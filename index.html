@@ -334,33 +334,88 @@
 
         async function loadPaymentsTab(content) {
             try {
-                const { data: payments } = await supabase.from('payments').select(`*, user_profiles!inner(full_name, email)`).order('created_at', { ascending: false });
+                console.log('Loading payments tab...');
+                
+                // Get payments first
+                const { data: payments, error: paymentsError } = await supabase
+                    .from('payments')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                console.log('Payments query result:', payments, paymentsError);
+                
+                if (paymentsError) {
+                    console.error('Payments error:', paymentsError);
+                    throw paymentsError;
+                }
+
+                // Get user profiles separately
+                const { data: profiles, error: profilesError } = await supabase
+                    .from('user_profiles')
+                    .select('user_id, full_name, email');
+                
+                console.log('Profiles query result:', profiles, profilesError);
+
+                // Create profile lookup map
+                const profileMap = {};
+                if (profiles) {
+                    profiles.forEach(profile => {
+                        profileMap[profile.user_id] = profile;
+                    });
+                }
+
                 content.innerHTML = `
                     <h3>Payment Management (${payments?.length || 0})</h3>
                     ${!payments || payments.length === 0 ? `
-                        <div class="empty-state"><div class="empty-state-icon">💰</div><h3>No Payments Yet</h3><p>Commission payments will appear here.</p></div>
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💰</div>
+                            <h3>No Payments Yet</h3>
+                            <p>Commission payments will appear here.</p>
+                        </div>
                     ` : `
                         <div class="table-container">
                             <table>
-                                <thead><tr><th>Affiliate</th><th>Company</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+                                <thead>
+                                    <tr>
+                                        <th>Affiliate</th>
+                                        <th>Company</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
-                                    ${payments.map(payment => `
-                                        <tr>
-                                            <td><strong>${payment.user_profiles?.full_name || 'Unknown'}</strong><br><small>${payment.user_profiles?.email || ''}</small></td>
-                                            <td>${payment.referral_company || 'N/A'}</td>
-                                            <td><strong>$${parseFloat(payment.amount).toFixed(2)}</strong></td>
-                                            <td><span class="status-badge status-active">Completed</span></td>
-                                            <td>${new Date(payment.created_at).toLocaleDateString()}</td>
-                                            <td><span style="color: var(--success-green);">✓ Paid via External Platform</span></td>
-                                        </tr>
-                                    `).join('')}
+                                    ${payments.map(payment => {
+                                        const profile = profileMap[payment.affiliate_id] || {};
+                                        return `
+                                            <tr>
+                                                <td>
+                                                    <strong>${profile.full_name || 'Unknown Affiliate'}</strong><br>
+                                                    <small>${profile.email || 'No email'}</small>
+                                                </td>
+                                                <td>${payment.referral_company || 'N/A'}</td>
+                                                <td><strong>${parseFloat(payment.amount).toFixed(2)}</strong></td>
+                                                <td><span class="status-badge status-active">Completed</span></td>
+                                                <td>${new Date(payment.created_at).toLocaleDateString()}</td>
+                                                <td><span style="color: var(--success-green);">✓ Paid via External Platform</span></td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
                                 </tbody>
                             </table>
                         </div>
                     `}
                 `;
             } catch (error) {
-                content.innerHTML = '<div class="empty-state"><h3>Error loading payments</h3></div>';
+                console.error('Error loading payments:', error);
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>Error Loading Payments</h3>
+                        <p>There was an error loading payment data: ${error.message}</p>
+                    </div>
+                `;
             }
         }
 
