@@ -1469,9 +1469,15 @@
             
             const content = document.getElementById('admin-content');
             
-            // Simple referrals display for admin
+            // Load different admin tabs
             if (tabName === 'referrals-admin') {
                 loadSimpleReferralsTab(content);
+            } else if (tabName === 'affiliates') {
+                loadAffiliatesAdminTab(content);
+            } else if (tabName === 'payments-admin') {
+                loadPaymentsAdminTab(content);
+            } else if (tabName === 'questions-admin') {
+                loadQuestionsAdminTab(content);
             } else {
                 content.innerHTML = `
                     <div class="empty-state">
@@ -1484,6 +1490,173 @@
             
             if (event && event.target) {
                 event.target.classList.add('active');
+            }
+        }
+
+        async function loadAffiliatesAdminTab(content) {
+            try {
+                const { data: affiliates } = await supabase
+                    .from('user_profiles')
+                    .select('*')
+                    .eq('role', 'affiliate')
+                    .order('created_at', { ascending: false });
+
+                if (!affiliates || affiliates.length === 0) {
+                    content.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">👥</div>
+                            <h3>No Affiliates Yet</h3>
+                            <p>New affiliates will appear here when they sign up.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                content.innerHTML = `
+                    <h3>Affiliate Management (${affiliates.length})</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Company</th>
+                                    <th>Joined</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${affiliates.map(affiliate => `
+                                    <tr>
+                                        <td><strong>${affiliate.full_name || 'N/A'}</strong></td>
+                                        <td>${affiliate.email}</td>
+                                        <td>${affiliate.company || 'N/A'}</td>
+                                        <td>${new Date(affiliate.created_at).toLocaleDateString()}</td>
+                                        <td><span class="status-badge status-active">Active</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading affiliates:', error);
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>Error Loading Affiliates</h3>
+                        <p>There was an error loading affiliate data.</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function loadPaymentsAdminTab(content) {
+            try {
+                const { data: payments } = await supabase
+                    .from('payments')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                content.innerHTML = `
+                    <h3>Payment Management</h3>
+                    ${!payments || payments.length === 0 ? `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💰</div>
+                            <h3>No Payments Yet</h3>
+                            <p>Commission payments will appear here.</p>
+                        </div>
+                    ` : `
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Affiliate</th>
+                                        <th>Amount</th>
+                                        <th>Description</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${payments.map(payment => `
+                                        <tr>
+                                            <td>Affiliate</td>
+                                            <td><strong>${payment.amount.toFixed(2)}</strong></td>
+                                            <td>${payment.description || 'Commission Payment'}</td>
+                                            <td><span class="status-badge status-${payment.status}">${payment.status}</span></td>
+                                            <td>${new Date(payment.created_at).toLocaleDateString()}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `}
+                `;
+            } catch (error) {
+                console.error('Error loading payments:', error);
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>Error Loading Payments</h3>
+                        <p>There was an error loading payment data.</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function loadQuestionsAdminTab(content) {
+            try {
+                const { data: questions } = await supabase
+                    .from('questions')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (!questions || questions.length === 0) {
+                    content.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">❓</div>
+                            <h3>No Questions Yet</h3>
+                            <p>Affiliate questions will appear here.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                content.innerHTML = `
+                    <h3>Questions & Support (${questions.length})</h3>
+                    ${questions.map(q => `
+                        <div style="border: 1px solid var(--border-gray); border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                                <div>
+                                    <div style="font-size: 0.9rem; color: var(--slate-gray);">
+                                        Affiliate asked - ${new Date(q.created_at).toLocaleDateString()}
+                                    </div>
+                                    <div style="margin-top: 0.5rem;">
+                                        <strong>${q.subject}</strong>
+                                    </div>
+                                </div>
+                                <span class="status-badge status-${q.response ? 'active' : 'pending'}">${q.response ? 'Answered' : 'Pending'}</span>
+                            </div>
+                            <p style="margin-bottom: 1rem;">${q.question}</p>
+                            ${q.response ? `
+                                <div style="background: var(--light-gray); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                                    <div style="font-size: 0.9rem; color: var(--slate-gray); margin-bottom: 0.5rem;">Your response:</div>
+                                    <p>${q.response}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `).join('')}
+                `;
+            } catch (error) {
+                console.error('Error loading questions:', error);
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>Error Loading Questions</h3>
+                        <p>There was an error loading question data.</p>
+                    </div>
+                `;
             }
         }
 
