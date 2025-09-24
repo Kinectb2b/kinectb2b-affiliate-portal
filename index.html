@@ -1,37 +1,1448 @@
--- Create clients table
-CREATE TABLE clients (
-    username TEXT PRIMARY KEY,
-    password TEXT NOT NULL,
-    name TEXT NOT NULL,
-    plan TEXT NOT NULL,
-    status TEXT DEFAULT 'active',
-    next_billing DATE,
-    total_appointments INTEGER DEFAULT 0,
-    businesses_contacted INTEGER DEFAULT 0,
-    people_called INTEGER DEFAULT 0,
-    total_contact_points INTEGER DEFAULT 0,
-    appointments JSONB DEFAULT '[]'::jsonb,
-    prospects JSONB DEFAULT '[]'::jsonb,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KinectB2B Affiliate Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
--- Create notifications table  
-CREATE TABLE notifications (
-    id BIGSERIAL PRIMARY KEY,
-    type TEXT NOT NULL,
-    message TEXT NOT NULL,
-    client_name TEXT NOT NULL,
-    read BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+        :root {
+            --deep-blue: #0F172A;
+            --electric-blue: #2563EB;
+            --white: #FFFFFF;
+            --slate-gray: #64748B;
+            --light-gray: #F8FAFC;
+            --border-gray: #E2E8F0;
+            --success-green: #10B981;
+            --warning-yellow: #F59E0B;
+            --danger-red: #EF4444;
+        }
 
--- Insert your existing clients
-INSERT INTO clients (username, password, name, plan, status, next_billing, total_appointments, businesses_contacted, people_called, total_contact_points, appointments, prospects) VALUES 
-('dynamic-duo', 'kinect2024', 'Dynamic Duo', 'Pro Plan 300', 'active', '2025-10-22', 45, 25, 75, 675, 
-'[{"date":"2025-09-24","time":"2:00 PM","company":"TechStart Solutions","contact":"John Mitchell","type":"CRM Implementation","location":"Downtown Office","status":"confirmed","notes":""}]'::jsonb,
-'[{"businessName":"Enterprise Solutions Inc.","location":"Chicago, IL","service":"CRM Implementation","status":"Discovery"}]'::jsonb),
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--deep-blue);
+            background-color: var(--light-gray);
+        }
 
-('techstart', 'tech2024', 'TechStart Solutions', 'Pro Plan 500', 'active', '2025-11-15', 78, 42, 125, 1125,
-'[{"date":"2025-09-26","time":"3:15 PM","company":"Blue Ocean Consulting","contact":"Mike Rodriguez","type":"Sales Pipeline Setup","location":"Client Site","status":"confirmed","notes":""}]'::jsonb,
-'[{"businessName":"Midwest Manufacturing","location":"Detroit, MI","service":"Sales Pipeline","status":"Negotiation"}]'::jsonb);
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        h1, h2, h3 {
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: var(--electric-blue);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background-color: #1D4ED8;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: var(--white);
+            color: var(--electric-blue);
+            border: 2px solid var(--electric-blue);
+        }
+
+        .btn-success {
+            background-color: var(--success-green);
+            color: var(--white);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-red);
+            color: var(--white);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(15, 23, 42, 0.08);
+            margin-bottom: 2rem;
+        }
+
+        /* Header */
+        .header {
+            background: var(--white);
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--deep-blue);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--slate-gray);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--electric-blue);
+        }
+
+        /* Login Form */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--deep-blue) 0%, #1E293B 100%);
+        }
+
+        .login-card {
+            max-width: 400px;
+            width: 100%;
+            margin: 2rem;
+        }
+
+        .login-card .card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 3rem;
+            text-align: center;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--electric-blue), #3B82F6);
+            color: var(--white);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        th {
+            background: var(--light-gray);
+            font-weight: 600;
+            color: var(--deep-blue);
+        }
+
+        tr:hover {
+            background: var(--light-gray);
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .status-contacted {
+            background: #DBEAFE;
+            color: #2563EB;
+        }
+
+        .status-active {
+            background: #D1FAE5;
+            color: #059669;
+        }
+
+        .status-closed {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--deep-blue);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--electric-blue);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--slate-gray);
+        }
+
+        /* Q&A Section */
+        .qa-item {
+            border-bottom: 1px solid var(--border-gray);
+            padding: 1.5rem 0;
+        }
+
+        .qa-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .qa-meta {
+            font-size: 0.9rem;
+            color: var(--slate-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .qa-response {
+            background: var(--light-gray);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        /* Payment History */
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .payment-amount {
+            font-weight: 600;
+            color: var(--success-green);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border-gray);
+            margin-bottom: 2rem;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--slate-gray);
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            color: var(--electric-blue);
+            border-bottom: 2px solid var(--electric-blue);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-container {
+                font-size: 0.9rem;
+            }
+
+            th, td {
+                padding: 0.5rem;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: var(--white);
+            font-weight: 600;
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.success {
+            background: var(--success-green);
+        }
+
+        .notification.error {
+            background: var(--danger-red);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Section -->
+    <div id="login-section" class="login-container">
+        <div class="login-card">
+            <div class="card">
+                <div class="logo" style="margin-bottom: 2rem;">KinectB2B Affiliates</div>
+                
+                <div id="affiliate-login">
+                    <h2>Affiliate Login</h2>
+                    <form id="affiliateLoginForm">
+                        <div class="form-group">
+                            <label for="affiliate-email">Email</label>
+                            <input type="email" id="affiliate-email" required>
+                        <!-- Notification -->
+    <div id="notification" class="notification"></div>
+                        <div class="form-group">
+                            <label for="affiliate-password">Password</label>
+                            <input type="password" id="affiliate-password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Login</button>
+                    </form>
+                    <p style="text-align: center; color: var(--slate-gray); font-size: 0.9rem;">
+                        <a href="#" onclick="showAdminLogin()" style="color: var(--electric-blue);">Admin Login</a>
+                    </p>
+                </div>
+
+                <div id="admin-login" class="hidden">
+                    <h2>Admin Login</h2>
+                    <form id="adminLoginForm">
+                        <div class="form-group">
+                            <label for="admin-email">Email</label>
+                            <input type="email" id="admin-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="admin-password">Password</label>
+                            <input type="password" id="admin-password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Login</button>
+                    </form>
+                    <p style="text-align: center; color: var(--slate-gray); font-size: 0.9rem;">
+                        <a href="#" onclick="showAffiliateLogin()" style="color: var(--electric-blue);">Affiliate Login</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header (Hidden until login) -->
+    <header class="header hidden" id="main-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">KinectB2B Affiliates</div>
+                <nav class="nav-links">
+                    <span id="user-name">Welcome, User</span>
+                    <a href="#" onclick="logout()">Logout</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Affiliate Portal -->
+    <div id="affiliate-portal" class="hidden">
+        <div class="container" style="padding-top: 2rem;">
+            <!-- Dashboard Stats -->
+            <div class="dashboard-grid">
+                <div class="card stat-card">
+                    <div class="stat-number" id="total-referrals">12</div>
+                    <div class="stat-label">Total Referrals</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-number" id="active-clients">5</div>
+                    <div class="stat-label">Active Clients</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-number" id="monthly-earnings">$850</div>
+                    <div class="stat-label">This Month</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-number" id="total-earnings">$4,200</div>
+                    <div class="stat-label">Total Earned</div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('referrals')">My Referrals</button>
+                    <button class="tab" onclick="showTab('submit')">Submit Referral</button>
+                    <button class="tab" onclick="showTab('payments')">Payment History</button>
+                    <button class="tab" onclick="showTab('qa')">Q&A Support</button>
+                </div>
+
+                <!-- My Referrals Tab -->
+                <div id="referrals-tab" class="tab-content active">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>My Referrals</h3>
+                        <button class="btn btn-primary btn-small" onclick="showTab('submit')">+ Submit New Referral</button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Company</th>
+                                    <th>Contact</th>
+                                    <th>Status</th>
+                                    <th>Monthly Value</th>
+                                    <th>Submitted</th>
+                                </tr>
+                            </thead>
+                            <tbody id="referrals-table">
+                                <tr>
+                                    <td>ABC Cleaning Services</td>
+                                    <td>John Smith<br><small>john@abc.com</small></td>
+                                    <td><span class="status-badge status-active">Active</span></td>
+                                    <td>$250/mo</td>
+                                    <td>Jan 15, 2025</td>
+                                </tr>
+                                <tr>
+                                    <td>XYZ Maintenance Co</td>
+                                    <td>Sarah Johnson<br><small>sarah@xyz.com</small></td>
+                                    <td><span class="status-badge status-contacted">Contacted</span></td>
+                                    <td>$500/mo</td>
+                                    <td>Feb 2, 2025</td>
+                                </tr>
+                                <tr>
+                                    <td>Quick Fix LLC</td>
+                                    <td>Mike Davis<br><small>mike@quickfix.com</small></td>
+                                    <td><span class="status-badge status-pending">Pending</span></td>
+                                    <td>-</td>
+                                    <td>Feb 8, 2025</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Submit Referral Tab -->
+                <div id="submit-tab" class="tab-content">
+                    <h3>Submit New Referral</h3>
+                    <form id="new-referral-form">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <div>
+                                <h4 style="margin-bottom: 1rem;">Company Information</h4>
+                                <div class="form-group">
+                                    <label for="company-name">Company Name *</label>
+                                    <input type="text" id="company-name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="company-website">Website</label>
+                                    <input type="url" id="company-website">
+                                </div>
+                                <div class="form-group">
+                                    <label for="company-size">Company Size</label>
+                                    <select id="company-size">
+                                        <option value="">Select size...</option>
+                                        <option value="1-10">1-10 employees</option>
+                                        <option value="11-50">11-50 employees</option>
+                                        <option value="51-200">51-200 employees</option>
+                                        <option value="200+">200+ employees</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 1rem;">Contact Information</h4>
+                                <div class="form-group">
+                                    <label for="contact-name">Contact Name *</label>
+                                    <input type="text" id="contact-name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contact-email">Email *</label>
+                                    <input type="email" id="contact-email" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contact-phone">Phone</label>
+                                    <input type="tel" id="contact-phone">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="referral-notes">Additional Notes</label>
+                            <textarea id="referral-notes" placeholder="Tell us about their business, current challenges, or why they'd be a good fit..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Referral</button>
+                    </form>
+                </div>
+
+                <!-- Payment History Tab -->
+                <div id="payments-tab" class="tab-content">
+                    <h3>Payment History</h3>
+                    <div class="payment-item">
+                        <div>
+                            <strong>January 2025 Commission</strong><br>
+                            <small>ABC Cleaning Services - Pro Plan 100</small>
+                        </div>
+                        <div class="payment-amount">+$25.00</div>
+                    </div>
+                    <div class="payment-item">
+                        <div>
+                            <strong>December 2024 Commission</strong><br>
+                            <small>ABC Cleaning Services - Pro Plan 100</small>
+                        </div>
+                        <div class="payment-amount">+$25.00</div>
+                    </div>
+                    <div class="payment-item">
+                        <div>
+                            <strong>November 2024 Commission</strong><br>
+                            <small>ABC Cleaning Services - Pro Plan 100</small>
+                        </div>
+                        <div class="payment-amount">+$25.00</div>
+                    </div>
+                    
+                    <div style="margin-top: 2rem; padding: 1.5rem; background: var(--light-gray); border-radius: 8px;">
+                        <h4>Next Payment</h4>
+                        <p>February commission will be paid on March 30, 2025</p>
+                        <p><strong>Expected amount: $50.00</strong></p>
+                    </div>
+                </div>
+
+                <!-- Q&A Support Tab -->
+                <div id="qa-tab" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>Q&A Support</h3>
+                        <button class="btn btn-primary btn-small" onclick="openQuestionModal()">Ask Question</button>
+                    </div>
+
+                    <div id="qa-list">
+                        <div class="qa-item">
+                            <div class="qa-meta">You asked - February 5, 2025</div>
+                            <div class="qa-question">
+                                <div><strong>How long does it take to get paid after a referral converts?</strong></div>
+                                <span class="status-badge status-active">Answered</span>
+                            </div>
+                            <div class="qa-response">
+                                <div class="qa-meta">Admin responded - February 5, 2025</div>
+                                <p>Payments are processed net-30, so you'll receive your commission 30 days after the end of the month in which the payment was received. For example, if a client pays in February, you'll receive your commission by March 30th.</p>
+                            </div>
+                        </div>
+
+                        <div class="qa-item">
+                            <div class="qa-meta">You asked - January 28, 2025</div>
+                            <div class="qa-question">
+                                <div><strong>Can I refer international clients?</strong></div>
+                                <span class="status-badge status-pending">Pending</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Portal -->
+    <div id="admin-portal" class="hidden">
+        <div class="container" style="padding-top: 2rem;">
+            <!-- Admin Stats -->
+            <div class="dashboard-grid">
+                <div class="card stat-card">
+                    <div class="stat-number">25</div>
+                    <div class="stat-label">Active Affiliates</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-number">142</div>
+                    <div class="stat-label">Total Referrals</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-number">$12,500</div>
+                    <div class="stat-label">Monthly Commissions</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-number">$85,200</div>
+                    <div class="stat-label">Total Paid Out</div>
+                </div>
+            </div>
+
+            <!-- Admin Tabs -->
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab active" onclick="showAdminTab('affiliates')">Manage Affiliates</button>
+                    <button class="tab" onclick="showAdminTab('referrals-admin')">All Referrals</button>
+                    <button class="tab" onclick="showAdminTab('payments-admin')">Payments</button>
+                    <button class="tab" onclick="showAdminTab('questions')">Q&A Queue</button>
+                    <button class="tab" onclick="showAdminTab('settings')">Settings</button>
+                </div>
+
+                <!-- Manage Affiliates Tab -->
+                <div id="affiliates-admin-tab" class="tab-content active">
+                    <h3>Manage Affiliates</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Affiliate</th>
+                                    <th>Email</th>
+                                    <th>Referrals</th>
+                                    <th>Total Earned</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>John Doe<br><small>JOHNDOE-ABC123</small></td>
+                                    <td>affiliate@test.com</td>
+                                    <td>12</td>
+                                    <td>$4,200</td>
+                                    <td><span class="status-badge status-active">Active</span></td>
+                                    <td>
+                                        <button class="btn btn-secondary btn-small" onclick="editAffiliate('john-doe')">Edit</button>
+                                        <button class="btn btn-success btn-small" onclick="addPayment('john-doe')">Add Payment</button>
+                                        <button class="btn btn-primary btn-small" onclick="changeAffiliatePassword('john-doe')">Reset Password</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Sarah Smith<br><small>SARAHSMITH-XYZ789</small></td>
+                                    <td>sarah@example.com</td>
+                                    <td>8</td>
+                                    <td>$2,100</td>
+                                    <td><span class="status-badge status-active">Active</span></td>
+                                    <td>
+                                        <button class="btn btn-secondary btn-small" onclick="editAffiliate('sarah-smith')">Edit</button>
+                                        <button class="btn btn-success btn-small" onclick="addPayment('sarah-smith')">Add Payment</button>
+                                        <button class="btn btn-primary btn-small" onclick="changeAffiliatePassword('sarah-smith')">Reset Password</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- All Referrals Tab -->
+                <div id="referrals-admin-admin-tab" class="tab-content">
+                    <h3>All Referrals</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Company</th>
+                                    <th>Contact</th>
+                                    <th>Referred By</th>
+                                    <th>Status</th>
+                                    <th>Value</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>ABC Cleaning Services</td>
+                                    <td>John Smith<br><small>john@abc.com</small></td>
+                                    <td>John Doe<br><small>JOHNDOE-ABC123</small></td>
+                                    <td><span class="status-badge status-active">Active</span></td>
+                                    <td>$250/mo</td>
+                                    <td>
+                                        <button class="btn btn-secondary btn-small" onclick="updateReferralStatus('abc-cleaning')">Update</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Payments Tab -->
+                <div id="payments-admin-admin-tab" class="tab-content">
+                    <h3>Payment Management</h3>
+                    <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                        <button class="btn btn-primary" onclick="processMonthlyPayments()">Process Monthly Payments</button>
+                        <button class="btn btn-secondary" onclick="exportPayments()">Export Payment Report</button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Affiliate</th>
+                                    <th>Period</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date Paid</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>John Doe</td>
+                                    <td>January 2025</td>
+                                    <td>$350.00</td>
+                                    <td><span class="status-badge status-active">Paid</span></td>
+                                    <td>Feb 28, 2025</td>
+                                    <td>
+                                        <button class="btn btn-secondary btn-small">View Details</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Q&A Queue Tab -->
+                <div id="questions-admin-tab" class="tab-content">
+                    <h3>Q&A Queue</h3>
+                    <div id="admin-qa-list">
+                        <div class="qa-item">
+                            <div class="qa-meta">John Doe asked - February 8, 2025</div>
+                            <div class="qa-question">
+                                <div><strong>Can I refer international clients?</strong></div>
+                                <span class="status-badge status-pending">Pending Response</span>
+                            </div>
+                            <button class="btn btn-primary btn-small" onclick="respondToQuestion('q1')">Respond</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="settings-admin-tab" class="tab-content">
+                    <h3>Admin Settings</h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;">
+                        <!-- Change Password -->
+                        <div class="card">
+                            <h4>Change Admin Password</h4>
+                            <form id="change-password-form">
+                                <div class="form-group">
+                                    <label for="current-password">Current Password</label>
+                                    <input type="password" id="current-password" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="new-password">New Password</label>
+                                    <input type="password" id="new-password" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="confirm-password">Confirm New Password</label>
+                                    <input type="password" id="confirm-password" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Update Password</button>
+                            </form>
+                        </div>
+
+                        <!-- Admin Profile -->
+                        <div class="card">
+                            <h4>Admin Profile</h4>
+                            <form id="admin-profile-form">
+                                <div class="form-group">
+                                    <label for="admin-name">Name</label>
+                                    <input type="text" id="admin-name" value="Robert" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="admin-email-setting">Email</label>
+                                    <input type="email" id="admin-email-setting" value="robert@kinectb2b.com" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="admin-phone">Phone</label>
+                                    <input type="tel" id="admin-phone" placeholder="(555) 123-4567">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Update Profile</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- System Settings -->
+                    <div class="card" style="margin-top: 2rem;">
+                        <h4>System Settings</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <div>
+                                <div class="form-group">
+                                    <label for="commission-rate">Default Commission Rate (%)</label>
+                                    <input type="number" id="commission-rate" value="10" min="0" max="100" step="0.1">
+                                </div>
+                                <div class="form-group">
+                                    <label for="payment-schedule">Payment Schedule</label>
+                                    <select id="payment-schedule">
+                                        <option value="net-30">Net-30 (30 days)</option>
+                                        <option value="net-15">Net-15 (15 days)</option>
+                                        <option value="net-60">Net-60 (60 days)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="form-group">
+                                    <label for="minimum-payout">Minimum Payout Amount ($)</label>
+                                    <input type="number" id="minimum-payout" value="50" min="0" step="1">
+                                </div>
+                                <div class="form-group">
+                                    <label for="auto-approval">Auto-approve Affiliates</label>
+                                    <select id="auto-approval">
+                                        <option value="false">Manual Approval</option>
+                                        <option value="true">Auto-approve</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="saveSystemSettings()">Save System Settings</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question Modal -->
+    <div id="question-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Ask a Question</h3>
+                <button class="close-modal" onclick="closeModal('question-modal')">&times;</button>
+            </div>
+            <form id="question-form">
+                <div class="form-group">
+                    <label for="question-subject">Subject</label>
+                    <input type="text" id="question-subject" required>
+                </div>
+                <div class="form-group">
+                    <label for="question-text">Your Question</label>
+                    <textarea id="question-text" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Question</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Affiliate Modal -->
+    <div id="edit-affiliate-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Affiliate</h3>
+                <button class="close-modal" onclick="closeModal('edit-affiliate-modal')">&times;</button>
+            </div>
+            <form id="edit-affiliate-form">
+                <div class="form-group">
+                    <label for="edit-name">Name</label>
+                    <input type="text" id="edit-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-email">Email</label>
+                    <input type="email" id="edit-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-status">Status</label>
+                    <select id="edit-status">
+                        <option value="active">Active</option>
+                        <option value="suspended">Suspended</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-notes">Admin Notes</label>
+                    <textarea id="edit-notes"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Payment Modal -->
+    <div id="add-payment-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Payment</h3>
+                <button class="close-modal" onclick="closeModal('add-payment-modal')">&times;</button>
+            </div>
+            <form id="add-payment-form">
+                <div class="form-group">
+                    <label for="payment-amount">Amount</label>
+                    <input type="number" id="payment-amount" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="payment-period">Period</label>
+                    <input type="text" id="payment-period" placeholder="e.g., February 2025" required>
+                </div>
+                <div class="form-group">
+                    <label for="payment-notes">Notes</label>
+                    <textarea id="payment-notes"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Payment</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Response Modal -->
+    <div id="response-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Respond to Question</h3>
+                <button class="close-modal" onclick="closeModal('response-modal')">&times;</button>
+            </div>
+            <div id="question-display" style="background: var(--light-gray); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                <!-- Question will be displayed here -->
+            </div>
+            <form id="response-form">
+                <div class="form-group">
+                    <label for="response-text">Your Response</label>
+                    <textarea id="response-text" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Send Response</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Change Affiliate Password Modal -->
+    <div id="change-affiliate-password-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Reset Affiliate Password</h3>
+                <button class="close-modal" onclick="closeModal('change-affiliate-password-modal')">&times;</button>
+            </div>
+            <form id="change-affiliate-password-form">
+                <div class="form-group">
+                    <label for="affiliate-name-display">Affiliate</label>
+                    <input type="text" id="affiliate-name-display" readonly style="background: var(--light-gray);">
+                </div>
+                <div class="form-group">
+                    <label for="new-affiliate-password">New Password</label>
+                    <input type="password" id="new-affiliate-password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm-affiliate-password">Confirm New Password</label>
+                    <input type="password" id="confirm-affiliate-password" required>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary">Reset Password</button>
+                    <button type="button" class="btn btn-secondary" onclick="generateRandomPassword()">Generate Random</button>
+                </div>
+                <div id="generated-password" class="form-group" style="display: none; margin-top: 1rem;">
+                    <label>Generated Password:</label>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="text" id="random-password" readonly style="background: var(--light-gray);">
+                        <button type="button" class="btn btn-secondary btn-small" onclick="copyPassword()">Copy</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentUser = null;
+        let currentUserRole = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, setting up...'); // Debug
+            setupEventListeners();
+            
+            // Make sure we start with affiliate login visible
+            document.getElementById('affiliate-login').classList.remove('hidden');
+            document.getElementById('admin-login').classList.add('hidden');
+        });
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Login forms
+            document.getElementById('affiliateLoginForm').addEventListener('submit', handleAffiliateLogin);
+            document.getElementById('adminLoginForm').addEventListener('submit', handleAdminLogin);
+            
+            // Other forms
+            document.getElementById('new-referral-form').addEventListener('submit', handleNewReferral);
+            document.getElementById('question-form').addEventListener('submit', handleNewQuestion);
+            document.getElementById('edit-affiliate-form').addEventListener('submit', handleEditAffiliate);
+            document.getElementById('add-payment-form').addEventListener('submit', handleAddPayment);
+            document.getElementById('response-form').addEventListener('submit', handleResponse);
+            document.getElementById('change-password-form').addEventListener('submit', handleChangePassword);
+            document.getElementById('admin-profile-form').addEventListener('submit', handleUpdateProfile);
+            document.getElementById('change-affiliate-password-form').addEventListener('submit', handleChangeAffiliatePassword);
+        }
+
+        // Login Functions
+        function handleAffiliateLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('affiliate-email').value.trim().toLowerCase();
+            const password = document.getElementById('affiliate-password').value;
+            
+            console.log('Affiliate login attempt:', email, password); // Debug log
+            
+            // Demo affiliate credentials
+            if (email === 'affiliate@test.com' && password === 'password123') {
+                currentUser = { name: 'John Doe', email: 'affiliate@test.com', id: 'john-doe' };
+                currentUserRole = 'affiliate';
+                showPortal('affiliate');
+                showNotification('Welcome back, John!', 'success');
+            } else {
+                console.log('Affiliate login failed for:', email); // Debug log
+                showNotification('Invalid credentials. Try: affiliate@test.com / password123', 'error');
+            }
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('admin-email').value.trim().toLowerCase();
+            const password = document.getElementById('admin-password').value;
+            
+            console.log('Login attempt:', email, password); // Debug log
+            
+            // Updated admin credentials - exact match
+            if (email === 'robert@kinectb2b.com' && password === 'kinect2024admin') {
+                currentUser = { name: 'Robert', email: 'robert@kinectb2b.com' };
+                currentUserRole = 'admin';
+                showPortal('admin');
+                showNotification('Welcome back, Robert!', 'success');
+            } else {
+                console.log('Login failed for:', email); // Debug log
+                showNotification('Invalid credentials. Try: robert@kinectb2b.com / kinect2024admin', 'error');
+            }
+        }
+
+        function showPortal(type) {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('main-header').classList.remove('hidden');
+            document.getElementById('user-name').textContent = `Welcome, ${currentUser.name}`;
+            
+            if (type === 'affiliate') {
+                document.getElementById('affiliate-portal').classList.remove('hidden');
+            } else if (type === 'admin') {
+                document.getElementById('admin-portal').classList.remove('hidden');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            currentUserRole = null;
+            document.getElementById('login-section').classList.remove('hidden');
+            document.getElementById('main-header').classList.add('hidden');
+            document.getElementById('affiliate-portal').classList.add('hidden');
+            document.getElementById('admin-portal').classList.add('hidden');
+            
+            // Reset forms
+            document.getElementById('affiliateLoginForm').reset();
+            document.getElementById('adminLoginForm').reset();
+        }
+
+        // Login switchers
+        function showAdminLogin() {
+            console.log('Switching to admin login'); // Debug
+            document.getElementById('affiliate-login').classList.add('hidden');
+            document.getElementById('admin-login').classList.remove('hidden');
+            
+            // Clear any existing error messages
+            const notifications = document.querySelectorAll('.notification');
+            notifications.forEach(n => n.classList.remove('show'));
+            
+            // Clear form fields
+            document.getElementById('affiliateLoginForm').reset();
+        }
+
+        function showAffiliateLogin() {
+            console.log('Switching to affiliate login'); // Debug
+            document.getElementById('admin-login').classList.add('hidden');
+            document.getElementById('affiliate-login').classList.remove('hidden');
+            
+            // Clear any existing error messages
+            const notifications = document.querySelectorAll('.notification');
+            notifications.forEach(n => n.classList.remove('show'));
+            
+            // Clear form fields
+            document.getElementById('adminLoginForm').reset();
+        }
+
+        // Tab Functions
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        function showAdminTab(tabName) {
+            // Hide all admin tab contents
+            document.querySelectorAll('#admin-portal .tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all admin tabs
+            document.querySelectorAll('#admin-portal .tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-admin-tab').classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // Form Handlers
+        function handleNewReferral(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            // Simulate submission
+            showNotification('Referral submitted successfully!', 'success');
+            e.target.reset();
+            
+            // Switch to referrals tab
+            showTab('referrals');
+        }
+
+        function handleNewQuestion(e) {
+            e.preventDefault();
+            const subject = document.getElementById('question-subject').value;
+            const question = document.getElementById('question-text').value;
+            
+            // Add to Q&A list
+            const qaList = document.getElementById('qa-list');
+            const newQuestion = document.createElement('div');
+            newQuestion.className = 'qa-item';
+            newQuestion.innerHTML = `
+                <div class="qa-meta">You asked - ${new Date().toLocaleDateString()}</div>
+                <div class="qa-question">
+                    <div><strong>${subject}</strong></div>
+                    <span class="status-badge status-pending">Pending</span>
+                </div>
+                <p>${question}</p>
+            `;
+            qaList.insertBefore(newQuestion, qaList.firstChild);
+            
+            closeModal('question-modal');
+            showNotification('Question submitted! We\'ll respond soon.', 'success');
+            document.getElementById('question-form').reset();
+        }
+
+        function handleEditAffiliate(e) {
+            e.preventDefault();
+            showNotification('Affiliate updated successfully!', 'success');
+            closeModal('edit-affiliate-modal');
+        }
+
+        function handleAddPayment(e) {
+            e.preventDefault();
+            showNotification('Payment added successfully!', 'success');
+            closeModal('add-payment-modal');
+        }
+
+        function handleResponse(e) {
+            e.preventDefault();
+            showNotification('Response sent to affiliate!', 'success');
+            closeModal('response-modal');
+        }
+
+        function handleChangePassword(e) {
+            e.preventDefault();
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            if (currentPassword !== 'kinect2024admin') {
+                showNotification('Current password is incorrect', 'error');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showNotification('New passwords do not match', 'error');
+                return;
+            }
+
+            if (newPassword.length < 8) {
+                showNotification('Password must be at least 8 characters', 'error');
+                return;
+            }
+
+            // In a real app, you'd update the password in your backend
+            showNotification('Admin password updated successfully!', 'success');
+            document.getElementById('change-password-form').reset();
+        }
+
+        function handleUpdateProfile(e) {
+            e.preventDefault();
+            showNotification('Admin profile updated successfully!', 'success');
+        }
+
+        function handleChangeAffiliatePassword(e) {
+            e.preventDefault();
+            const newPassword = document.getElementById('new-affiliate-password').value;
+            const confirmPassword = document.getElementById('confirm-affiliate-password').value;
+
+            if (newPassword !== confirmPassword) {
+                showNotification('Passwords do not match', 'error');
+                return;
+            }
+
+            if (newPassword.length < 8) {
+                showNotification('Password must be at least 8 characters', 'error');
+                return;
+            }
+
+            showNotification('Affiliate password reset successfully!', 'success');
+            closeModal('change-affiliate-password-modal');
+            document.getElementById('change-affiliate-password-form').reset();
+            document.getElementById('generated-password').style.display = 'none';
+        }
+
+        // Modal Functions
+        function openQuestionModal() {
+            document.getElementById('question-modal').classList.add('active');
+        }
+
+        function editAffiliate(affiliateId) {
+            // Populate form with affiliate data
+            document.getElementById('edit-name').value = 'John Doe';
+            document.getElementById('edit-email').value = 'affiliate@test.com';
+            document.getElementById('edit-status').value = 'active';
+            
+            document.getElementById('edit-affiliate-modal').classList.add('active');
+        }
+
+        function addPayment(affiliateId) {
+            document.getElementById('add-payment-modal').classList.add('active');
+        }
+
+        function changeAffiliatePassword(affiliateId) {
+            // Set affiliate name in modal
+            const affiliateName = affiliateId === 'john-doe' ? 'John Doe (JOHNDOE-ABC123)' : 'Sarah Smith (SARAHSMITH-XYZ789)';
+            document.getElementById('affiliate-name-display').value = affiliateName;
+            document.getElementById('change-affiliate-password-modal').classList.add('active');
+        }
+
+        function generateRandomPassword() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%';
+            let password = '';
+            for (let i = 0; i < 12; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            
+            document.getElementById('random-password').value = password;
+            document.getElementById('new-affiliate-password').value = password;
+            document.getElementById('confirm-affiliate-password').value = password;
+            document.getElementById('generated-password').style.display = 'block';
+        }
+
+        function copyPassword() {
+            const passwordInput = document.getElementById('random-password');
+            passwordInput.select();
+            document.execCommand('copy');
+            showNotification('Password copied to clipboard!', 'success');
+        }
+
+        function respondToQuestion(questionId) {
+            document.getElementById('question-display').innerHTML = `
+                <strong>Question:</strong> Can I refer international clients?<br>
+                <small>Asked by John Doe on February 8, 2025</small>
+            `;
+            document.getElementById('response-modal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Admin Functions
+        function updateReferralStatus(referralId) {
+            showNotification('Referral status updated!', 'success');
+        }
+
+        function processMonthlyPayments() {
+            showNotification('Monthly payments processed!', 'success');
+        }
+
+        function exportPayments() {
+            showNotification('Payment report exported!', 'success');
+        }
+
+        function saveSystemSettings() {
+            showNotification('System settings saved successfully!', 'success');
+        }
+
+        // Notification Function
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
