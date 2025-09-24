@@ -139,6 +139,117 @@
         </div>
     </div>
 
+    <!-- Affiliate Portal -->
+    <div id="affiliate-portal" class="hidden">
+        <div class="container" style="padding-top: 2rem;">
+            <!-- Affiliate Stats -->
+            <div class="dashboard-grid">
+                <div class="card stat-card">
+                    <div class="stat-number" id="total-referrals">0</div>
+                    <div class="stat-label">Total Referrals</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-number" id="active-clients">0</div>
+                    <div class="stat-label">Active Clients</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-number" id="monthly-earnings">$0</div>
+                    <div class="stat-label">This Month</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-number" id="total-earnings">$0</div>
+                    <div class="stat-label">Total Earned</div>
+                </div>
+            </div>
+
+            <!-- Affiliate Tabs -->
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab active" onclick="showAffiliateTab(event, 'my-referrals')">My Referrals</button>
+                    <button class="tab" onclick="showAffiliateTab(event, 'submit-referral')">Submit Referral</button>
+                    <button class="tab" onclick="showAffiliateTab(event, 'my-payments')">My Payments</button>
+                </div>
+
+                <!-- Affiliate Content -->
+                <div id="affiliate-content">
+                    <!-- My Referrals Tab -->
+                    <div id="my-referrals-content" class="tab-content active">
+                        <h3>My Referrals</h3>
+                        <div id="affiliate-referrals-list">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📋</div>
+                                <h3>No Referrals Yet</h3>
+                                <p>Submit your first referral to start earning commissions!</p>
+                                <button class="btn btn-primary" onclick="showAffiliateTab(null, 'submit-referral')" style="margin-top: 1rem;">Submit Referral</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Referral Tab -->
+                    <div id="submit-referral-content" class="tab-content">
+                        <h3>Submit New Referral</h3>
+                        <form id="affiliate-referral-form">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                                <div>
+                                    <h4 style="margin-bottom: 1rem;">Company Information</h4>
+                                    <div class="form-group">
+                                        <label for="ref-company-name">Company Name *</label>
+                                        <input type="text" id="ref-company-name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ref-company-website">Website</label>
+                                        <input type="url" id="ref-company-website">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ref-company-size">Company Size</label>
+                                        <select id="ref-company-size">
+                                            <option value="">Select size...</option>
+                                            <option value="1-10">1-10 employees</option>
+                                            <option value="11-50">11-50 employees</option>
+                                            <option value="51-200">51-200 employees</option>
+                                            <option value="200+">200+ employees</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 style="margin-bottom: 1rem;">Contact Information</h4>
+                                    <div class="form-group">
+                                        <label for="ref-contact-name">Contact Name *</label>
+                                        <input type="text" id="ref-contact-name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ref-contact-email">Email *</label>
+                                        <input type="email" id="ref-contact-email" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ref-contact-phone">Phone</label>
+                                        <input type="tel" id="ref-contact-phone">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="ref-notes">Additional Notes</label>
+                                <textarea id="ref-notes" placeholder="Tell us about their business, current challenges, or why they'd be a good fit..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit Referral</button>
+                        </form>
+                    </div>
+
+                    <!-- My Payments Tab -->
+                    <div id="my-payments-content" class="tab-content">
+                        <h3>My Payment History</h3>
+                        <div id="affiliate-payments-list">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">💰</div>
+                                <h3>No Payments Yet</h3>
+                                <p>Payments will appear here once your referrals become active clients.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     <div id="notification" class="notification"></div>
 
     <script>
@@ -171,6 +282,7 @@
 
         function setupEventListeners() {
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('affiliate-referral-form').addEventListener('submit', handleAffiliateReferralSubmit);
         }
 
         async function handleLogin(e) {
@@ -192,6 +304,10 @@
                 currentUserRole = 'admin';
                 showPortal('admin');
                 await loadAdminData();
+            } else {
+                currentUserRole = 'affiliate';
+                showPortal('affiliate');
+                await loadAffiliateData();
             }
         }
 
@@ -210,13 +326,20 @@
             document.getElementById('main-header').classList.remove('hidden');
             const userName = currentUser?.user_metadata?.full_name || currentUser?.name || 'User';
             document.getElementById('user-name').textContent = `Welcome, ${userName}`;
-            if (type === 'admin') document.getElementById('admin-portal').classList.remove('hidden');
+            if (type === 'admin') {
+                document.getElementById('admin-portal').classList.remove('hidden');
+                document.getElementById('affiliate-portal').classList.add('hidden');
+            } else if (type === 'affiliate') {
+                document.getElementById('affiliate-portal').classList.remove('hidden');
+                document.getElementById('admin-portal').classList.add('hidden');
+            }
         }
 
         function showLogin() {
             document.getElementById('login-section').classList.remove('hidden');
             document.getElementById('main-header').classList.add('hidden');
             document.getElementById('admin-portal').classList.add('hidden');
+            document.getElementById('affiliate-portal').classList.add('hidden');
         }
 
         function showAdminLogin() {
@@ -588,6 +711,220 @@
             notification.textContent = message;
             notification.className = `notification ${type} show`;
             setTimeout(() => notification.classList.remove('show'), 4000);
+        }
+
+        // Affiliate Functions
+        async function loadAffiliateData() {
+            if (!currentUser) return;
+            try {
+                console.log('Loading affiliate data for user:', currentUser.id);
+                
+                // Load referrals for this affiliate
+                const { data: referrals } = await supabase
+                    .from('referrals')
+                    .select('*')
+                    .eq('affiliate_id', currentUser.id)
+                    .order('created_at', { ascending: false });
+
+                // Load payments for this affiliate
+                const { data: payments } = await supabase
+                    .from('payments')
+                    .select('*')
+                    .eq('affiliate_id', currentUser.id)
+                    .order('created_at', { ascending: false });
+
+                console.log('Loaded affiliate data:', { referrals, payments });
+
+                updateAffiliateStats(referrals || [], payments || []);
+                renderAffiliateReferrals(referrals || []);
+                renderAffiliatePayments(payments || []);
+
+            } catch (error) {
+                console.error('Error loading affiliate data:', error);
+                showNotification('Error loading your data', 'error');
+            }
+        }
+
+        function updateAffiliateStats(referrals = [], payments = []) {
+            const totalReferrals = referrals.length;
+            const activeClients = referrals.filter(r => r.status === 'customer').length;
+            const totalEarnings = payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const monthlyEarnings = payments
+                .filter(p => p.created_at?.startsWith(currentMonth))
+                .reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+
+            document.getElementById('total-referrals').textContent = totalReferrals;
+            document.getElementById('active-clients').textContent = activeClients;
+            document.getElementById('monthly-earnings').textContent = `${monthlyEarnings.toFixed(2)}`;
+            document.getElementById('total-earnings').textContent = `${totalEarnings.toFixed(2)}`;
+        }
+
+        function showAffiliateTab(event, tabName) {
+            // Hide all affiliate tab contents
+            document.querySelectorAll('#affiliate-content .tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all affiliate tabs
+            document.querySelectorAll('#affiliate-portal .tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show the selected tab content
+            document.getElementById(tabName + '-content').classList.add('active');
+            
+            // Add active class to clicked tab
+            if (event && event.target) {
+                event.target.classList.add('active');
+            } else {
+                // Find and activate the correct tab
+                document.querySelectorAll('#affiliate-portal .tab').forEach(tab => {
+                    if ((tabName === 'my-referrals' && tab.textContent.includes('My Referrals')) ||
+                        (tabName === 'submit-referral' && tab.textContent.includes('Submit Referral')) ||
+                        (tabName === 'my-payments' && tab.textContent.includes('My Payments'))) {
+                        tab.classList.add('active');
+                    }
+                });
+            }
+        }
+
+        function renderAffiliateReferrals(referrals = []) {
+            const container = document.getElementById('affiliate-referrals-list');
+            
+            if (referrals.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <h3>No Referrals Yet</h3>
+                        <p>Submit your first referral to start earning commissions!</p>
+                        <button class="btn btn-primary" onclick="showAffiliateTab(null, 'submit-referral')" style="margin-top: 1rem;">Submit Referral</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Company</th>
+                                <th>Contact</th>
+                                <th>Status</th>
+                                <th>Plan Value</th>
+                                <th>Commission</th>
+                                <th>Submitted</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${referrals.map(referral => {
+                                const commission = referral.pro_plan_value ? (parseFloat(referral.pro_plan_value) * 0.1).toFixed(2) : '0.00';
+                                return `
+                                    <tr>
+                                        <td><strong>${referral.company_name}</strong></td>
+                                        <td>${referral.contact_name}<br><small>${referral.contact_email}</small></td>
+                                        <td><span class="status-badge status-${referral.status}">${referral.status.charAt(0).toUpperCase() + referral.status.slice(1)}</span></td>
+                                        <td>${referral.pro_plan_value ? `${parseFloat(referral.pro_plan_value).toFixed(2)}` : 'TBD'}</td>
+                                        <td>${referral.commission_paid ? `<span style="color: var(--success-green);">${commission} ✓</span>` : (referral.pro_plan_value ? `${commission}` : 'TBD')}</td>
+                                        <td>${new Date(referral.created_at).toLocaleDateString()}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function renderAffiliatePayments(payments = []) {
+            const container = document.getElementById('affiliate-payments-list');
+            
+            if (payments.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💰</div>
+                        <h3>No Payments Yet</h3>
+                        <p>Payments will appear here once your referrals become active clients.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Company</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${payments.map(payment => `
+                                <tr>
+                                    <td><strong>${payment.referral_company || 'Commission Payment'}</strong></td>
+                                    <td style="color: var(--success-green); font-weight: 600;">+${parseFloat(payment.amount).toFixed(2)}</td>
+                                    <td><span class="status-badge status-active">Paid</span></td>
+                                    <td>${new Date(payment.created_at).toLocaleDateString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top: 2rem; padding: 1rem; background: var(--light-gray); border-radius: 8px;">
+                    <strong>Total Earned: ${payments.reduce((sum, p) => sum + parseFloat(p.amount), 0).toFixed(2)}</strong>
+                </div>
+            `;
+        }
+
+        async function handleAffiliateReferralSubmit(e) {
+            e.preventDefault();
+            
+            const formData = {
+                company_name: document.getElementById('ref-company-name').value,
+                website: document.getElementById('ref-company-website').value || null,
+                company_size: document.getElementById('ref-company-size').value || null,
+                contact_name: document.getElementById('ref-contact-name').value,
+                contact_email: document.getElementById('ref-contact-email').value,
+                contact_phone: document.getElementById('ref-contact-phone').value || null,
+                notes: document.getElementById('ref-notes').value || null,
+                status: 'pending',
+                affiliate_id: currentUser.id,
+                created_at: new Date().toISOString()
+            };
+
+            try {
+                console.log('Submitting referral:', formData);
+                
+                const { data, error } = await supabase
+                    .from('referrals')
+                    .insert([formData])
+                    .select();
+
+                if (error) {
+                    console.error('Referral submission error:', error);
+                    throw error;
+                }
+                
+                console.log('Referral submitted successfully:', data);
+                showNotification('Referral submitted successfully!', 'success');
+                
+                // Reset form
+                document.getElementById('affiliate-referral-form').reset();
+                
+                // Switch to My Referrals tab
+                showAffiliateTab(null, 'my-referrals');
+                
+                // Reload affiliate data
+                await loadAffiliateData();
+
+            } catch (error) {
+                console.error('Error submitting referral:', error);
+                showNotification(`Error: ${error.message}`, 'error');
+            }
         }
     </script>
 </body>
