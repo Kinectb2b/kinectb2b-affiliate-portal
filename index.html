@@ -1623,13 +1623,98 @@
         }
 
         async function loadReferralsAdminTab(content) {
-            const { data: referrals } = await supabase
+            // First get referrals
+            const { data: referrals, error } = await supabase
                 .from('referrals')
-                .select(`
-                    *,
-                    user_profiles!inner(full_name, email)
-                `)
+                .select('*')
                 .order('created_at', { ascending: false });
+
+            console.log('Referrals query result:', referrals, error);
+
+            if (error) {
+                console.error('Referrals query error:', error);
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>Error Loading Referrals</h3>
+                        <p>There was an error loading referral data. Check console for details.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            if (!referrals || referrals.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <h3>No Referrals Yet</h3>
+                        <p>Referrals will appear here when affiliates submit them.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Get affiliate names separately
+            const { data: affiliates } = await supabase
+                .from('user_profiles')
+                .select('user_id, full_name, email');
+
+            // Create a map of affiliate_id to affiliate info
+            const affiliateMap = {};
+            if (affiliates) {
+                affiliates.forEach(affiliate => {
+                    affiliateMap[affiliate.user_id] = affiliate;
+                });
+            }
+
+            content.innerHTML = `
+                <h3>Referral Management (${referrals.length})</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Company</th>
+                                <th>Contact</th>
+                                <th>Affiliate</th>
+                                <th>Status</th>
+                                <th>Submitted</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${referrals.map(referral => {
+                                const affiliate = affiliateMap[referral.affiliate_id];
+                                return `
+                                    <tr>
+                                        <td>
+                                            <strong>${referral.company_name}</strong>
+                                            ${referral.website ? `<br><small><a href="${referral.website}" target="_blank">${referral.website}</a></small>` : ''}
+                                        </td>
+                                        <td>
+                                            ${referral.contact_name}<br>
+                                            <small>${referral.contact_email}</small>
+                                        </td>
+                                        <td>${affiliate ? affiliate.full_name : 'Unknown Affiliate'}</td>
+                                        <td>
+                                            <select onchange="updateReferralStatus('${referral.id}', this.value)" class="status-select">
+                                                <option value="pending" ${referral.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                                <option value="contacted" ${referral.status === 'contacted' ? 'selected' : ''}>Contacted</option>
+                                                <option value="active" ${referral.status === 'active' ? 'selected' : ''}>Active</option>
+                                                <option value="closed" ${referral.status === 'closed' ? 'selected' : ''}>Closed</option>
+                                            </select>
+                                        </td>
+                                        <td>${new Date(referral.created_at).toLocaleDateString()}</td>
+                                        <td>
+                                            <button class="btn btn-small btn-primary" onclick="viewReferralDetails('${referral.id}')">View</button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
 
             if (!referrals || referrals.length === 0) {
                 content.innerHTML = `
