@@ -188,6 +188,7 @@
             color: var(--slate-gray);
             font-weight: 500;
             transition: color 0.3s ease;
+            cursor: pointer;
         }
 
         .nav-links a:hover, .nav-links a.active {
@@ -581,7 +582,7 @@
                     </form>
                     <p style="text-align: center; color: var(--slate-gray); font-size: 0.9rem;">
                         Already have an account? 
-                        <button onclick="showLogin()" style="background: none; border: none; color: var(--electric-blue); text-decoration: underline; cursor: pointer;">Login</button>
+                        <button onclick="showLoginForm()" style="background: none; border: none; color: var(--electric-blue); text-decoration: underline; cursor: pointer;">Login</button>
                     </p>
                 </div>
 
@@ -602,7 +603,7 @@
                 <div class="logo">KinectB2B Affiliates</div>
                 <nav class="nav-links">
                     <span id="user-name">Loading...</span>
-                    <a href="#" onclick="logout()">Logout</a>
+                    <a onclick="logout()">Logout</a>
                 </nav>
             </div>
         </div>
@@ -634,18 +635,18 @@
             <!-- Tabs -->
             <div class="card">
                 <div class="tabs">
-                    <button class="tab active" onclick="showTab('referrals')">My Referrals</button>
-                    <button class="tab" onclick="showTab('submit')">Submit Referral</button>
-                    <button class="tab" onclick="showTab('payments')">Payments</button>
-                    <button class="tab" onclick="showTab('qa')">Support</button>
-                    <button class="tab" onclick="showTab('profile')">Profile</button>
+                    <button class="tab active" onclick="showTab(event, 'referrals')">My Referrals</button>
+                    <button class="tab" onclick="showTab(event, 'submit')">Submit Referral</button>
+                    <button class="tab" onclick="showTab(event, 'payments')">Payments</button>
+                    <button class="tab" onclick="showTab(event, 'qa')">Support</button>
+                    <button class="tab" onclick="showTab(event, 'profile')">Profile</button>
                 </div>
 
                 <!-- My Referrals Tab -->
                 <div id="referrals-tab" class="tab-content active">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                         <h3>My Referrals</h3>
-                        <button class="btn btn-primary btn-small" onclick="showTab('submit')">+ Submit Referral</button>
+                        <button class="btn btn-primary btn-small" onclick="showSubmitTab()">+ Submit Referral</button>
                     </div>
                     
                     <div id="referrals-list">
@@ -653,7 +654,7 @@
                             <div class="empty-state-icon">📋</div>
                             <h3>No Referrals Yet</h3>
                             <p>Submit your first referral to start earning commissions!</p>
-                            <button class="btn btn-primary" onclick="showTab('submit')" style="margin-top: 1rem;">Submit Referral</button>
+                            <button class="btn btn-primary" onclick="showSubmitTab()" style="margin-top: 1rem;">Submit Referral</button>
                         </div>
                     </div>
                 </div>
@@ -818,11 +819,11 @@
             <!-- Admin Tabs -->
             <div class="card">
                 <div class="tabs">
-                    <button class="tab active" onclick="showAdminTab('affiliates')">Affiliates</button>
-                    <button class="tab" onclick="showAdminTab('referrals-admin')">Referrals</button>
-                    <button class="tab" onclick="showAdminTab('payments-admin')">Payments</button>
-                    <button class="tab" onclick="showAdminTab('questions-admin')">Questions</button>
-                    <button class="tab" onclick="showAdminTab('settings')">Settings</button>
+                    <button class="tab active" onclick="showAdminTab(event, 'affiliates')">Affiliates</button>
+                    <button class="tab" onclick="showAdminTab(event, 'referrals-admin')">Referrals</button>
+                    <button class="tab" onclick="showAdminTab(event, 'payments-admin')">Payments</button>
+                    <button class="tab" onclick="showAdminTab(event, 'questions-admin')">Questions</button>
+                    <button class="tab" onclick="showAdminTab(event, 'settings')">Settings</button>
                 </div>
 
                 <!-- Admin content will be populated here -->
@@ -946,9 +947,29 @@
                     }
                 });
 
+                // Create tables if they don't exist (for demo purposes)
+                await createTablesIfNeeded();
+
             } catch (error) {
                 console.error('Error initializing app:', error);
                 showNotification('Error connecting to server', 'error');
+            }
+        }
+
+        // Create tables if they don't exist (this would normally be done via migrations)
+        async function createTablesIfNeeded() {
+            try {
+                // Check if referrals table exists by trying to select from it
+                const { data, error } = await supabase
+                    .from('referrals')
+                    .select('id')
+                    .limit(1);
+                
+                if (error && error.code === 'PGRST116') { // Table doesn't exist
+                    console.log('Tables may need to be created. This should be done via Supabase dashboard.');
+                }
+            } catch (error) {
+                console.log('Table check error:', error);
             }
         }
 
@@ -1008,12 +1029,40 @@
                 });
 
                 if (error) throw error;
+                
+                // Also create a record in a profiles table if needed
+                if (data.user) {
+                    await createUserProfile(data.user, name, company);
+                }
+                
                 showNotification('Account created! Check your email to verify.', 'success');
             } catch (error) {
                 showNotification(error.message, 'error');
             }
 
             setLoading('signup', false);
+        }
+
+        async function createUserProfile(user, name, company) {
+            try {
+                // Try to create user profile (this table would need to exist)
+                const { error } = await supabase
+                    .from('user_profiles')
+                    .insert([{
+                        user_id: user.id,
+                        full_name: name,
+                        email: user.email,
+                        company: company,
+                        role: 'affiliate',
+                        created_at: new Date().toISOString()
+                    }]);
+
+                if (error) {
+                    console.log('Could not create user profile:', error);
+                }
+            } catch (error) {
+                console.log('Profile creation error:', error);
+            }
         }
 
         async function handleUserSession(user) {
@@ -1023,6 +1072,7 @@
             if (user.email === 'robert@kinectb2b.com' || user.user_metadata?.role === 'admin') {
                 currentUserRole = 'admin';
                 showPortal('admin');
+                await loadAdminData();
             } else {
                 currentUserRole = 'affiliate';
                 showPortal('affiliate');
@@ -1072,6 +1122,11 @@
             document.getElementById('signup-form').classList.remove('hidden');
         }
 
+        function showLoginForm() {
+            document.getElementById('signup-form').classList.add('hidden');
+            document.getElementById('login-form').classList.remove('hidden');
+        }
+
         function showAdminLogin() {
             document.getElementById('login-email').value = 'robert@kinectb2b.com';
             document.getElementById('login-password').focus();
@@ -1106,9 +1161,55 @@
                 renderPayments(payments);
                 renderQuestions(questions);
 
+                // Load profile data
+                loadProfileData();
+
             } catch (error) {
                 console.error('Error loading affiliate data:', error);
                 showNotification('Error loading data', 'error');
+            }
+        }
+
+        async function loadAdminData() {
+            if (!currentUser) return;
+
+            try {
+                // Load all affiliates
+                const { data: affiliates } = await supabase
+                    .from('user_profiles')
+                    .select('*')
+                    .eq('role', 'affiliate');
+
+                // Load all referrals
+                const { data: referrals } = await supabase
+                    .from('referrals')
+                    .select('*');
+
+                // Load all payments
+                const { data: payments } = await supabase
+                    .from('payments')
+                    .select('*');
+
+                // Load all questions
+                const { data: questions } = await supabase
+                    .from('questions')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                updateAdminStats(affiliates, referrals, payments);
+
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+                showNotification('Error loading admin data', 'error');
+            }
+        }
+
+        function loadProfileData() {
+            if (currentUser) {
+                document.getElementById('profile-name').value = currentUser.user_metadata?.full_name || '';
+                document.getElementById('profile-email').value = currentUser.email || '';
+                document.getElementById('profile-company').value = currentUser.user_metadata?.company || '';
+                document.getElementById('profile-phone').value = currentUser.user_metadata?.phone || '';
             }
         }
 
@@ -1127,6 +1228,21 @@
             document.getElementById('total-earnings').textContent = `$${totalEarnings.toFixed(2)}`;
         }
 
+        function updateAdminStats(affiliates = [], referrals = [], payments = []) {
+            const totalAffiliates = affiliates.length;
+            const totalReferrals = referrals.length;
+            const totalCommissions = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const monthlyRevenue = payments
+                .filter(p => p.created_at?.startsWith(currentMonth))
+                .reduce((sum, p) => sum + (p.amount || 0) * 10, 0); // Assume 10x commission for revenue
+
+            document.getElementById('admin-total-affiliates').textContent = totalAffiliates;
+            document.getElementById('admin-total-referrals').textContent = totalReferrals;
+            document.getElementById('admin-monthly-revenue').textContent = `$${monthlyRevenue.toFixed(2)}`;
+            document.getElementById('admin-total-commissions').textContent = `$${totalCommissions.toFixed(2)}`;
+        }
+
         function renderReferrals(referrals = []) {
             const container = document.getElementById('referrals-list');
             
@@ -1136,7 +1252,7 @@
                         <div class="empty-state-icon">📋</div>
                         <h3>No Referrals Yet</h3>
                         <p>Submit your first referral to start earning commissions!</p>
-                        <button class="btn btn-primary" onclick="showTab('submit')" style="margin-top: 1rem;">Submit Referral</button>
+                        <button class="btn btn-primary" onclick="showSubmitTab()" style="margin-top: 1rem;">Submit Referral</button>
                     </div>
                 `;
                 return;
@@ -1245,25 +1361,27 @@
 
             const formData = {
                 company_name: document.getElementById('company-name').value,
-                website: document.getElementById('company-website').value,
-                company_size: document.getElementById('company-size').value,
+                website: document.getElementById('company-website').value || null,
+                company_size: document.getElementById('company-size').value || null,
                 contact_name: document.getElementById('contact-name').value,
                 contact_email: document.getElementById('contact-email').value,
-                contact_phone: document.getElementById('contact-phone').value,
-                notes: document.getElementById('referral-notes').value,
-                status: 'pending'
+                contact_phone: document.getElementById('contact-phone').value || null,
+                notes: document.getElementById('referral-notes').value || null,
+                status: 'pending',
+                affiliate_id: currentUser.id,
+                created_at: new Date().toISOString()
             };
 
             try {
                 const { data, error } = await supabase
                     .from('referrals')
-                    .insert([{ ...formData, affiliate_id: currentUser.id }]);
+                    .insert([formData]);
 
                 if (error) throw error;
                 
                 showNotification('Referral submitted successfully!', 'success');
                 document.getElementById('new-referral-form').reset();
-                showTab('referrals');
+                showTab(null, 'referrals');
                 await loadAffiliateData();
 
             } catch (error) {
@@ -1286,7 +1404,8 @@
                     .insert([{
                         subject: subject,
                         question: question,
-                        affiliate_id: currentUser.id
+                        affiliate_id: currentUser.id,
+                        created_at: new Date().toISOString()
                     }]);
 
                 if (error) throw error;
@@ -1351,25 +1470,42 @@
             }
         }
 
-        // UI Helper Functions
-        function showTab(tabName) {
+        // UI Helper Functions - FIXED
+        function showTab(event, tabName) {
+            // Remove active class from all tab contents
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });
             
+            // Remove active class from all tabs
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
             
+            // Show the selected tab content
             document.getElementById(tabName + '-tab').classList.add('active');
-            event.target.classList.add('active');
+            
+            // Add active class to clicked tab
+            if (event && event.target) {
+                event.target.classList.add('active');
+            } else {
+                // Find the tab by tabName and make it active
+                const tabs = document.querySelectorAll('.tab');
+                tabs.forEach(tab => {
+                    if (tab.textContent.toLowerCase().includes(tabName) || 
+                        (tabName === 'referrals' && tab.textContent.includes('My Referrals')) ||
+                        (tabName === 'submit' && tab.textContent.includes('Submit Referral')) ||
+                        (tabName === 'payments' && tab.textContent.includes('Payments')) ||
+                        (tabName === 'qa' && tab.textContent.includes('Support')) ||
+                        (tabName === 'profile' && tab.textContent.includes('Profile'))) {
+                        tab.classList.add('active');
+                    }
+                });
+            }
         }
 
-        function showAdminTab(tabName) {
-            document.querySelectorAll('#admin-portal .tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            
+        function showAdminTab(event, tabName) {
+            // Remove active from all admin tabs
             document.querySelectorAll('#admin-portal .tab').forEach(tab => {
                 tab.classList.remove('active');
             });
@@ -1378,12 +1514,18 @@
             document.getElementById('admin-content').innerHTML = `
                 <div class="empty-state">
                     <div class="empty-state-icon">🛠️</div>
-                    <h3>${tabName.charAt(0).toUpperCase() + tabName.slice(1)} Management</h3>
-                    <p>Admin functionality for ${tabName} will be available here.</p>
+                    <h3>${tabName.charAt(0).toUpperCase() + tabName.slice(1).replace('-', ' ')} Management</h3>
+                    <p>Admin functionality for ${tabName.replace('-', ' ')} will be available here.</p>
                 </div>
             `;
             
-            event.target.classList.add('active');
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+        }
+
+        function showSubmitTab() {
+            showTab(null, 'submit');
         }
 
         function openQuestionModal() {
@@ -1398,12 +1540,14 @@
             const loadingEl = document.getElementById(type + '-loading');
             const textEl = document.getElementById(type + '-text');
             
-            if (loading) {
-                loadingEl.classList.remove('hidden');
-                textEl.textContent = 'Processing...';
-            } else {
-                loadingEl.classList.add('hidden');
-                textEl.textContent = textEl.getAttribute('data-original') || getOriginalText(type);
+            if (loadingEl && textEl) {
+                if (loading) {
+                    loadingEl.classList.remove('hidden');
+                    textEl.textContent = 'Processing...';
+                } else {
+                    loadingEl.classList.add('hidden');
+                    textEl.textContent = getOriginalText(type);
+                }
             }
         }
 
