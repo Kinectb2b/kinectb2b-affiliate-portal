@@ -716,7 +716,7 @@
                                                 <td>${new Date(referral.created_at).toLocaleDateString()}</td>
                                                 <td>
                                                     ${referral.status === 'customer' && referral.pro_plan_value && !referral.commission_paid ? 
-                                                        `<button class="btn btn-small btn-success" onclick="processCommission('${referral.id}', '${referral.affiliate_id}', ${commissionAmount}, '${referral.company_name}')">Pay Commission</button>` : 
+                                                        `<button class="btn btn-small btn-success" onclick="markCommissionPaid('${referral.id}', '${referral.affiliate_id}', ${commissionAmount}, '${referral.company_name}')">Mark as Paid</button>` : 
                                                         (referral.commission_paid ? '<span style="color: var(--success-green);">✓ Paid</span>' : '')
                                                     }
                                                 </td>
@@ -778,16 +778,11 @@
                                             <td>${payment.referral_company || 'N/A'}</td>
                                             <td><strong>${parseFloat(payment.amount).toFixed(2)}</strong></td>
                                             <td>
-                                                <span class="status-badge status-${payment.status === 'completed' ? 'active' : 'pending'}">
-                                                    ${payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
-                                                </span>
+                                                <span class="status-badge status-active">Completed</span>
                                             </td>
                                             <td>${new Date(payment.created_at).toLocaleDateString()}</td>
                                             <td>
-                                                ${payment.status === 'pending' ? 
-                                                    `<button class="btn btn-small btn-success" onclick="markPaymentComplete('${payment.id}')">Mark Paid</button>` : 
-                                                    '<span style="color: var(--success-green);">✓ Complete</span>'
-                                                }
+                                                <span style="color: var(--success-green);">✓ Paid via External Platform</span>
                                             </td>
                                         </tr>
                                     `).join('')}
