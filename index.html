@@ -70,6 +70,16 @@
             background-color: #1D4ED8;
         }
 
+        .btn-success {
+            background-color: var(--success-green);
+            color: var(--white);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-red);
+            color: var(--white);
+        }
+
         .btn-small {
             padding: 8px 16px;
             font-size: 0.9rem;
@@ -283,6 +293,40 @@
 
         .notification.show {
             transform: translateX(0);
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .status-contacted {
+            background: #DBEAFE;
+            color: #2563EB;
+        }
+
+        .status-active {
+            background: #D1FAE5;
+            color: #059669;
+        }
+
+        .status-closed {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .status-customer {
+            background: #D1FAE5;
+            color: #059669;
         }
     </style>
 </head>
@@ -561,7 +605,9 @@
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Company</th>
+                                        <th>Status</th>
                                         <th>Joined</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -570,7 +616,18 @@
                                             <td><strong>${affiliate.full_name || 'N/A'}</strong></td>
                                             <td>${affiliate.email}</td>
                                             <td>${affiliate.company || 'N/A'}</td>
+                                            <td>
+                                                <span class="status-badge status-${(affiliate.status || 'active') === 'active' ? 'active' : 'closed'}">
+                                                    ${(affiliate.status || 'active').charAt(0).toUpperCase() + (affiliate.status || 'active').slice(1)}
+                                                </span>
+                                            </td>
                                             <td>${new Date(affiliate.created_at).toLocaleDateString()}</td>
+                                            <td>
+                                                <button class="btn btn-small ${(affiliate.status || 'active') === 'active' ? 'btn-danger' : 'btn-success'}" 
+                                                        onclick="toggleAffiliateStatus('${affiliate.user_id}', '${affiliate.status || 'active'}')">
+                                                    ${(affiliate.status || 'active') === 'active' ? 'Deactivate' : 'Activate'}
+                                                </button>
+                                            </td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -618,19 +675,51 @@
                                         <th>Contact</th>
                                         <th>Referred By</th>
                                         <th>Status</th>
+                                        <th>Pro Plan</th>
+                                        <th>Commission</th>
                                         <th>Submitted</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     ${referrals.map(referral => {
                                         const profile = profileMap[referral.affiliate_id] || {};
+                                        const commissionAmount = referral.pro_plan_value ? (parseFloat(referral.pro_plan_value) * 0.1).toFixed(2) : '0.00';
                                         return `
                                             <tr>
                                                 <td><strong>${referral.company_name}</strong></td>
                                                 <td>${referral.contact_name}<br><small>${referral.contact_email}</small></td>
                                                 <td><strong>${profile.full_name || 'Unknown'}</strong><br><small>${profile.email || ''}</small></td>
-                                                <td>${referral.status}</td>
+                                                <td>
+                                                    <select onchange="updateReferralStatus('${referral.id}', this.value)" style="padding: 0.25rem; border-radius: 4px; border: 1px solid var(--border-gray);">
+                                                        <option value="pending" ${referral.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                                        <option value="contacted" ${referral.status === 'contacted' ? 'selected' : ''}>Contacted</option>
+                                                        <option value="customer" ${referral.status === 'customer' ? 'selected' : ''}>Customer</option>
+                                                        <option value="closed" ${referral.status === 'closed' ? 'selected' : ''}>Closed</option>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    ${referral.pro_plan_value ? 
+                                                        `<strong>${parseFloat(referral.pro_plan_value).toFixed(2)}</strong>` : 
+                                                        (referral.status === 'customer' ? 
+                                                            `<button class="btn btn-small btn-primary" onclick="selectProPlan('${referral.id}')">Select Plan</button>` : 
+                                                            'N/A'
+                                                        )
+                                                    }
+                                                </td>
+                                                <td>
+                                                    ${referral.pro_plan_value ? 
+                                                        `<strong>${commissionAmount}</strong>` : 
+                                                        'N/A'
+                                                    }
+                                                </td>
                                                 <td>${new Date(referral.created_at).toLocaleDateString()}</td>
+                                                <td>
+                                                    ${referral.status === 'customer' && referral.pro_plan_value && !referral.commission_paid ? 
+                                                        `<button class="btn btn-small btn-success" onclick="processCommission('${referral.id}', '${referral.affiliate_id}', ${commissionAmount}, '${referral.company_name}')">Pay Commission</button>` : 
+                                                        (referral.commission_paid ? '<span style="color: var(--success-green);">✓ Paid</span>' : '')
+                                                    }
+                                                </td>
                                             </tr>
                                         `;
                                     }).join('')}
@@ -645,14 +734,71 @@
         }
 
         function loadPaymentsTab(content) {
-            content.innerHTML = `
-                <h3>Payment Management</h3>
-                <div class="empty-state">
-                    <div class="empty-state-icon">💰</div>
-                    <h3>No Payments Yet</h3>
-                    <p>Commission payments will appear here.</p>
-                </div>
-            `;
+            loadPaymentsData(content);
+        }
+
+        async function loadPaymentsData(content) {
+            try {
+                const { data: payments } = await supabase
+                    .from('payments')
+                    .select(`
+                        *,
+                        user_profiles!inner(full_name, email)
+                    `)
+                    .order('created_at', { ascending: false });
+
+                content.innerHTML = `
+                    <h3>Payment Management (${payments?.length || 0})</h3>
+                    ${!payments || payments.length === 0 ? `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💰</div>
+                            <h3>No Payments Yet</h3>
+                            <p>Commission payments will appear here.</p>
+                        </div>
+                    ` : `
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Affiliate</th>
+                                        <th>Company</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${payments.map(payment => `
+                                        <tr>
+                                            <td>
+                                                <strong>${payment.user_profiles?.full_name || 'Unknown'}</strong><br>
+                                                <small>${payment.user_profiles?.email || ''}</small>
+                                            </td>
+                                            <td>${payment.referral_company || 'N/A'}</td>
+                                            <td><strong>${parseFloat(payment.amount).toFixed(2)}</strong></td>
+                                            <td>
+                                                <span class="status-badge status-${payment.status === 'completed' ? 'active' : 'pending'}">
+                                                    ${payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                                                </span>
+                                            </td>
+                                            <td>${new Date(payment.created_at).toLocaleDateString()}</td>
+                                            <td>
+                                                ${payment.status === 'pending' ? 
+                                                    `<button class="btn btn-small btn-success" onclick="markPaymentComplete('${payment.id}')">Mark Paid</button>` : 
+                                                    '<span style="color: var(--success-green);">✓ Complete</span>'
+                                                }
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `}
+                `;
+            } catch (error) {
+                content.innerHTML = '<div class="empty-state"><h3>Error loading payments</h3></div>';
+            }
         }
 
         function loadQuestionsTab(content) {
@@ -675,6 +821,260 @@
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 4000);
+        }
+
+        // Admin Management Functions
+        async function toggleAffiliateStatus(userId, currentStatus) {
+            const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+            
+            try {
+                const { error } = await supabase
+                    .from('user_profiles')
+                    .update({ status: newStatus })
+                    .eq('user_id', userId);
+                
+                if (error) throw error;
+                
+                showNotification(`Affiliate ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully!`, 'success');
+                
+                // Reload the affiliates tab
+                const content = document.getElementById('admin-content');
+                loadAffiliatesTab(content);
+                
+            } catch (error) {
+                console.error('Error updating affiliate status:', error);
+                showNotification('Error updating affiliate status', 'error');
+            }
+        }
+
+        async function updateReferralStatus(referralId, newStatus) {
+            try {
+                const { error } = await supabase
+                    .from('referrals')
+                    .update({ 
+                        status: newStatus,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', referralId);
+                
+                if (error) throw error;
+                
+                showNotification('Referral status updated successfully!', 'success');
+                
+                // Reload the referrals tab
+                const content = document.getElementById('admin-content');
+                loadReferralsTab(content);
+                
+            } catch (error) {
+                console.error('Error updating referral status:', error);
+                showNotification('Error updating referral status', 'error');
+            }
+        }
+
+        function selectProPlan(referralId) {
+            const planOptions = [
+                { value: 250, label: 'Pro Plan 100 - $250/month' },
+                { value: 500, label: 'Pro Plan 200 - $500/month' },
+                { value: 750, label: 'Pro Plan 300 - $750/month' },
+                { value: 1000, label: 'Pro Plan 400 - $1000/month' },
+                { value: 1250, label: 'Pro Plan 500 - $1250/month' },
+                { value: 1500, label: 'Pro Plan 600 - $1500/month' },
+                { value: 1750, label: 'Pro Plan 700 - $1750/month' },
+                { value: 2000, label: 'Pro Plan 800 - $2000/month' },
+                { value: 2250, label: 'Pro Plan 900 - $2250/month' },
+                { value: 2500, label: 'Pro Plan 1000 - $2500/month' },
+                { value: 2750, label: 'Pro Plan 1100 - $2750/month' },
+                { value: 3000, label: 'Pro Plan 1200 - $3000/month' }
+            ];
+
+            const planSelect = planOptions.map(plan => 
+                `<option value="${plan.value}">${plan.label}</option>`
+            ).join('');
+
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5); display: flex; align-items: center;
+                justify-content: center; z-index: 1000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                    <h3 style="margin-bottom: 1rem;">Select Pro Plan</h3>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Choose the plan this customer selected:</label>
+                        <select id="plan-select" onchange="toggleCustomPlan()" style="width: 100%; padding: 12px; border: 2px solid #E2E8F0; border-radius: 8px; margin-bottom: 1rem;">
+                            <option value="">Select a plan...</option>
+                            ${planSelect}
+                            <option value="custom">Custom Plan (Enter manually)</option>
+                        </select>
+                    </div>
+                    
+                    <div id="custom-plan-section" style="display: none; margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Custom Plan Details:</label>
+                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                            <input type="text" id="custom-plan-name" placeholder="e.g., Pro Plan 5000" style="padding: 12px; border: 2px solid #E2E8F0; border-radius: 8px;">
+                            <input type="number" id="custom-plan-price" placeholder="Monthly price" style="padding: 12px; border: 2px solid #E2E8F0; border-radius: 8px;">
+                        </div>
+                    </div>
+                    
+                    <div style="background: #F8FAFC; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <div style="font-size: 0.9rem; color: #64748B;">Commission will be calculated at 10% of monthly price</div>
+                        <div id="commission-preview" style="font-weight: 600; color: #059669; margin-top: 0.5rem;"></div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary" onclick="savePlanSelection('${referralId}')">Save Plan</button>
+                        <button class="btn" onclick="this.closest('div').parentElement.remove()" style="background: #f1f5f9; color: #64748B;">Cancel</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        function toggleCustomPlan() {
+            const selectValue = document.getElementById('plan-select').value;
+            const customSection = document.getElementById('custom-plan-section');
+            const commissionPreview = document.getElementById('commission-preview');
+            
+            if (selectValue === 'custom') {
+                customSection.style.display = 'block';
+                commissionPreview.textContent = '';
+            } else {
+                customSection.style.display = 'none';
+                if (selectValue) {
+                    const commission = (parseFloat(selectValue) * 0.1).toFixed(2);
+                    commissionPreview.textContent = `Commission: ${commission}`;
+                } else {
+                    commissionPreview.textContent = '';
+                }
+            }
+        }
+
+        async function savePlanSelection(referralId) {
+            const planSelect = document.getElementById('plan-select');
+            const planValue = planSelect.value;
+            
+            let finalPrice, planName;
+            
+            if (planValue === 'custom') {
+                const customPrice = document.getElementById('custom-plan-price').value;
+                const customName = document.getElementById('custom-plan-name').value;
+                
+                if (!customPrice || !customName) {
+                    showNotification('Please enter custom plan name and price', 'error');
+                    return;
+                }
+                
+                finalPrice = parseFloat(customPrice);
+                planName = customName;
+                
+            } else if (planValue) {
+                finalPrice = parseFloat(planValue);
+                planName = planSelect.options[planSelect.selectedIndex].text.split(' - ')[0];
+            } else {
+                showNotification('Please select a plan', 'error');
+                return;
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('referrals')
+                    .update({ 
+                        pro_plan_value: finalPrice,
+                        pro_plan_name: planName,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', referralId);
+                
+                if (error) throw error;
+                
+                showNotification(`${planName} updated successfully!`, 'success');
+                
+                // Close modal
+                document.querySelector('[style*="position: fixed"]').remove();
+                
+                // Reload the referrals tab
+                const content = document.getElementById('admin-content');
+                loadReferralsTab(content);
+                
+            } catch (error) {
+                console.error('Error saving plan selection:', error);
+                showNotification('Error saving plan selection', 'error');
+            }
+        }
+
+        async function processCommission(referralId, affiliateId, commissionAmount, companyName) {
+            if (!confirm(`Process ${commissionAmount} commission payment for ${companyName}?`)) {
+                return;
+            }
+
+            try {
+                // Create payment record
+                const { error: paymentError } = await supabase
+                    .from('payments')
+                    .insert([{
+                        affiliate_id: affiliateId,
+                        referral_id: referralId,
+                        amount: parseFloat(commissionAmount),
+                        referral_company: companyName,
+                        description: `Commission for ${companyName} referral`,
+                        status: 'pending',
+                        created_at: new Date().toISOString()
+                    }]);
+
+                if (paymentError) throw paymentError;
+
+                // Mark referral as commission paid
+                const { error: referralError } = await supabase
+                    .from('referrals')
+                    .update({ 
+                        commission_paid: true,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', referralId);
+
+                if (referralError) throw referralError;
+
+                showNotification('Commission payment created successfully!', 'success');
+                
+                // Reload the referrals tab
+                const content = document.getElementById('admin-content');
+                loadReferralsTab(content);
+                
+            } catch (error) {
+                console.error('Error processing commission:', error);
+                showNotification('Error processing commission payment', 'error');
+            }
+        }
+
+        async function markPaymentComplete(paymentId) {
+            if (!confirm('Mark this payment as completed?')) {
+                return;
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('payments')
+                    .update({ 
+                        status: 'completed',
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', paymentId);
+                
+                if (error) throw error;
+                
+                showNotification('Payment marked as completed!', 'success');
+                
+                // Reload the payments tab
+                const content = document.getElementById('admin-content');
+                loadPaymentsData(content);
+                
+            } catch (error) {
+                console.error('Error marking payment complete:', error);
+                showNotification('Error updating payment status', 'error');
+            }
         }
     </script>
 </body>
