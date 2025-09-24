@@ -802,7 +802,15 @@
                                             <td>${affiliate.company || 'N/A'}</td>
                                             <td><span class="status-badge status-${(affiliate.status || 'active') === 'active' ? 'active' : 'closed'}">${(affiliate.status || 'active').charAt(0).toUpperCase() + (affiliate.status || 'active').slice(1)}</span></td>
                                             <td>${new Date(affiliate.created_at).toLocaleDateString()}</td>
-                                            <td><button class="btn btn-small ${(affiliate.status || 'active') === 'active' ? 'btn-danger' : 'btn-success'}" onclick="toggleAffiliateStatus('${affiliate.user_id}', '${affiliate.status || 'active'}')">${(affiliate.status || 'active') === 'active' ? 'Deactivate' : 'Activate'}</button></td>
+                                            <td>
+                                                <button class="btn btn-small ${(affiliate.status || 'active') === 'active' ? 'btn-danger' : 'btn-success'}" 
+                                                        onclick="toggleAffiliateStatus('${affiliate.user_id}', '${affiliate.status || 'active'}')">
+                                                    ${(affiliate.status || 'active') === 'active' ? 'Deactivate' : 'Activate'}
+                                                </button>
+                                                <button class="btn btn-small btn-primary" onclick="viewAffiliateProfile('${affiliate.user_id}')" style="margin-left: 0.5rem;">
+                                                    👤 View Profile
+                                                </button>
+                                            </td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -1155,15 +1163,32 @@
 
         async function toggleAffiliateStatus(userId, currentStatus) {
             const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+            
+            console.log('Toggling affiliate status:', { userId, currentStatus, newStatus });
+            
             try {
-                const { error } = await supabase.from('user_profiles').update({ status: newStatus }).eq('user_id', userId);
-                if (error) throw error;
+                const { error } = await supabase
+                    .from('user_profiles')
+                    .update({ 
+                        status: newStatus,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('user_id', userId);
+                
+                if (error) {
+                    console.error('Database error:', error);
+                    throw error;
+                }
+                
                 showNotification(`Affiliate ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully!`, 'success');
+                
+                // Reload the affiliates tab
                 const content = document.getElementById('admin-content');
                 loadAffiliatesTab(content);
+                
             } catch (error) {
                 console.error('Error updating affiliate status:', error);
-                showNotification('Error updating affiliate status', 'error');
+                showNotification(`Error updating affiliate status: ${error.message}`, 'error');
             }
         }
 
@@ -1875,6 +1900,419 @@
                 e.target.classList.remove('active');
             }
         });
+
+        // Affiliate Profile Management
+        async function viewAffiliateProfile(userId) {
+            try {
+                console.log('Loading affiliate profile for user:', userId);
+                
+                // Get affiliate profile details
+                const { data: profile } = await supabase
+                    .from('user_profiles')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .single();
+
+                // Get affiliate referrals
+                const { data: referrals } = await supabase
+                    .from('referrals')
+                    .select('*')
+                    .eq('affiliate_id', userId)
+                    .order('created_at', { ascending: false });
+
+                // Get affiliate payments
+                const { data: payments } = await supabase
+                    .from('payments')
+                    .select('*')
+                    .eq('affiliate_id', userId)
+                    .order('created_at', { ascending: false });
+
+                // Get affiliate questions
+                const { data: questions } = await supabase
+                    .from('questions')
+                    .select('*')
+                    .eq('affiliate_id', userId)
+                    .order('created_at', { ascending: false });
+
+                console.log('Loaded affiliate data:', { profile, referrals, payments, questions });
+
+                displayAffiliateProfile(profile, referrals || [], payments || [], questions || []);
+                
+            } catch (error) {
+                console.error('Error loading affiliate profile:', error);
+                showNotification('Error loading affiliate profile', 'error');
+            }
+        }
+
+        function displayAffiliateProfile(profile, referrals, payments, questions) {
+            if (!profile) {
+                showNotification('Affiliate profile not found', 'error');
+                return;
+            }
+
+            // Calculate statistics
+            const totalReferrals = referrals.length;
+            const activeReferrals = referrals.filter(r => r.status === 'customer').length;
+            const totalEarnings = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+            const pendingQuestions = questions.filter(q => !q.response).length;
+
+            // Set modal title
+            document.getElementById('affiliate-profile-title').textContent = `${profile.full_name || 'Unknown'} - Affiliate Profile`;
+
+            // Build profile content
+            document.getElementById('affiliate-profile-content').innerHTML = `
+                <!-- Profile Header -->
+                <div style="background: linear-gradient(135deg, var(--electric-blue), #3B82F6); color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h2 style="margin: 0; color: white;">${profile.full_name || 'Unknown Name'}</h2>
+                            <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">${profile.email}</p>
+                            <p style="margin: 0.25rem 0 0 0; opacity: 0.8;">Joined: ${new Date(profile.created_at).toLocaleDateString()}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                                <select onchange="updateAffiliateStatus('${profile.user_id}', this.value)" style="padding: 0.5rem; border-radius: 6px; border: none;">
+                                    <option value="active" ${(profile.status || 'active') === 'active' ? 'selected' : ''}>🟢 Active</option>
+                                    <option value="paused" ${profile.status === 'paused' ? 'selected' : ''}>🟡 Paused</option>
+                                    <option value="inactive" ${profile.status === 'inactive' ? 'selected' : ''}>🔴 Inactive</option>
+                                </select>
+                            </div>
+                            <div style="font-size: 0.9rem; opacity: 0.8;">Status: <strong>${(profile.status || 'active').charAt(0).toUpperCase() + (profile.status || 'active').slice(1)}</strong></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div style="background: white; border: 1px solid var(--border-gray); border-radius: 12px; padding: 1.5rem; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: bold; color: var(--electric-blue); margin-bottom: 0.5rem;">${totalReferrals}</div>
+                        <div style="color: var(--slate-gray);">Total Referrals</div>
+                    </div>
+                    <div style="background: white; border: 1px solid var(--border-gray); border-radius: 12px; padding: 1.5rem; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: bold; color: var(--success-green); margin-bottom: 0.5rem;">${activeReferrals}</div>
+                        <div style="color: var(--slate-gray);">Active Clients</div>
+                    </div>
+                    <div style="background: white; border: 1px solid var(--border-gray); border-radius: 12px; padding: 1.5rem; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: bold; color: var(--success-green); margin-bottom: 0.5rem;">${totalEarnings.toFixed(2)}</div>
+                        <div style="color: var(--slate-gray);">Total Earned</div>
+                    </div>
+                    <div style="background: white; border: 1px solid var(--border-gray); border-radius: 12px; padding: 1.5rem; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: bold; color: ${pendingQuestions > 0 ? 'var(--warning-yellow)' : 'var(--slate-gray)'}; margin-bottom: 0.5rem;">${pendingQuestions}</div>
+                        <div style="color: var(--slate-gray);">Pending Questions</div>
+                    </div>
+                </div>
+
+                <!-- Profile Details Tabs -->
+                <div style="background: white; border-radius: 12px; padding: 0; overflow: hidden; border: 1px solid var(--border-gray);">
+                    <div style="display: flex; border-bottom: 1px solid var(--border-gray);">
+                        <button class="profile-tab active" onclick="showProfileTab(event, 'contact-info')" style="padding: 1rem 1.5rem; border: none; background: none; cursor: pointer; border-bottom: 3px solid var(--electric-blue);">Contact Info</button>
+                        <button class="profile-tab" onclick="showProfileTab(event, 'payment-info')" style="padding: 1rem 1.5rem; border: none; background: none; cursor: pointer;">Payment Info</button>
+                        <button class="profile-tab" onclick="showProfileTab(event, 'promotion-links')" style="padding: 1rem 1.5rem; border: none; background: none; cursor: pointer;">Promotion</button>
+                        <button class="profile-tab" onclick="showProfileTab(event, 'referrals-history')" style="padding: 1rem 1.5rem; border: none; background: none; cursor: pointer;">Referrals (${totalReferrals})</button>
+                        <button class="profile-tab" onclick="showProfileTab(event, 'earnings-history')" style="padding: 1rem 1.5rem; border: none; background: none; cursor: pointer;">Earnings (${payments.length})</button>
+                    </div>
+
+                    <div style="padding: 2rem;">
+                        <!-- Contact Info Tab -->
+                        <div id="contact-info" class="profile-tab-content">
+                            <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Contact Information</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                                <div>
+                                    <div style="margin-bottom: 1rem;">
+                                        <strong>Full Name:</strong><br>
+                                        <span style="color: var(--slate-gray);">${profile.full_name || 'Not provided'}</span>
+                                    </div>
+                                    <div style="margin-bottom: 1rem;">
+                                        <strong>Email:</strong><br>
+                                        <span style="color: var(--slate-gray);">${profile.email || 'Not provided'}</span>
+                                    </div>
+                                    <div style="margin-bottom: 1rem;">
+                                        <strong>Phone:</strong><br>
+                                        <span style="color: var(--slate-gray);">${profile.phone || 'Not provided'}</span>
+                                    </div>
+                                    <div style="margin-bottom: 1rem;">
+                                        <strong>Company:</strong><br>
+                                        <span style="color: var(--slate-gray);">${profile.company || 'Not provided'}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="margin-bottom: 1rem;">
+                                        <strong>Mailing Address:</strong><br>
+                                        <span style="color: var(--slate-gray);">
+                                            ${profile.address || 'Not provided'}<br>
+                                            ${profile.address2 ? profile.address2 + '<br>' : ''}
+                                            ${profile.city || ''} ${profile.state || ''} ${profile.zip || ''}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Info Tab -->
+                        <div id="payment-info" class="profile-tab-content" style="display: none;">
+                            <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Payment Information</h4>
+                            ${profile.payment_method ? `
+                                <div style="background: var(--light-gray); padding: 1.5rem; border-radius: 8px;">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                                        <span style="font-size: 1.5rem;">${getPaymentIcon(profile.payment_method)}</span>
+                                        <strong style="text-transform: capitalize;">${profile.payment_method} Payment</strong>
+                                    </div>
+                                    ${getPaymentDetails(profile)}
+                                </div>
+                            ` : `
+                                <div style="text-align: center; padding: 2rem; color: var(--slate-gray);">
+                                    <div style="font-size: 2rem; margin-bottom: 1rem;">💳</div>
+                                    <p>No payment method configured yet</p>
+                                </div>
+                            `}
+                        </div>
+
+                        <!-- Promotion Links Tab -->
+                        <div id="promotion-links" class="profile-tab-content" style="display: none;">
+                            <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Promotion Channels</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                                ${getSocialLinksDisplay(profile)}
+                            </div>
+                        </div>
+
+                        <!-- Referrals History Tab -->
+                        <div id="referrals-history" class="profile-tab-content" style="display: none;">
+                            <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Referral History</h4>
+                            ${getReferralsTable(referrals)}
+                        </div>
+
+                        <!-- Earnings History Tab -->
+                        <div id="earnings-history" class="profile-tab-content" style="display: none;">
+                            <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Earnings History</h4>
+                            ${getEarningsTable(payments)}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Show modal
+            document.getElementById('affiliate-profile-modal').classList.add('active');
+        }
+
+        function getPaymentIcon(method) {
+            const icons = {
+                'paypal': '💰',
+                'zelle': '📱',
+                'cashapp': '💸',
+                'ach': '🏦'
+            };
+            return icons[method] || '💳';
+        }
+
+        function getPaymentDetails(profile) {
+            switch(profile.payment_method) {
+                case 'paypal':
+                    return `<p><strong>PayPal Email:</strong> ${profile.paypal_email || 'Not provided'}</p>`;
+                case 'zelle':
+                    return `
+                        <p><strong>Zelle Email:</strong> ${profile.zelle_email || 'Not provided'}</p>
+                        <p><strong>Zelle Phone:</strong> ${profile.zelle_phone || 'Not provided'}</p>
+                    `;
+                case 'cashapp':
+                    return `<p><strong>Cash App Tag:</strong> ${profile.cashapp_tag || 'Not provided'}</p>`;
+                case 'ach':
+                    return `
+                        <p><strong>Account Number:</strong> ${profile.ach_account ? '*'.repeat(profile.ach_account.length - 4) + profile.ach_account.slice(-4) : 'Not provided'}</p>
+                        <p><strong>Routing Number:</strong> ${profile.ach_routing || 'Not provided'}</p>
+                        <p><strong>Bank Name:</strong> ${profile.ach_bank_name || 'Not provided'}</p>
+                    `;
+                default:
+                    return '<p>No payment details available</p>';
+            }
+        }
+
+        function getSocialLinksDisplay(profile) {
+            const socialLinks = [
+                { key: 'social_facebook', label: '🔗 Facebook', value: profile.social_facebook },
+                { key: 'social_instagram', label: '📸 Instagram', value: profile.social_instagram },
+                { key: 'social_linkedin', label: '💼 LinkedIn', value: profile.social_linkedin },
+                { key: 'social_twitter', label: '🐦 Twitter/X', value: profile.social_twitter },
+                { key: 'social_youtube', label: '📺 YouTube', value: profile.social_youtube },
+                { key: 'social_website', label: '🌐 Website', value: profile.social_website }
+            ];
+
+            const hasAnyLinks = socialLinks.some(link => link.value);
+
+            if (!hasAnyLinks) {
+                return `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--slate-gray);">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">📢</div>
+                        <p>No social media links provided yet</p>
+                    </div>
+                `;
+            }
+
+            return socialLinks.map(link => `
+                <div style="margin-bottom: 1rem;">
+                    <strong>${link.label}:</strong><br>
+                    ${link.value ? 
+                        `<a href="${link.value}" target="_blank" style="color: var(--electric-blue); text-decoration: none;">${link.value}</a>` : 
+                        '<span style="color: var(--slate-gray);">Not provided</span>'
+                    }
+                </div>
+            `).join('');
+        }
+
+        function getReferralsTable(referrals) {
+            if (referrals.length === 0) {
+                return `
+                    <div style="text-align: center; padding: 2rem; color: var(--slate-gray);">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">📋</div>
+                        <p>No referrals submitted yet</p>
+                    </div>
+                `;
+            }
+
+            return `
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: var(--light-gray);">
+                                <th style="padding: 1rem; text-align: left; border-bottom: 1px solid var(--border-gray);">Company</th>
+                                <th style="padding: 1rem; text-align: left; border-bottom: 1px solid var(--border-gray);">Status</th>
+                                <th style="padding: 1rem; text-align: left; border-bottom: 1px solid var(--border-gray);">Plan Value</th>
+                                <th style="padding: 1rem; text-align: left; border-bottom: 1px solid var(--border-gray);">Commission</th>
+                                <th style="padding: 1rem; text-align: left; border-bottom: 1px solid var(--border-gray);">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${referrals.map(referral => {
+                                const commission = referral.pro_plan_value ? (parseFloat(referral.pro_plan_value) * 0.1).toFixed(2) : '0.00';
+                                return `
+                                    <tr>
+                                        <td style="padding: 1rem; border-bottom: 1px solid var(--border-gray);">
+                                            <strong>${referral.company_name}</strong><br>
+                                            <small style="color: var(--slate-gray);">${referral.contact_name} - ${referral.contact_email}</small>
+                                        </td>
+                                        <td style="padding: 1rem; border-bottom: 1px solid var(--border-gray);">
+                                            <span class="status-badge status-${referral.status}">${referral.status.charAt(0).toUpperCase() + referral.status.slice(1)}</span>
+                                        </td>
+                                        <td style="padding: 1rem; border-bottom: 1px solid var(--border-gray);">
+                                            ${referral.pro_plan_value ? `${parseFloat(referral.pro_plan_value).toFixed(2)}` : 'TBD'}
+                                        </td>
+                                        <td style="padding: 1rem; border-bottom: 1px solid var(--border-gray);">
+                                            ${referral.commission_paid ? 
+                                                `<span style="color: var(--success-green);">${commission} ✅</span>` : 
+                                                (referral.pro_plan_value ? `${commission}` : 'TBD')
+                                            }
+                                        </td>
+                                        <td style="padding: 1rem; border-bottom: 1px solid var(--border-gray);">
+                                            ${new Date(referral.created_at).toLocaleDateString()}
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function getEarningsTable(payments) {
+            if (payments.length === 0) {
+                return `
+                    <div style="text-align: center; padding: 2rem; color: var(--slate-gray);">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">💰</div>
+                        <p>No earnings yet</p>
+                    </div>
+                `;
+            }
+
+            const totalEarnings = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+            return `
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: var(--light-gray);">
+                                <th style="padding: 1rem; text-align: left; border-bottom: 1px solid var(--border-gray);">Company</th>
+                                <th style="padding: 1rem; text-align: left; border-bottom: 1px solid var(--border-gray);">Amount</th>
+                                <th style="padding: 1rem; text-align: left; border-bottom: 1px solid var(--border-gray);">Date</th>
+                                <th style="padding: 1rem; text-align: left; border-bottom: 1px solid var(--border-gray);">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${payments.map(payment => `
+                                <tr>
+                                    <td style="padding: 1rem; border-bottom: 1px solid var(--border-gray);">
+                                        <strong>${payment.referral_company || 'Commission Payment'}</strong>
+                                    </td>
+                                    <td style="padding: 1rem; border-bottom: 1px solid var(--border-gray);">
+                                        <span style="color: var(--success-green); font-weight: 600;">+${parseFloat(payment.amount).toFixed(2)}</span>
+                                    </td>
+                                    <td style="padding: 1rem; border-bottom: 1px solid var(--border-gray);">
+                                        ${new Date(payment.created_at).toLocaleDateString()}
+                                    </td>
+                                    <td style="padding: 1rem; border-bottom: 1px solid var(--border-gray);">
+                                        <span class="status-badge status-active">Paid</span>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <div style="margin-top: 1rem; padding: 1rem; background: var(--light-gray); border-radius: 8px; text-align: right;">
+                        <strong style="color: var(--success-green); font-size: 1.2rem;">Total Earned: ${totalEarnings.toFixed(2)}</strong>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showProfileTab(event, tabName) {
+            // Remove active class from all profile tabs
+            document.querySelectorAll('.profile-tab').forEach(tab => {
+                tab.classList.remove('active');
+                tab.style.borderBottom = 'none';
+            });
+
+            // Hide all profile tab contents
+            document.querySelectorAll('.profile-tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+
+            // Show selected tab content
+            document.getElementById(tabName).style.display = 'block';
+
+            // Add active class to clicked tab
+            if (event && event.target) {
+                event.target.classList.add('active');
+                event.target.style.borderBottom = '3px solid var(--electric-blue)';
+            }
+        }
+
+        function closeAffiliateProfile() {
+            document.getElementById('affiliate-profile-modal').classList.remove('active');
+        }
+
+        async function updateAffiliateStatus(userId, newStatus) {
+            try {
+                const { error } = await supabase
+                    .from('user_profiles')
+                    .update({ 
+                        status: newStatus,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('user_id', userId);
+                
+                if (error) throw error;
+                
+                showNotification(`Affiliate status updated to ${newStatus}!`, 'success');
+                
+                // Also reload the main affiliates tab if it's open
+                const content = document.getElementById('admin-content');
+                if (content.innerHTML.includes('Affiliate Management')) {
+                    loadAffiliatesTab(content);
+                }
+                
+            } catch (error) {
+                console.error('Error updating affiliate status:', error);
+                showNotification('Error updating affiliate status', 'error');
+            }
+        }
     </script>
 </body>
 </html>
