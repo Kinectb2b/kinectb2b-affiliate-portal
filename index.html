@@ -979,21 +979,25 @@
             }
 
             try {
+                // First try with both columns
                 const { error } = await supabase
                     .from('referrals')
                     .update({ 
                         pro_plan_value: finalPrice,
-                        pro_plan_name: planName,
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', referralId);
                 
-                if (error) throw error;
+                if (error) {
+                    console.error('Error details:', error);
+                    throw error;
+                }
                 
                 showNotification(`${planName} updated successfully!`, 'success');
                 
                 // Close modal
-                document.querySelector('[style*="position: fixed"]').remove();
+                const modal = document.querySelector('[style*="position: fixed"]');
+                if (modal) modal.remove();
                 
                 // Reload the referrals tab
                 const content = document.getElementById('admin-content');
@@ -1001,7 +1005,7 @@
                 
             } catch (error) {
                 console.error('Error saving plan selection:', error);
-                showNotification('Error saving plan selection', 'error');
+                showNotification(`Error: ${error.message}`, 'error');
             }
         }
 
