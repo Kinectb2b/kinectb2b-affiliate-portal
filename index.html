@@ -60,6 +60,46 @@
         .status-active { background: #D1FAE5; color: #059669; }
         .status-closed { background: #FEE2E2; color: #DC2626; }
         .status-customer { background: #D1FAE5; color: #059669; }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--slate-gray);
+        }
     </style>
 </head>
 <body>
@@ -168,6 +208,7 @@
                     <button class="tab active" onclick="showAffiliateTab(event, 'my-referrals')">My Referrals</button>
                     <button class="tab" onclick="showAffiliateTab(event, 'submit-referral')">Submit Referral</button>
                     <button class="tab" onclick="showAffiliateTab(event, 'my-payments')">My Payments</button>
+                    <button class="tab" onclick="showAffiliateTab(event, 'support-qa')">Support & Q&A</button>
                     <button class="tab" onclick="showAffiliateTab(event, 'profile-settings')">Profile & Payment</button>
                     <button class="tab" onclick="showAffiliateTab(event, 'affiliate-info')">How It Works</button>
                 </div>
@@ -245,6 +286,23 @@
                                 <div class="empty-state-icon">💰</div>
                                 <h3>No Payments Yet</h3>
                                 <p>Payments will appear here once your referrals become active clients.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Support & Q&A Tab -->
+                    <div id="support-qa-content" class="tab-content">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                            <h3>Support & Questions</h3>
+                            <button class="btn btn-primary btn-small" onclick="openQuestionModal()">Ask New Question</button>
+                        </div>
+                        
+                        <div id="affiliate-questions-list">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">❓</div>
+                                <h3>No Questions Yet</h3>
+                                <p>Have a question about the affiliate program, payments, or need help? Our team is here to help!</p>
+                                <button class="btn btn-primary" onclick="openQuestionModal()" style="margin-top: 1rem;">Ask Your First Question</button>
                             </div>
                         </div>
                     </div>
@@ -550,6 +608,44 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Question Modal for Affiliates -->
+    <div id="affiliate-question-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Ask a Question</h3>
+                <button class="close-modal" onclick="closeQuestionModal()">&times;</button>
+            </div>
+            <form id="affiliate-question-form">
+                <div class="form-group">
+                    <label for="question-category">Category</label>
+                    <select id="question-category" required>
+                        <option value="">Select a category...</option>
+                        <option value="payments">💰 Payments & Commissions</option>
+                        <option value="referrals">📋 Referral Process</option>
+                        <option value="technical">🔧 Technical Support</option>
+                        <option value="general">💬 General Question</option>
+                        <option value="marketing">📢 Marketing & Promotion</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="question-subject">Subject</label>
+                    <input type="text" id="question-subject" required placeholder="Brief description of your question">
+                </div>
+                <div class="form-group">
+                    <label for="question-message">Your Question</label>
+                    <textarea id="question-message" required placeholder="Please provide as much detail as possible so we can help you effectively..." rows="6"></textarea>
+                </div>
+                <div style="background: var(--light-gray); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <small style="color: var(--slate-gray);">
+                        💡 <strong>Tip:</strong> Our admin team typically responds within 24 hours. You'll see the response right here in your Support section.
+                    </small>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Question</button>
+            </form>
+        </div>
+    </div>
 
     <div id="notification" class="notification"></div>
 
@@ -587,6 +683,7 @@
             document.getElementById('personal-info-form').addEventListener('submit', handlePersonalInfoUpdate);
             document.getElementById('payment-method-form').addEventListener('submit', handlePaymentMethodUpdate);
             document.getElementById('social-links-form').addEventListener('submit', handleSocialLinksUpdate);
+            document.getElementById('affiliate-question-form').addEventListener('submit', handleAffiliateQuestion);
         }
 
         async function handleLogin(e) {
@@ -847,7 +944,213 @@
         }
 
         function loadQuestionsTab(content) {
-            content.innerHTML = `<h3>Questions & Support</h3><div class="empty-state"><div class="empty-state-icon">❓</div><h3>No Questions Yet</h3><p>Affiliate questions will appear here.</p></div>`;
+            loadQuestionsAdminData(content);
+        }
+
+        async function loadQuestionsAdminData(content) {
+            try {
+                const { data: questions } = await supabase
+                    .from('questions')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                // Get user profiles to show affiliate names
+                const { data: profiles } = await supabase
+                    .from('user_profiles')
+                    .select('user_id, full_name, email');
+
+                const profileMap = {};
+                if (profiles) {
+                    profiles.forEach(profile => {
+                        profileMap[profile.user_id] = profile;
+                    });
+                }
+
+                if (!questions || questions.length === 0) {
+                    content.innerHTML = `
+                        <h3>Questions & Support (0)</h3>
+                        <div class="empty-state">
+                            <div class="empty-state-icon">❓</div>
+                            <h3>No Questions Yet</h3>
+                            <p>Affiliate questions will appear here.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const pendingQuestions = questions.filter(q => !q.response);
+                const answeredQuestions = questions.filter(q => q.response);
+
+                content.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>Questions & Support (${questions.length})</h3>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <span style="color: var(--warning-yellow); font-weight: 600;">⏳ ${pendingQuestions.length} Pending</span>
+                            <span style="color: var(--success-green); font-weight: 600;">✅ ${answeredQuestions.length} Answered</span>
+                        </div>
+                    </div>
+
+                    ${pendingQuestions.length > 0 ? `
+                        <div style="margin-bottom: 3rem;">
+                            <h4 style="color: var(--warning-yellow); margin-bottom: 1rem;">🚨 Questions Needing Response</h4>
+                            ${pendingQuestions.map(q => {
+                                const profile = profileMap[q.affiliate_id] || {};
+                                return `
+                                    <div style="border: 2px solid var(--warning-yellow); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; background: #FFFBEB;">
+                                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                                            <div>
+                                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                                    <span style="font-size: 1.2rem;">${getCategoryIcon(q.category)}</span>
+                                                    <span style="font-size: 0.9rem; color: var(--slate-gray); text-transform: uppercase; font-weight: 600;">${q.category || 'General'}</span>
+                                                    <span style="color: var(--slate-gray);">•</span>
+                                                    <span style="font-size: 0.9rem; color: var(--slate-gray);">${new Date(q.created_at).toLocaleDateString()}</span>
+                                                </div>
+                                                <div style="font-weight: 600; font-size: 1.1rem; color: var(--deep-blue);">${q.subject}</div>
+                                                <div style="font-size: 0.9rem; color: var(--slate-gray); margin-top: 0.25rem;">
+                                                    Asked by: <strong>${profile.full_name || 'Unknown'}</strong> (${profile.email || 'No email'})
+                                                </div>
+                                            </div>
+                                            <span class="status-badge status-pending">⏳ Needs Response</span>
+                                        </div>
+                                        
+                                        <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                                            <div style="font-size: 0.9rem; color: var(--slate-gray); margin-bottom: 0.5rem;">Question:</div>
+                                            <p style="margin: 0; color: var(--deep-blue);">${q.question}</p>
+                                        </div>
+                                        
+                                        <div style="display: flex; gap: 1rem;">
+                                            <button class="btn btn-primary btn-small" onclick="respondToQuestion('${q.id}')">📝 Respond</button>
+                                            <button class="btn btn-small" onclick="markQuestionRead('${q.id}')" style="background: var(--light-gray); color: var(--slate-gray);">Mark as Read</button>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    ` : ''}
+
+                    ${answeredQuestions.length > 0 ? `
+                        <div>
+                            <h4 style="color: var(--success-green); margin-bottom: 1rem;">✅ Answered Questions</h4>
+                            ${answeredQuestions.map(q => {
+                                const profile = profileMap[q.affiliate_id] || {};
+                                return `
+                                    <div style="border: 1px solid var(--border-gray); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; background: white;">
+                                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                                            <div>
+                                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                                    <span style="font-size: 1.2rem;">${getCategoryIcon(q.category)}</span>
+                                                    <span style="font-size: 0.9rem; color: var(--slate-gray); text-transform: uppercase; font-weight: 600;">${q.category || 'General'}</span>
+                                                    <span style="color: var(--slate-gray);">•</span>
+                                                    <span style="font-size: 0.9rem; color: var(--slate-gray);">${new Date(q.created_at).toLocaleDateString()}</span>
+                                                </div>
+                                                <div style="font-weight: 600; font-size: 1.1rem; color: var(--deep-blue);">${q.subject}</div>
+                                                <div style="font-size: 0.9rem; color: var(--slate-gray); margin-top: 0.25rem;">
+                                                    Asked by: <strong>${profile.full_name || 'Unknown'}</strong> (${profile.email || 'No email'})
+                                                </div>
+                                            </div>
+                                            <span class="status-badge status-active">✅ Answered</span>
+                                        </div>
+                                        
+                                        <div style="background: var(--light-gray); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                                            <div style="font-size: 0.9rem; color: var(--slate-gray); margin-bottom: 0.5rem;">Question:</div>
+                                            <p style="margin: 0; color: var(--deep-blue);">${q.question}</p>
+                                        </div>
+                                        
+                                        <div style="background: linear-gradient(135deg, #EBF4FF, #DBEAFE); padding: 1rem; border-radius: 8px; border-left: 4px solid var(--electric-blue);">
+                                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                                <span style="font-weight: 600; color: var(--electric-blue);">Your Response:</span>
+                                                <span style="font-size: 0.9rem; color: var(--slate-gray);">${new Date(q.updated_at).toLocaleDateString()}</span>
+                                            </div>
+                                            <p style="margin: 0; color: var(--deep-blue);">${q.response}</p>
+                                        </div>
+                                        
+                                        <div style="margin-top: 1rem;">
+                                            <button class="btn btn-small" onclick="editResponse('${q.id}')" style="background: var(--light-gray); color: var(--slate-gray);">✏️ Edit Response</button>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    ` : ''}
+                `;
+            } catch (error) {
+                console.error('Error loading questions:', error);
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>Error Loading Questions</h3>
+                        <p>There was an error loading question data.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Admin question response functions
+        function respondToQuestion(questionId) {
+            const response = prompt('Enter your response to this question:');
+            if (response && response.trim()) {
+                saveQuestionResponse(questionId, response.trim());
+            }
+        }
+
+        async function saveQuestionResponse(questionId, response) {
+            try {
+                const { error } = await supabase
+                    .from('questions')
+                    .update({ 
+                        response: response,
+                        status: 'answered',
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', questionId);
+
+                if (error) throw error;
+                
+                showNotification('Response saved successfully!', 'success');
+                
+                // Reload questions tab
+                const content = document.getElementById('admin-content');
+                loadQuestionsAdminData(content);
+
+            } catch (error) {
+                console.error('Error saving response:', error);
+                showNotification('Error saving response', 'error');
+            }
+        }
+
+        function editResponse(questionId) {
+            // Get current response first
+            const questionDiv = document.querySelector(`[onclick="editResponse('${questionId}')"]`).closest('div').querySelector('p');
+            const currentResponse = questionDiv.textContent;
+            
+            const newResponse = prompt('Edit your response:', currentResponse);
+            if (newResponse && newResponse.trim() && newResponse !== currentResponse) {
+                saveQuestionResponse(questionId, newResponse.trim());
+            }
+        }
+
+        async function markQuestionRead(questionId) {
+            try {
+                const { error } = await supabase
+                    .from('questions')
+                    .update({ 
+                        status: 'read',
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', questionId);
+
+                if (error) throw error;
+                
+                showNotification('Question marked as read', 'success');
+                
+                // Reload questions tab
+                const content = document.getElementById('admin-content');
+                loadQuestionsAdminData(content);
+
+            } catch (error) {
+                console.error('Error marking question as read:', error);
+                showNotification('Error updating question', 'error');
+            }
         }
 
         async function toggleAffiliateStatus(userId, currentStatus) {
@@ -1037,11 +1340,19 @@
                     .eq('affiliate_id', currentUser.id)
                     .order('created_at', { ascending: false });
 
-                console.log('Loaded affiliate data:', { referrals, payments });
+                // Load questions for this affiliate
+                const { data: questions } = await supabase
+                    .from('questions')
+                    .select('*')
+                    .eq('affiliate_id', currentUser.id)
+                    .order('created_at', { ascending: false });
+
+                console.log('Loaded affiliate data:', { referrals, payments, questions });
 
                 updateAffiliateStats(referrals || [], payments || []);
                 renderAffiliateReferrals(referrals || []);
                 renderAffiliatePayments(payments || []);
+                renderAffiliateQuestions(questions || []);
 
             } catch (error) {
                 console.error('Error loading affiliate data:', error);
@@ -1087,6 +1398,7 @@
                     if ((tabName === 'my-referrals' && tab.textContent.includes('My Referrals')) ||
                         (tabName === 'submit-referral' && tab.textContent.includes('Submit Referral')) ||
                         (tabName === 'my-payments' && tab.textContent.includes('My Payments')) ||
+                        (tabName === 'support-qa' && tab.textContent.includes('Support & Q&A')) ||
                         (tabName === 'profile-settings' && tab.textContent.includes('Profile & Payment')) ||
                         (tabName === 'affiliate-info' && tab.textContent.includes('How It Works'))) {
                         tab.classList.add('active');
@@ -1438,6 +1750,131 @@
                 showNotification('Error saving social links', 'error');
             }
         }
+
+        // Question/Support Functions
+        function renderAffiliateQuestions(questions = []) {
+            const container = document.getElementById('affiliate-questions-list');
+            
+            if (questions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">❓</div>
+                        <h3>No Questions Yet</h3>
+                        <p>Have a question about the affiliate program, payments, or need help? Our team is here to help!</p>
+                        <button class="btn btn-primary" onclick="openQuestionModal()" style="margin-top: 1rem;">Ask Your First Question</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = questions.map(q => `
+                <div style="border: 1px solid var(--border-gray); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; background: white;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                <span style="font-size: 1.2rem;">${getCategoryIcon(q.category)}</span>
+                                <span style="font-size: 0.9rem; color: var(--slate-gray); text-transform: uppercase; font-weight: 600;">${q.category || 'General'}</span>
+                                <span style="color: var(--slate-gray);">•</span>
+                                <span style="font-size: 0.9rem; color: var(--slate-gray);">${new Date(q.created_at).toLocaleDateString()}</span>
+                            </div>
+                            <div style="font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem;">${q.subject}</div>
+                        </div>
+                        <span class="status-badge status-${q.response ? 'active' : 'pending'}">
+                            ${q.response ? '✅ Answered' : '⏳ Pending'}
+                        </span>
+                    </div>
+                    
+                    <div style="background: var(--light-gray); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <div style="font-size: 0.9rem; color: var(--slate-gray); margin-bottom: 0.5rem;">Your Question:</div>
+                        <p style="margin: 0; color: var(--deep-blue);">${q.question}</p>
+                    </div>
+                    
+                    ${q.response ? `
+                        <div style="background: linear-gradient(135deg, #EBF4FF, #DBEAFE); padding: 1rem; border-radius: 8px; border-left: 4px solid var(--electric-blue);">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                <span style="font-weight: 600; color: var(--electric-blue);">🎯 Admin Response:</span>
+                                <span style="font-size: 0.9rem; color: var(--slate-gray);">${new Date(q.updated_at).toLocaleDateString()}</span>
+                            </div>
+                            <p style="margin: 0; color: var(--deep-blue);">${q.response}</p>
+                        </div>
+                    ` : `
+                        <div style="background: #FEF3C7; padding: 1rem; border-radius: 8px; color: #92400E;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span>⏰</span>
+                                <span>Our team will respond within 24 hours. You'll see the answer right here!</span>
+                            </div>
+                        </div>
+                    `}
+                </div>
+            `).join('');
+        }
+
+        function getCategoryIcon(category) {
+            const icons = {
+                'payments': '💰',
+                'referrals': '📋',
+                'technical': '🔧',
+                'general': '💬',
+                'marketing': '📢'
+            };
+            return icons[category] || '❓';
+        }
+
+        function openQuestionModal() {
+            document.getElementById('affiliate-question-modal').classList.add('active');
+        }
+
+        function closeQuestionModal() {
+            document.getElementById('affiliate-question-modal').classList.remove('active');
+            document.getElementById('affiliate-question-form').reset();
+        }
+
+        async function handleAffiliateQuestion(e) {
+            e.preventDefault();
+            
+            const questionData = {
+                affiliate_id: currentUser.id,
+                category: document.getElementById('question-category').value,
+                subject: document.getElementById('question-subject').value,
+                question: document.getElementById('question-message').value,
+                status: 'pending',
+                created_at: new Date().toISOString()
+            };
+
+            try {
+                console.log('Submitting question:', questionData);
+                
+                const { data, error } = await supabase
+                    .from('questions')
+                    .insert([questionData])
+                    .select();
+
+                if (error) {
+                    console.error('Question submission error:', error);
+                    throw error;
+                }
+                
+                console.log('Question submitted successfully:', data);
+                showNotification('Question submitted successfully! Our team will respond within 24 hours.', 'success');
+                
+                // Close modal and reset form
+                closeQuestionModal();
+                
+                // Reload affiliate data to show the new question
+                await loadAffiliateData();
+
+            } catch (error) {
+                console.error('Error submitting question:', error);
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Modal click outside to close
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
     </script>
 </body>
 </html>
