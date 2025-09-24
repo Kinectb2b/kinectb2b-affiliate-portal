@@ -796,7 +796,7 @@
                                 <thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
                                 <tbody>
                                     ${affiliates.map(affiliate => `
-                                        <tr>
+                                        <tr id="affiliate-row-${affiliate.user_id}">
                                             <td><strong>${affiliate.full_name || 'N/A'}</strong></td>
                                             <td>${affiliate.email}</td>
                                             <td>${affiliate.company || 'N/A'}</td>
@@ -804,10 +804,14 @@
                                             <td>${new Date(affiliate.created_at).toLocaleDateString()}</td>
                                             <td>
                                                 <button class="btn btn-small ${(affiliate.status || 'active') === 'active' ? 'btn-danger' : 'btn-success'}" 
-                                                        onclick="toggleAffiliateStatus('${affiliate.user_id}', '${affiliate.status || 'active'}')">
+                                                        onclick="event.stopPropagation(); toggleAffiliateStatus('${affiliate.user_id}', '${affiliate.status || 'active'}', this);" 
+                                                        data-user-id="${affiliate.user_id}"
+                                                        data-current-status="${affiliate.status || 'active'}">
                                                     ${(affiliate.status || 'active') === 'active' ? 'Deactivate' : 'Activate'}
                                                 </button>
-                                                <button class="btn btn-small btn-primary" onclick="viewAffiliateProfile('${affiliate.user_id}')" style="margin-left: 0.5rem;">
+                                                <button class="btn btn-small btn-primary" 
+                                                        onclick="event.stopPropagation(); viewAffiliateProfile('${affiliate.user_id}');" 
+                                                        style="margin-left: 0.5rem;">
                                                     👤 View Profile
                                                 </button>
                                             </td>
@@ -1161,10 +1165,16 @@
             }
         }
 
-        async function toggleAffiliateStatus(userId, currentStatus) {
+        async function toggleAffiliateStatus(userId, currentStatus, buttonElement) {
             const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
             
-            console.log('Toggling affiliate status:', { userId, currentStatus, newStatus });
+            console.log('Toggling affiliate status:', { userId, currentStatus, newStatus, buttonElement });
+            
+            // Disable the specific button to prevent double-clicks
+            if (buttonElement) {
+                buttonElement.disabled = true;
+                buttonElement.textContent = 'Updating...';
+            }
             
             try {
                 const { error } = await supabase
@@ -1180,15 +1190,44 @@
                     throw error;
                 }
                 
+                console.log('Successfully updated affiliate status');
                 showNotification(`Affiliate ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully!`, 'success');
                 
-                // Reload the affiliates tab
-                const content = document.getElementById('admin-content');
-                loadAffiliatesTab(content);
+                // Update the specific row instead of reloading entire table
+                const row = document.getElementById(`affiliate-row-${userId}`);
+                if (row) {
+                    const statusBadge = row.querySelector('.status-badge');
+                    const button = row.querySelector(`[data-user-id="${userId}"]`);
+                    
+                    // Update status badge
+                    if (statusBadge) {
+                        statusBadge.className = `status-badge status-${newStatus === 'active' ? 'active' : 'closed'}`;
+                        statusBadge.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+                    }
+                    
+                    // Update button
+                    if (button) {
+                        button.className = `btn btn-small ${newStatus === 'active' ? 'btn-danger' : 'btn-success'}`;
+                        button.textContent = newStatus === 'active' ? 'Deactivate' : 'Activate';
+                        button.setAttribute('data-current-status', newStatus);
+                        button.setAttribute('onclick', `event.stopPropagation(); toggleAffiliateStatus('${userId}', '${newStatus}', this);`);
+                        button.disabled = false;
+                    }
+                } else {
+                    // Fallback: reload the entire affiliates tab
+                    const content = document.getElementById('admin-content');
+                    loadAffiliatesTab(content);
+                }
                 
             } catch (error) {
                 console.error('Error updating affiliate status:', error);
                 showNotification(`Error updating affiliate status: ${error.message}`, 'error');
+                
+                // Re-enable button on error
+                if (buttonElement) {
+                    buttonElement.disabled = false;
+                    buttonElement.textContent = currentStatus === 'active' ? 'Deactivate' : 'Activate';
+                }
             }
         }
 
