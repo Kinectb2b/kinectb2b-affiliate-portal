@@ -1175,32 +1175,53 @@
 
             try {
                 // Load all affiliates
-                const { data: affiliates } = await supabase
+                const { data: affiliates, error: affiliatesError } = await supabase
                     .from('user_profiles')
                     .select('*')
                     .eq('role', 'affiliate');
 
+                if (affiliatesError) {
+                    console.error('Affiliates query error:', affiliatesError);
+                }
+
                 // Load all referrals
-                const { data: referrals } = await supabase
+                const { data: referrals, error: referralsError } = await supabase
                     .from('referrals')
                     .select('*');
 
+                if (referralsError) {
+                    console.error('Referrals query error:', referralsError);
+                }
+
                 // Load all payments
-                const { data: payments } = await supabase
+                const { data: payments, error: paymentsError } = await supabase
                     .from('payments')
                     .select('*');
 
+                if (paymentsError) {
+                    console.error('Payments query error:', paymentsError);
+                }
+
                 // Load all questions
-                const { data: questions } = await supabase
+                const { data: questions, error: questionsError } = await supabase
                     .from('questions')
                     .select('*')
                     .order('created_at', { ascending: false });
 
-                updateAdminStats(affiliates, referrals, payments);
+                if (questionsError) {
+                    console.error('Questions query error:', questionsError);
+                }
+
+                // Ensure data is always an array, never null
+                updateAdminStats(
+                    affiliates || [], 
+                    referrals || [], 
+                    payments || []
+                );
 
             } catch (error) {
                 console.error('Error loading admin data:', error);
-                showNotification('Error loading admin data', 'error');
+                showNotification('Error loading admin data: ' + error.message, 'error');
             }
         }
 
