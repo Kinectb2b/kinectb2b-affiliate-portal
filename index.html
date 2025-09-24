@@ -168,6 +168,8 @@
                     <button class="tab active" onclick="showAffiliateTab(event, 'my-referrals')">My Referrals</button>
                     <button class="tab" onclick="showAffiliateTab(event, 'submit-referral')">Submit Referral</button>
                     <button class="tab" onclick="showAffiliateTab(event, 'my-payments')">My Payments</button>
+                    <button class="tab" onclick="showAffiliateTab(event, 'profile-settings')">Profile & Payment</button>
+                    <button class="tab" onclick="showAffiliateTab(event, 'affiliate-info')">How It Works</button>
                 </div>
 
                 <!-- Affiliate Content -->
@@ -246,6 +248,305 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Profile & Payment Settings Tab -->
+                    <div id="profile-settings-content" class="tab-content">
+                        <h3>Profile & Payment Settings</h3>
+                        
+                        <!-- Personal Information -->
+                        <div style="margin-bottom: 3rem;">
+                            <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Personal Information</h4>
+                            <form id="personal-info-form">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                                    <div class="form-group">
+                                        <label for="profile-full-name">Full Name *</label>
+                                        <input type="text" id="profile-full-name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="profile-phone">Phone Number *</label>
+                                        <input type="tel" id="profile-phone" required>
+                                    </div>
+                                </div>
+                                
+                                <h5 style="margin-bottom: 1rem;">Mailing Address</h5>
+                                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                    <div class="form-group">
+                                        <label for="profile-address">Street Address *</label>
+                                        <input type="text" id="profile-address" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="profile-address2">Apt/Unit</label>
+                                        <input type="text" id="profile-address2">
+                                    </div>
+                                </div>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                                    <div class="form-group">
+                                        <label for="profile-city">City *</label>
+                                        <input type="text" id="profile-city" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="profile-state">State *</label>
+                                        <input type="text" id="profile-state" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="profile-zip">ZIP Code *</label>
+                                        <input type="text" id="profile-zip" required>
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">Update Personal Info</button>
+                            </form>
+                        </div>
+
+                        <!-- Payment Method Selection -->
+                        <div style="margin-bottom: 3rem;">
+                            <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Payment Method</h4>
+                            <form id="payment-method-form">
+                                <div class="form-group">
+                                    <label>Choose your preferred payment method:</label>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 0.5rem;">
+                                        <label style="display: flex; align-items: center; padding: 1rem; border: 2px solid var(--border-gray); border-radius: 8px; cursor: pointer; transition: all 0.3s ease;" onclick="selectPaymentMethod('paypal')">
+                                            <input type="radio" name="payment-method" value="paypal" id="payment-paypal" style="margin-right: 0.5rem;">
+                                            <span>💰 PayPal</span>
+                                        </label>
+                                        <label style="display: flex; align-items: center; padding: 1rem; border: 2px solid var(--border-gray); border-radius: 8px; cursor: pointer; transition: all 0.3s ease;" onclick="selectPaymentMethod('zelle')">
+                                            <input type="radio" name="payment-method" value="zelle" id="payment-zelle" style="margin-right: 0.5rem;">
+                                            <span>📱 Zelle</span>
+                                        </label>
+                                        <label style="display: flex; align-items: center; padding: 1rem; border: 2px solid var(--border-gray); border-radius: 8px; cursor: pointer; transition: all 0.3s ease;" onclick="selectPaymentMethod('cashapp')">
+                                            <input type="radio" name="payment-method" value="cashapp" id="payment-cashapp" style="margin-right: 0.5rem;">
+                                            <span>💸 Cash App</span>
+                                        </label>
+                                        <label style="display: flex; align-items: center; padding: 1rem; border: 2px solid var(--border-gray); border-radius: 8px; cursor: pointer; transition: all 0.3s ease;" onclick="selectPaymentMethod('ach')">
+                                            <input type="radio" name="payment-method" value="ach" id="payment-ach" style="margin-right: 0.5rem;">
+                                            <span>🏦 ACH Transfer</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- PayPal Details -->
+                                <div id="paypal-details" class="payment-details" style="display: none; margin-top: 1rem;">
+                                    <div class="form-group">
+                                        <label for="paypal-email">PayPal Email Address *</label>
+                                        <input type="email" id="paypal-email" placeholder="your-email@example.com">
+                                    </div>
+                                </div>
+
+                                <!-- Zelle Details -->
+                                <div id="zelle-details" class="payment-details" style="display: none; margin-top: 1rem;">
+                                    <div class="form-group">
+                                        <label>Zelle Contact Info *</label>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                            <input type="email" id="zelle-email" placeholder="Email linked to Zelle">
+                                            <input type="tel" id="zelle-phone" placeholder="Phone linked to Zelle">
+                                        </div>
+                                        <small style="color: var(--slate-gray);">Enter either email OR phone number that's linked to your Zelle account</small>
+                                    </div>
+                                </div>
+
+                                <!-- Cash App Details -->
+                                <div id="cashapp-details" class="payment-details" style="display: none; margin-top: 1rem;">
+                                    <div class="form-group">
+                                        <label for="cashapp-tag">Cash App Tag *</label>
+                                        <input type="text" id="cashapp-tag" placeholder="$YourCashTag">
+                                    </div>
+                                </div>
+
+                                <!-- ACH Details -->
+                                <div id="ach-details" class="payment-details" style="display: none; margin-top: 1rem;">
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                        <div class="form-group">
+                                            <label for="ach-account">Account Number *</label>
+                                            <input type="text" id="ach-account" placeholder="Account Number">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="ach-routing">Routing Number *</label>
+                                            <input type="text" id="ach-routing" placeholder="Routing Number">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ach-bank-name">Bank Name</label>
+                                        <input type="text" id="ach-bank-name" placeholder="Bank Name">
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Save Payment Method</button>
+                            </form>
+                        </div>
+
+                        <!-- Social Media Links -->
+                        <div style="margin-bottom: 3rem;">
+                            <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Social Media & Promotion Links</h4>
+                            <p style="color: var(--slate-gray); margin-bottom: 1.5rem;">Add links to your social accounts where you'll be promoting KinectB2B as an affiliate.</p>
+                            <form id="social-links-form">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                                    <div>
+                                        <div class="form-group">
+                                            <label for="social-facebook">🔗 Facebook Profile/Page</label>
+                                            <input type="url" id="social-facebook" placeholder="https://facebook.com/yourpage">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="social-instagram">📸 Instagram Profile</label>
+                                            <input type="url" id="social-instagram" placeholder="https://instagram.com/yourusername">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="social-linkedin">💼 LinkedIn Profile</label>
+                                            <input type="url" id="social-linkedin" placeholder="https://linkedin.com/in/yourname">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="form-group">
+                                            <label for="social-twitter">🐦 Twitter/X Profile</label>
+                                            <input type="url" id="social-twitter" placeholder="https://twitter.com/yourusername">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="social-youtube">📺 YouTube Channel</label>
+                                            <input type="url" id="social-youtube" placeholder="https://youtube.com/yourchannel">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="social-website">🌐 Personal Website/Blog</label>
+                                            <input type="url" id="social-website" placeholder="https://yourwebsite.com">
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Social Links</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- How It Works / Affiliate Info Tab -->
+                    <div id="affiliate-info-content" class="tab-content">
+                        <div style="max-width: 800px;">
+                            <h3 style="color: var(--electric-blue); margin-bottom: 2rem;">KinectB2B Affiliate Program - How It Works</h3>
+                            
+                            <!-- What is an Affiliate -->
+                            <div style="margin-bottom: 3rem;">
+                                <h4 style="color: var(--electric-blue); margin-bottom: 1rem;">🤝 What is an Affiliate?</h4>
+                                <p style="margin-bottom: 1rem;">As a KinectB2B affiliate, you're our trusted partner who helps us connect with businesses that need our lead generation and appointment setting services. You act as a bridge between KinectB2B and potential clients who could benefit from our expertise.</p>
+                                <p style="margin-bottom: 1rem;">Think of it as being a matchmaker - you identify businesses that struggle with lead generation or need more appointments, and you introduce them to our proven solutions.</p>
+                            </div>
+
+                            <!-- How You Make Money -->
+                            <div style="margin-bottom: 3rem;">
+                                <h4 style="color: var(--success-green); margin-bottom: 1rem;">💰 How You Earn Commissions</h4>
+                                <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
+                                    <h5 style="color: var(--electric-blue); margin-bottom: 1rem;">Simple 4-Step Process:</h5>
+                                    <div style="display: grid; gap: 1.5rem;">
+                                        <div style="display: flex; align-items: center; gap: 1rem;">
+                                            <div style="background: var(--electric-blue); color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold;">1</div>
+                                            <div>
+                                                <strong>Submit Referral:</strong> You find a business that needs lead generation and submit their info through this portal
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 1rem;">
+                                            <div style="background: var(--electric-blue); color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold;">2</div>
+                                            <div>
+                                                <strong>We Contact Them:</strong> Our sales team reaches out and presents our services to your referral
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 1rem;">
+                                            <div style="background: var(--success-green); color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold;">3</div>
+                                            <div>
+                                                <strong>They Become a Client:</strong> If they sign up for one of our Pro Plans, you earn a commission
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 1rem;">
+                                            <div style="background: var(--success-green); color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold;">4</div>
+                                            <div>
+                                                <strong>Get Paid:</strong> You receive 10% of their first month's payment via your chosen payment method
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Commission Structure -->
+                            <div style="margin-bottom: 3rem;">
+                                <h4 style="color: var(--success-green); margin-bottom: 1rem;">💵 Commission Structure</h4>
+                                <div style="background: linear-gradient(135deg, var(--success-green), #059669); color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 3rem; font-weight: bold; margin-bottom: 0.5rem;">10%</div>
+                                        <div style="font-size: 1.2rem;">Commission on First Month Payment</div>
+                                    </div>
+                                </div>
+                                <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px;">
+                                    <h5 style="margin-bottom: 1rem;">Example Earnings:</h5>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                                        <div style="text-align: center; padding: 1rem; background: white; border-radius: 8px;">
+                                            <div style="font-weight: bold; color: var(--electric-blue);">Pro Plan 300</div>
+                                            <div style="color: var(--slate-gray);">$750/month</div>
+                                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--success-green);">$75</div>
+                                        </div>
+                                        <div style="text-align: center; padding: 1rem; background: white; border-radius: 8px;">
+                                            <div style="font-weight: bold; color: var(--electric-blue);">Pro Plan 600</div>
+                                            <div style="color: var(--slate-gray);">$1,500/month</div>
+                                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--success-green);">$150</div>
+                                        </div>
+                                        <div style="text-align: center; padding: 1rem; background: white; border-radius: 8px;">
+                                            <div style="font-weight: bold; color: var(--electric-blue);">Pro Plan 1000</div>
+                                            <div style="color: var(--slate-gray);">$2,500/month</div>
+                                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--success-green);">$250</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Best Prospects -->
+                            <div style="margin-bottom: 3rem;">
+                                <h4 style="color: var(--electric-blue); margin-bottom: 1rem;">🎯 Who Makes a Great Referral?</h4>
+                                <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px;">
+                                    <h5 style="margin-bottom: 1rem;">Look for businesses that:</h5>
+                                    <ul style="list-style: none; padding: 0;">
+                                        <li style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-green);">✅</span>
+                                            <strong>Need more leads or appointments</strong> - Service businesses, consultants, contractors
+                                        </li>
+                                        <li style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-green);">✅</span>
+                                            <strong>Spend money on marketing</strong> - Already advertising online or offline
+                                        </li>
+                                        <li style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-green);">✅</span>
+                                            <strong>High-value services</strong> - Charge $1,000+ per client (lawyers, coaches, agencies)
+                                        </li>
+                                        <li style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-green);">✅</span>
+                                            <strong>Growing businesses</strong> - 5+ employees, ready to scale
+                                        </li>
+                                        <li style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                            <span style="color: var(--success-green);">✅</span>
+                                            <strong>B2B companies</strong> - Sell to other businesses (our specialty!)
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Payment Timeline -->
+                            <div style="margin-bottom: 3rem;">
+                                <h4 style="color: var(--electric-blue); margin-bottom: 1rem;">⏰ Payment Timeline</h4>
+                                <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px;">
+                                    <p style="margin-bottom: 1rem;"><strong>When do you get paid?</strong></p>
+                                    <ul style="list-style: none; padding: 0;">
+                                        <li style="margin-bottom: 1rem;">📅 <strong>Client signs up:</strong> We notify you and update your portal</li>
+                                        <li style="margin-bottom: 1rem;">💳 <strong>Client makes first payment:</strong> Usually within 1-7 days of signing</li>
+                                        <li style="margin-bottom: 1rem;">💰 <strong>Your commission is processed:</strong> Within 2-3 business days via your chosen payment method</li>
+                                    </ul>
+                                    <div style="background: var(--electric-blue); color: white; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                                        <strong>Typical timeline:</strong> 1-2 weeks from referral to payment in your account!
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Getting Started -->
+                            <div style="background: linear-gradient(135deg, var(--electric-blue), #3B82F6); color: white; padding: 2rem; border-radius: 12px;">
+                                <h4 style="margin-bottom: 1rem;">🚀 Ready to Start Earning?</h4>
+                                <p style="margin-bottom: 1.5rem;">The best part? There's no limit to how many referrals you can submit. The more quality referrals you send us, the more you earn!</p>
+                                <div style="text-align: center;">
+                                    <button class="btn" onclick="showAffiliateTab(null, 'submit-referral')" style="background: white; color: var(--electric-blue); font-weight: bold;">Submit Your First Referral</button>
+                                </div>
+                            </div>
+                        </div>
                 </div>
             </div>
         </div>
@@ -283,6 +584,9 @@
         function setupEventListeners() {
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
             document.getElementById('affiliate-referral-form').addEventListener('submit', handleAffiliateReferralSubmit);
+            document.getElementById('personal-info-form').addEventListener('submit', handlePersonalInfoUpdate);
+            document.getElementById('payment-method-form').addEventListener('submit', handlePaymentMethodUpdate);
+            document.getElementById('social-links-form').addEventListener('submit', handleSocialLinksUpdate);
         }
 
         async function handleLogin(e) {
@@ -782,10 +1086,17 @@
                 document.querySelectorAll('#affiliate-portal .tab').forEach(tab => {
                     if ((tabName === 'my-referrals' && tab.textContent.includes('My Referrals')) ||
                         (tabName === 'submit-referral' && tab.textContent.includes('Submit Referral')) ||
-                        (tabName === 'my-payments' && tab.textContent.includes('My Payments'))) {
+                        (tabName === 'my-payments' && tab.textContent.includes('My Payments')) ||
+                        (tabName === 'profile-settings' && tab.textContent.includes('Profile & Payment')) ||
+                        (tabName === 'affiliate-info' && tab.textContent.includes('How It Works'))) {
                         tab.classList.add('active');
                     }
                 });
+            }
+
+            // Load profile data when profile tab is opened
+            if (tabName === 'profile-settings') {
+                loadAffiliateProfile();
             }
         }
 
@@ -924,6 +1235,207 @@
             } catch (error) {
                 console.error('Error submitting referral:', error);
                 showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Profile Management Functions
+        async function loadAffiliateProfile() {
+            try {
+                // Get user profile from user_profiles table
+                const { data: profile } = await supabase
+                    .from('user_profiles')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .single();
+
+                if (profile) {
+                    // Load personal info
+                    document.getElementById('profile-full-name').value = profile.full_name || '';
+                    document.getElementById('profile-phone').value = profile.phone || '';
+                    document.getElementById('profile-address').value = profile.address || '';
+                    document.getElementById('profile-address2').value = profile.address2 || '';
+                    document.getElementById('profile-city').value = profile.city || '';
+                    document.getElementById('profile-state').value = profile.state || '';
+                    document.getElementById('profile-zip').value = profile.zip || '';
+
+                    // Load payment method
+                    if (profile.payment_method) {
+                        const paymentMethod = profile.payment_method;
+                        document.getElementById(`payment-${paymentMethod}`).checked = true;
+                        selectPaymentMethod(paymentMethod);
+
+                        // Load payment details
+                        if (paymentMethod === 'paypal') {
+                            document.getElementById('paypal-email').value = profile.paypal_email || '';
+                        } else if (paymentMethod === 'zelle') {
+                            document.getElementById('zelle-email').value = profile.zelle_email || '';
+                            document.getElementById('zelle-phone').value = profile.zelle_phone || '';
+                        } else if (paymentMethod === 'cashapp') {
+                            document.getElementById('cashapp-tag').value = profile.cashapp_tag || '';
+                        } else if (paymentMethod === 'ach') {
+                            document.getElementById('ach-account').value = profile.ach_account || '';
+                            document.getElementById('ach-routing').value = profile.ach_routing || '';
+                            document.getElementById('ach-bank-name').value = profile.ach_bank_name || '';
+                        }
+                    }
+
+                    // Load social links
+                    document.getElementById('social-facebook').value = profile.social_facebook || '';
+                    document.getElementById('social-instagram').value = profile.social_instagram || '';
+                    document.getElementById('social-linkedin').value = profile.social_linkedin || '';
+                    document.getElementById('social-twitter').value = profile.social_twitter || '';
+                    document.getElementById('social-youtube').value = profile.social_youtube || '';
+                    document.getElementById('social-website').value = profile.social_website || '';
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+            }
+        }
+
+        function selectPaymentMethod(method) {
+            // Hide all payment detail sections
+            document.querySelectorAll('.payment-details').forEach(section => {
+                section.style.display = 'none';
+            });
+
+            // Show selected payment method details
+            document.getElementById(method + '-details').style.display = 'block';
+
+            // Update radio button styling
+            document.querySelectorAll('input[name="payment-method"]').forEach(input => {
+                const label = input.parentElement;
+                if (input.value === method) {
+                    label.style.borderColor = 'var(--electric-blue)';
+                    label.style.backgroundColor = '#EBF4FF';
+                } else {
+                    label.style.borderColor = 'var(--border-gray)';
+                    label.style.backgroundColor = 'white';
+                }
+            });
+        }
+
+        async function handlePersonalInfoUpdate(e) {
+            e.preventDefault();
+
+            const personalData = {
+                full_name: document.getElementById('profile-full-name').value,
+                phone: document.getElementById('profile-phone').value,
+                address: document.getElementById('profile-address').value,
+                address2: document.getElementById('profile-address2').value,
+                city: document.getElementById('profile-city').value,
+                state: document.getElementById('profile-state').value,
+                zip: document.getElementById('profile-zip').value,
+                updated_at: new Date().toISOString()
+            };
+
+            try {
+                const { error } = await supabase
+                    .from('user_profiles')
+                    .upsert({
+                        user_id: currentUser.id,
+                        email: currentUser.email,
+                        role: 'affiliate',
+                        ...personalData
+                    });
+
+                if (error) throw error;
+                showNotification('Personal information updated successfully!', 'success');
+            } catch (error) {
+                console.error('Error updating personal info:', error);
+                showNotification('Error updating personal information', 'error');
+            }
+        }
+
+        async function handlePaymentMethodUpdate(e) {
+            e.preventDefault();
+
+            const paymentMethod = document.querySelector('input[name="payment-method"]:checked')?.value;
+            if (!paymentMethod) {
+                showNotification('Please select a payment method', 'error');
+                return;
+            }
+
+            const paymentData = {
+                payment_method: paymentMethod,
+                updated_at: new Date().toISOString()
+            };
+
+            // Get payment method specific data
+            if (paymentMethod === 'paypal') {
+                paymentData.paypal_email = document.getElementById('paypal-email').value;
+                if (!paymentData.paypal_email) {
+                    showNotification('Please enter your PayPal email', 'error');
+                    return;
+                }
+            } else if (paymentMethod === 'zelle') {
+                paymentData.zelle_email = document.getElementById('zelle-email').value;
+                paymentData.zelle_phone = document.getElementById('zelle-phone').value;
+                if (!paymentData.zelle_email && !paymentData.zelle_phone) {
+                    showNotification('Please enter either email or phone for Zelle', 'error');
+                    return;
+                }
+            } else if (paymentMethod === 'cashapp') {
+                paymentData.cashapp_tag = document.getElementById('cashapp-tag').value;
+                if (!paymentData.cashapp_tag) {
+                    showNotification('Please enter your Cash App tag', 'error');
+                    return;
+                }
+            } else if (paymentMethod === 'ach') {
+                paymentData.ach_account = document.getElementById('ach-account').value;
+                paymentData.ach_routing = document.getElementById('ach-routing').value;
+                paymentData.ach_bank_name = document.getElementById('ach-bank-name').value;
+                if (!paymentData.ach_account || !paymentData.ach_routing) {
+                    showNotification('Please enter both account and routing numbers', 'error');
+                    return;
+                }
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('user_profiles')
+                    .upsert({
+                        user_id: currentUser.id,
+                        email: currentUser.email,
+                        role: 'affiliate',
+                        ...paymentData
+                    });
+
+                if (error) throw error;
+                showNotification('Payment method saved successfully!', 'success');
+            } catch (error) {
+                console.error('Error updating payment method:', error);
+                showNotification('Error saving payment method', 'error');
+            }
+        }
+
+        async function handleSocialLinksUpdate(e) {
+            e.preventDefault();
+
+            const socialData = {
+                social_facebook: document.getElementById('social-facebook').value,
+                social_instagram: document.getElementById('social-instagram').value,
+                social_linkedin: document.getElementById('social-linkedin').value,
+                social_twitter: document.getElementById('social-twitter').value,
+                social_youtube: document.getElementById('social-youtube').value,
+                social_website: document.getElementById('social-website').value,
+                updated_at: new Date().toISOString()
+            };
+
+            try {
+                const { error } = await supabase
+                    .from('user_profiles')
+                    .upsert({
+                        user_id: currentUser.id,
+                        email: currentUser.email,
+                        role: 'affiliate',
+                        ...socialData
+                    });
+
+                if (error) throw error;
+                showNotification('Social links updated successfully!', 'success');
+            } catch (error) {
+                console.error('Error updating social links:', error);
+                showNotification('Error saving social links', 'error');
             }
         }
     </script>
