@@ -1525,16 +1525,31 @@
                                     <th>Company</th>
                                     <th>Joined</th>
                                     <th>Status</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${affiliates.map(affiliate => `
                                     <tr>
-                                        <td><strong>${affiliate.full_name || 'N/A'}</strong></td>
+                                        <td>
+                                            <a href="#" onclick="viewAffiliateDetails('${affiliate.user_id}')" style="color: var(--electric-blue); text-decoration: none;">
+                                                <strong>${affiliate.full_name || 'N/A'}</strong>
+                                            </a>
+                                        </td>
                                         <td>${affiliate.email}</td>
                                         <td>${affiliate.company || 'N/A'}</td>
                                         <td>${new Date(affiliate.created_at).toLocaleDateString()}</td>
-                                        <td><span class="status-badge status-active">Active</span></td>
+                                        <td>
+                                            <span class="status-badge status-${(affiliate.status || 'active') === 'active' ? 'active' : 'closed'}">
+                                                ${(affiliate.status || 'active').charAt(0).toUpperCase() + (affiliate.status || 'active').slice(1)}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-small ${(affiliate.status || 'active') === 'active' ? 'btn-danger' : 'btn-success'}" 
+                                                    onclick="toggleAffiliateStatus('${affiliate.user_id}', '${affiliate.status || 'active'}')">
+                                                ${(affiliate.status || 'active') === 'active' ? 'Deactivate' : 'Activate'}
+                                            </button>
+                                        </td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -1726,7 +1741,10 @@
             try {
                 const { data: referrals } = await supabase
                     .from('referrals')
-                    .select('*')
+                    .select(`
+                        *,
+                        user_profiles!inner(full_name, email, paypal_email, preferred_payment)
+                    `)
                     .order('created_at', { ascending: false });
 
                 if (!referrals || referrals.length === 0) {
@@ -1748,8 +1766,12 @@
                                 <tr>
                                     <th>Company</th>
                                     <th>Contact</th>
+                                    <th>Referred By</th>
                                     <th>Status</th>
+                                    <th>Pro Plan Value</th>
+                                    <th>Commission</th>
                                     <th>Submitted</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1764,9 +1786,38 @@
                                             <small>${referral.contact_email}</small>
                                         </td>
                                         <td>
-                                            <span class="status-badge status-${referral.status}">${referral.status}</span>
+                                            <a href="#" onclick="viewAffiliateDetails('${referral.affiliate_id}')" style="color: var(--electric-blue); text-decoration: none;">
+                                                <strong>${referral.user_profiles?.full_name || 'Unknown'}</strong>
+                                            </a><br>
+                                            <small>${referral.user_profiles?.email || ''}</small>
+                                        </td>
+                                        <td>
+                                            <select onchange="updateReferralStatus('${referral.id}', this.value)" class="status-select" style="padding: 0.25rem; border-radius: 4px; border: 1px solid var(--border-gray);">
+                                                <option value="pending" ${referral.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                                <option value="contacted" ${referral.status === 'contacted' ? 'selected' : ''}>Contacted</option>
+                                                <option value="customer" ${referral.status === 'customer' ? 'selected' : ''}>Customer</option>
+                                                <option value="closed" ${referral.status === 'closed' ? 'selected' : ''}>Closed</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            ${referral.pro_plan_value ? 
+                                                `${parseFloat(referral.pro_plan_value).toFixed(2)}` : 
+                                                `<button class="btn btn-small btn-primary" onclick="addProPlan('${referral.id}')">Add Plan</button>`
+                                            }
+                                        </td>
+                                        <td>
+                                            ${referral.commission_amount ? 
+                                                `${parseFloat(referral.commission_amount).toFixed(2)}` : 
+                                                (referral.pro_plan_value ? `${(parseFloat(referral.pro_plan_value) * 0.1).toFixed(2)}` : 'N/A')
+                                            }
                                         </td>
                                         <td>${new Date(referral.created_at).toLocaleDateString()}</td>
+                                        <td>
+                                            <button class="btn btn-small btn-primary" onclick="viewReferralDetails('${referral.id}')">View</button>
+                                            ${referral.status === 'customer' && referral.pro_plan_value ? 
+                                                `<button class="btn btn-small btn-success" onclick="processPayment('${referral.id}', '${referral.affiliate_id}', ${referral.commission_amount || (parseFloat(referral.pro_plan_value) * 0.1)})">Pay</button>` : ''
+                                            }
+                                        </td>
                                     </tr>
                                 `).join('')}
                             </tbody>
