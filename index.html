@@ -947,29 +947,9 @@
                     }
                 });
 
-                // Create tables if they don't exist (for demo purposes)
-                await createTablesIfNeeded();
-
             } catch (error) {
                 console.error('Error initializing app:', error);
                 showNotification('Error connecting to server', 'error');
-            }
-        }
-
-        // Create tables if they don't exist (this would normally be done via migrations)
-        async function createTablesIfNeeded() {
-            try {
-                // Check if referrals table exists by trying to select from it
-                const { data, error } = await supabase
-                    .from('referrals')
-                    .select('id')
-                    .limit(1);
-                
-                if (error && error.code === 'PGRST116') { // Table doesn't exist
-                    console.log('Tables may need to be created. This should be done via Supabase dashboard.');
-                }
-            } catch (error) {
-                console.log('Table check error:', error);
             }
         }
 
@@ -1030,39 +1010,12 @@
 
                 if (error) throw error;
                 
-                // Also create a record in a profiles table if needed
-                if (data.user) {
-                    await createUserProfile(data.user, name, company);
-                }
-                
                 showNotification('Account created! Check your email to verify.', 'success');
             } catch (error) {
                 showNotification(error.message, 'error');
             }
 
             setLoading('signup', false);
-        }
-
-        async function createUserProfile(user, name, company) {
-            try {
-                // Try to create user profile (this table would need to exist)
-                const { error } = await supabase
-                    .from('user_profiles')
-                    .insert([{
-                        user_id: user.id,
-                        full_name: name,
-                        email: user.email,
-                        company: company,
-                        role: 'affiliate',
-                        created_at: new Date().toISOString()
-                    }]);
-
-                if (error) {
-                    console.log('Could not create user profile:', error);
-                }
-            } catch (error) {
-                console.log('Profile creation error:', error);
-            }
         }
 
         async function handleUserSession(user) {
@@ -1156,10 +1109,10 @@
                     .eq('affiliate_id', currentUser.id)
                     .order('created_at', { ascending: false });
 
-                updateAffiliateStats(referrals, payments);
-                renderReferrals(referrals);
-                renderPayments(payments);
-                renderQuestions(questions);
+                updateAffiliateStats(referrals || [], payments || []);
+                renderReferrals(referrals || []);
+                renderPayments(payments || []);
+                renderQuestions(questions || []);
 
                 // Load profile data
                 loadProfileData();
@@ -1202,17 +1155,6 @@
                     console.error('Payments query error:', paymentsError);
                 }
 
-                // Load all questions
-                const { data: questions, error: questionsError } = await supabase
-                    .from('questions')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (questionsError) {
-                    console.error('Questions query error:', questionsError);
-                }
-
-                // Ensure data is always an array, never null
                 updateAdminStats(
                     affiliates || [], 
                     referrals || [], 
@@ -1256,7 +1198,7 @@
             const currentMonth = new Date().toISOString().slice(0, 7);
             const monthlyRevenue = payments
                 .filter(p => p.created_at?.startsWith(currentMonth))
-                .reduce((sum, p) => sum + (p.amount || 0) * 10, 0); // Assume 10x commission for revenue
+                .reduce((sum, p) => sum + (p.amount || 0) * 10, 0);
 
             document.getElementById('admin-total-affiliates').textContent = totalAffiliates;
             document.getElementById('admin-total-referrals').textContent = totalReferrals;
@@ -1491,26 +1433,21 @@
             }
         }
 
-        // UI Helper Functions - FIXED
+        // UI Helper Functions
         function showTab(event, tabName) {
-            // Remove active class from all tab contents
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });
             
-            // Remove active class from all tabs
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
             
-            // Show the selected tab content
             document.getElementById(tabName + '-tab').classList.add('active');
             
-            // Add active class to clicked tab
             if (event && event.target) {
                 event.target.classList.add('active');
             } else {
-                // Find the tab by tabName and make it active
                 const tabs = document.querySelectorAll('.tab');
                 tabs.forEach(tab => {
                     if (tab.textContent.toLowerCase().includes(tabName) || 
@@ -1525,166 +1462,63 @@
             }
         }
 
-        async function showAdminTab(event, tabName) {
-            // Remove active from all admin tabs
+        function showAdminTab(event, tabName) {
             document.querySelectorAll('#admin-portal .tab').forEach(tab => {
                 tab.classList.remove('active');
             });
             
+            const content = document.getElementById('admin-content');
+            
+            // Simple referrals display for admin
+            if (tabName === 'referrals-admin') {
+                loadSimpleReferralsTab(content);
+            } else {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🛠️</div>
+                        <h3>${tabName.charAt(0).toUpperCase() + tabName.slice(1).replace('-', ' ')} Management</h3>
+                        <p>Admin functionality for ${tabName.replace('-', ' ')} will be available here.</p>
+                    </div>
+                `;
+            }
+            
             if (event && event.target) {
                 event.target.classList.add('active');
             }
-            
-            const content = document.getElementById('admin-content');
-            
+        }
+
+        async function loadSimpleReferralsTab(content) {
             try {
-                switch(tabName) {
-                    case 'affiliates':
-                        await loadAffiliatesTab(content);
-                        break;
-                    case 'referrals-admin':
-                        await loadReferralsAdminTab(content);
-                        break;
-                    case 'payments-admin':
-                        await loadPaymentsAdminTab(content);
-                        break;
-                    case 'questions-admin':
-                        await loadQuestionsAdminTab(content);
-                        break;
-                    case 'settings':
-                        loadSettingsTab(content);
-                        break;
-                    default:
-                        content.innerHTML = `
-                            <div class="empty-state">
-                                <div class="empty-state-icon">🛠️</div>
-                                <h3>Admin Dashboard</h3>
-                                <p>Select a tab to manage your affiliate program.</p>
-                            </div>
-                        `;
+                const { data: referrals } = await supabase
+                    .from('referrals')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (!referrals || referrals.length === 0) {
+                    content.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <h3>No Referrals Yet</h3>
+                            <p>Referrals will appear here when affiliates submit them.</p>
+                        </div>
+                    `;
+                    return;
                 }
-            } catch (error) {
-                console.error('Error loading admin tab:', error);
+
                 content.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">⚠️</div>
-                        <h3>Error Loading Data</h3>
-                        <p>There was an issue loading the admin data. Please try again.</p>
-                    </div>
-                `;
-            }
-        }
-
-        async function loadAffiliatesTab(content) {
-            const { data: affiliates } = await supabase
-                .from('user_profiles')
-                .select('*')
-                .eq('role', 'affiliate')
-                .order('created_at', { ascending: false });
-
-            if (!affiliates || affiliates.length === 0) {
-                content.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">👥</div>
-                        <h3>No Affiliates Yet</h3>
-                        <p>New affiliates will appear here when they sign up.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            content.innerHTML = `
-                <h3>Affiliate Management (${affiliates.length})</h3>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Company</th>
-                                <th>Joined</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${affiliates.map(affiliate => `
+                    <h3>Referral Management (${referrals.length})</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
                                 <tr>
-                                    <td><strong>${affiliate.full_name || 'N/A'}</strong></td>
-                                    <td>${affiliate.email}</td>
-                                    <td>${affiliate.company || 'N/A'}</td>
-                                    <td>${new Date(affiliate.created_at).toLocaleDateString()}</td>
-                                    <td><span class="status-badge status-active">Active</span></td>
+                                    <th>Company</th>
+                                    <th>Contact</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
                                 </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        }
-
-        async function loadReferralsAdminTab(content) {
-            // First get referrals
-            const { data: referrals, error } = await supabase
-                .from('referrals')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            console.log('Referrals query result:', referrals, error);
-
-            if (error) {
-                console.error('Referrals query error:', error);
-                content.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">⚠️</div>
-                        <h3>Error Loading Referrals</h3>
-                        <p>There was an error loading referral data. Check console for details.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            if (!referrals || referrals.length === 0) {
-                content.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📋</div>
-                        <h3>No Referrals Yet</h3>
-                        <p>Referrals will appear here when affiliates submit them.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            // Get affiliate names separately
-            const { data: affiliates } = await supabase
-                .from('user_profiles')
-                .select('user_id, full_name, email');
-
-            // Create a map of affiliate_id to affiliate info
-            const affiliateMap = {};
-            if (affiliates) {
-                affiliates.forEach(affiliate => {
-                    affiliateMap[affiliate.user_id] = affiliate;
-                });
-            }
-
-            content.innerHTML = `
-                <h3>Referral Management (${referrals.length})</h3>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Company</th>
-                                <th>Contact</th>
-                                <th>Affiliate</th>
-                                <th>Status</th>
-                                <th>Submitted</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${referrals.map(referral => {
-                                const affiliate = affiliateMap[referral.affiliate_id];
-                                return `
+                            </thead>
+                            <tbody>
+                                ${referrals.map(referral => `
                                     <tr>
                                         <td>
                                             <strong>${referral.company_name}</strong>
@@ -1694,230 +1528,26 @@
                                             ${referral.contact_name}<br>
                                             <small>${referral.contact_email}</small>
                                         </td>
-                                        <td>${affiliate ? affiliate.full_name : 'Unknown Affiliate'}</td>
                                         <td>
-                                            <select onchange="updateReferralStatus('${referral.id}', this.value)" class="status-select">
-                                                <option value="pending" ${referral.status === 'pending' ? 'selected' : ''}>Pending</option>
-                                                <option value="contacted" ${referral.status === 'contacted' ? 'selected' : ''}>Contacted</option>
-                                                <option value="active" ${referral.status === 'active' ? 'selected' : ''}>Active</option>
-                                                <option value="closed" ${referral.status === 'closed' ? 'selected' : ''}>Closed</option>
-                                            </select>
+                                            <span class="status-badge status-${referral.status}">${referral.status}</span>
                                         </td>
                                         <td>${new Date(referral.created_at).toLocaleDateString()}</td>
-                                        <td>
-                                            <button class="btn btn-small btn-primary" onclick="viewReferralDetails('${referral.id}')">View</button>
-                                        </td>
-                                    </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        }
-
-            if (!referrals || referrals.length === 0) {
-                content.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📋</div>
-                        <h3>No Referrals Yet</h3>
-                        <p>Referrals will appear here when affiliates submit them.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            content.innerHTML = `
-                <h3>Referral Management (${referrals.length})</h3>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Company</th>
-                                <th>Contact</th>
-                                <th>Affiliate</th>
-                                <th>Status</th>
-                                <th>Submitted</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${referrals.map(referral => `
-                                <tr>
-                                    <td>
-                                        <strong>${referral.company_name}</strong>
-                                        ${referral.website ? `<br><small><a href="${referral.website}" target="_blank">${referral.website}</a></small>` : ''}
-                                    </td>
-                                    <td>
-                                        ${referral.contact_name}<br>
-                                        <small>${referral.contact_email}</small>
-                                    </td>
-                                    <td>${referral.user_profiles?.full_name || 'Unknown'}</td>
-                                    <td>
-                                        <select onchange="updateReferralStatus('${referral.id}', this.value)" class="status-select">
-                                            <option value="pending" ${referral.status === 'pending' ? 'selected' : ''}>Pending</option>
-                                            <option value="contacted" ${referral.status === 'contacted' ? 'selected' : ''}>Contacted</option>
-                                            <option value="active" ${referral.status === 'active' ? 'selected' : ''}>Active</option>
-                                            <option value="closed" ${referral.status === 'closed' ? 'selected' : ''}>Closed</option>
-                                        </select>
-                                    </td>
-                                    <td>${new Date(referral.created_at).toLocaleDateString()}</td>
-                                    <td>
-                                        <button class="btn btn-small btn-primary" onclick="viewReferralDetails('${referral.id}')">View</button>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        }
-
-        async function loadPaymentsAdminTab(content) {
-            const { data: payments } = await supabase
-                .from('payments')
-                .select(`
-                    *,
-                    user_profiles!inner(full_name, email)
-                `)
-                .order('created_at', { ascending: false });
-
-            content.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                    <h3>Payment Management</h3>
-                    <button class="btn btn-primary btn-small" onclick="openPaymentModal()">+ Add Payment</button>
-                </div>
-                ${!payments || payments.length === 0 ? `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">💰</div>
-                        <h3>No Payments Yet</h3>
-                        <p>Commission payments will appear here.</p>
-                    </div>
-                ` : `
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Affiliate</th>
-                                    <th>Amount</th>
-                                    <th>Description</th>
-                                    <th>Status</th>
-                                    <th>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${payments.map(payment => `
-                                    <tr>
-                                        <td>${payment.user_profiles?.full_name || 'Unknown'}</td>
-                                        <td><strong>${payment.amount.toFixed(2)}</strong></td>
-                                        <td>${payment.description || 'Commission Payment'}</td>
-                                        <td><span class="status-badge status-${payment.status}">${payment.status}</span></td>
-                                        <td>${new Date(payment.created_at).toLocaleDateString()}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
                         </table>
                     </div>
-                `}
-            `;
-        }
-
-        async function loadQuestionsAdminTab(content) {
-            const { data: questions } = await supabase
-                .from('questions')
-                .select(`
-                    *,
-                    user_profiles!inner(full_name, email)
-                `)
-                .order('created_at', { ascending: false });
-
-            if (!questions || questions.length === 0) {
+                `;
+            } catch (error) {
+                console.error('Error loading referrals:', error);
                 content.innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-state-icon">❓</div>
-                        <h3>No Questions Yet</h3>
-                        <p>Affiliate questions will appear here.</p>
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>Error Loading Referrals</h3>
+                        <p>There was an error loading referral data.</p>
                     </div>
                 `;
-                return;
             }
-
-            content.innerHTML = `
-                <h3>Questions & Support (${questions.length})</h3>
-                <div class="table-container">
-                    ${questions.map(q => `
-                        <div style="border: 1px solid var(--border-gray); border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                                <div>
-                                    <div style="font-size: 0.9rem; color: var(--slate-gray);">
-                                        ${q.user_profiles?.full_name || 'Unknown'} asked - ${new Date(q.created_at).toLocaleDateString()}
-                                    </div>
-                                    <div style="margin-top: 0.5rem;">
-                                        <strong>${q.subject}</strong>
-                                    </div>
-                                </div>
-                                <span class="status-badge status-${q.response ? 'active' : 'pending'}">${q.response ? 'Answered' : 'Pending'}</span>
-                            </div>
-                            <p style="margin-bottom: 1rem;">${q.question}</p>
-                            ${q.response ? `
-                                <div style="background: var(--light-gray); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                                    <div style="font-size: 0.9rem; color: var(--slate-gray); margin-bottom: 0.5rem;">Your response:</div>
-                                    <p>${q.response}</p>
-                                </div>
-                            ` : ''}
-                            <button class="btn btn-primary btn-small" onclick="respondToQuestion('${q.id}', '${q.response ? 'true' : 'false'}')">
-                                ${q.response ? 'Update Response' : 'Respond'}
-                            </button>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        function loadSettingsTab(content) {
-            content.innerHTML = `
-                <h3>System Settings</h3>
-                <div class="card">
-                    <h4>Affiliate Program Settings</h4>
-                    <div class="form-group">
-                        <label>Default Commission Rate (%)</label>
-                        <input type="number" value="10" min="0" max="100">
-                    </div>
-                    <div class="form-group">
-                        <label>Admin Email</label>
-                        <input type="email" value="robert@kinectb2b.com">
-                    </div>
-                    <button class="btn btn-primary">Save Settings</button>
-                </div>
-            `;
-        }
-
-        // Helper functions for admin actions
-        async function updateReferralStatus(referralId, newStatus) {
-            try {
-                const { error } = await supabase
-                    .from('referrals')
-                    .update({ status: newStatus, updated_at: new Date().toISOString() })
-                    .eq('id', referralId);
-
-                if (error) throw error;
-                showNotification('Referral status updated!', 'success');
-            } catch (error) {
-                showNotification('Error updating status: ' + error.message, 'error');
-            }
-        }
-
-        function viewReferralDetails(referralId) {
-            // This would open a modal with full referral details
-            showNotification('Referral details feature coming soon!', 'warning');
-        }
-
-        function openPaymentModal() {
-            showNotification('Payment creation feature coming soon!', 'warning');
-        }
-
-        function respondToQuestion(questionId, hasResponse) {
-            showNotification('Question response feature coming soon!', 'warning');
         }
 
         function showSubmitTab() {
