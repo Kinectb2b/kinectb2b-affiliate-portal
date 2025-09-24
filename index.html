@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KinectB2B - Transform Your Business Growth</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; color: #333; background: #fff; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        
+        /* Header */
+        header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1rem 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(0,0,0,0.1); }
+        .logo { font-size: 2rem; font-weight: 900; color: white; text-align: center; text-transform: uppercase; letter-spacing: -1px; }
+        
+        /* Hero Section */
+        .hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 5rem 0; text-align: center; color: white; position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>'); }
+        .hero-content { position: relative; z-index: 2; }
+        .hero-badge { display: inline-flex; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(20px); padding: 12px 24px; border-radius: 50px; font-size: 1rem; font-weight: 600; margin-bottom: 2rem; border: 1px solid rgba(255, 255, 255, 0.3); animation: pulse 3s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(255,255,255,0.3); } 50% { transform: scale(1.02); box-shadow: 0 0 40px rgba(255,255,255,0.4); } }
+        .hero h1 { font-size: clamp(3rem, 8vw, 5.5rem); font-weight: 900; line-height: 1.1; margin-bottom: 1.5rem; text-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .hero-subtitle { font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 600; margin-bottom: 1.5rem; opacity: 0.95; }
+        .hero-description { font-size: clamp(1.1rem, 3vw, 1.4rem); margin-bottom: 3rem; opacity: 0.9; max-width: 800px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+        
+        /* Key Stats */
+        .key-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin: 4rem 0; padding: 3rem; background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(20px); border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .key-stat { text-align: center; }
+        .key-stat .number { display: block; font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 900; margin-bottom: 0.5rem; background: linear-gradient(45deg, #ff6b6b, #feca57); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 20px rgba(255,255,255,0.4)); }
+        .key-stat .label { font-size: 1.1rem; font-weight: 600; opacity: 0.95; }
+        
+        /* Hero CTA */
+        .hero-cta { margin-top: 3rem; }
+        .btn-hero { background: linear-gradient(45deg, #ff6b6b, #feca57); color: white; padding: 20px 40px; border: none; border-radius: 50px; font-size: 1.3rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .btn-hero:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        
+        /* Testimonials */
+        .testimonials { background: #f8fafc; padding: 5rem 0; }
+        .section-title { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 900; text-align: center; background: linear-gradient(45deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 3rem; }
+        .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; margin-top: 3rem; }
+        .testimonial { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border-left: 5px solid #667eea; position: relative; transition: transform 0.3s ease; }
+        .testimonial:hover { transform: translateY(-5px); box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+        .testimonial-quote { font-size: 1.2rem; font-style: italic; margin-bottom: 1.5rem; color: #555; line-height: 1.6; }
+        .testimonial-author { font-weight: 800; color: #667eea; font-size: 1.1rem; }
+        .testimonial-company { font-size: 0.95rem; color: #666; margin-top: 0.25rem; }
+        .testimonial::before { content: '"'; position: absolute; top: 1rem; left: 1.5rem; font-size: 4rem; color: #667eea; opacity: 0.3; font-family: serif; }
+        
+        /* Plan Selector */
+        .plan-selector { background: white; padding: 5rem 0; }
+        .plan-dropdown-container { max-width: 600px; margin: 0 auto 3rem; position: relative; }
+        .plan-dropdown { width: 100%; padding: 25px 30px; font-size: 1.4rem; font-weight: 600; border: 3px solid #667eea; border-radius: 15px; background: white; color: #333; cursor: pointer; transition: all 0.3s ease; appearance: none; background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTYgOUwxMiAxNUwxOCA5IiBzdHJva2U9IiM2NjdlZWEiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo='); background-repeat: no-repeat; background-position: right 25px center; background-size: 24px; padding-right: 70px; box-shadow: 0 5px 20px rgba(102, 126, 234, 0.1); }
+        .plan-dropdown:hover { box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2); transform: translateY(-2px); }
+        .plan-dropdown:focus { outline: none; box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2); }
+        
+        /* Plan Details */
+        .plan-details { display: none; max-width: 1000px; margin: 0 auto; background: linear-gradient(135deg, #f8f9ff 0%, #e6f2ff 100%); border-radius: 30px; padding: 3rem; box-shadow: 0 20px 60px rgba(0,0,0,0.1); border: 3px solid #667eea; animation: slideIn 0.6s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        .plan-details.show { display: block; }
+        
+        .plan-header { text-align: center; margin-bottom: 3rem; }
+        .plan-name { font-size: 3rem; font-weight: 900; color: #667eea; margin-bottom: 0.5rem; }
+        .plan-price { font-size: 4rem; font-weight: 900; color: #333; margin-bottom: 0.5rem; }
+        .plan-period { font-size: 1.3rem; color: #666; margin-bottom: 1.5rem; }
+        .annual-savings { background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 12px 24px; border-radius: 30px; font-size: 1.1rem; font-weight: 700; display: inline-block; }
+        
+        /* Plan Stats */
+        .plan-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 2rem; margin: 3rem 0; }
+        .plan-stat { text-align: center; background: white; padding: 2rem 1rem; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: transform 0.3s ease; }
+        .plan-stat:hover { transform: translateY(-5px); }
+        .plan-stat .number { font-size: 2.5rem; font-weight: 900; color: #667eea; display: block; margin-bottom: 0.5rem; }
+        .plan-stat .label { font-size: 1rem; color: #666; font-weight: 600; }
+        
+        /* Guarantee Box */
+        .guarantee-box { background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 3rem; border-radius: 25px; text-align: center; margin: 3rem 0; position: relative; overflow: hidden; }
+        .guarantee-box::before { content: '🎯'; position: absolute; top: 1rem; right: 1rem; font-size: 3rem; opacity: 0.3; }
+        .guarantee-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 1rem; }
+        .guarantee-goal { font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .guarantee-minimum { font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem; opacity: 0.9; }
+        .guarantee-details { font-size: 1.1rem; opacity: 0.9; }
+        
+        /* Contact Form */
+        .contact-form { background: white; padding: 3rem; border-radius: 25px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); margin-top: 3rem; border: 2px solid #e2e8f0; }
+        .form-title { font-size: 2rem; font-weight: 900; text-align: center; margin-bottom: 2rem; color: #333; background: linear-gradient(45deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+        .form-input { padding: 18px 24px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1.1rem; transition: all 0.3s ease; width: 100%; background: #f8fafc; }
+        .form-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1); background: white; }
+        .form-input::placeholder { color: #a0aec0; }
+        .btn-submit { background: linear-gradient(45deg, #667eea, #764ba2); color: white; padding: 20px 40px; border: none; border-radius: 15px; font-size: 1.4rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all 0.3s ease; width: 100%; margin-top: 1rem; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3); }
+        .btn-submit:hover { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4); }
+        
+        /* Trust Indicators */
+        .trust-indicators { display: flex; justify-content: center; align-items: center; gap: 3rem; margin: 3rem 0; flex-wrap: wrap; }
+        .trust-item { display: flex; align-items: center; gap: 12px; font-size: 1.1rem; font-weight: 600; color: #666; background: white; padding: 1rem 2rem; border-radius: 50px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        .trust-icon { font-size: 1.5rem; }
+        
+        /* Footer */
+        .footer { background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%); color: white; text-align: center; padding: 4rem 0; }
+        .footer-content { font-size: 1.1rem; opacity: 0.9; }
+        
+        /* Responsive */
+        @media (max-width: 768px) { 
+            .form-row { grid-template-columns: 1fr; }
+            .testimonials-grid { grid-template-columns: 1fr; }
+            .key-stats { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; padding: 2rem; }
+            .plan-stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .trust-indicators { flex-direction: column; gap: 1rem; }
+            .plan-details { padding: 2rem; }
+            .contact-form { padding: 2rem; }
+        }
+        @media (max-width: 480px) {
+            .key-stats { grid-template-columns: 1fr; }
+            .plan-stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">KinectB2B</div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">🚀 Professional B2B Sales & Lead Generation</div>
+                <h1>Transform Your Business Growth</h1>
+                <p class="hero-subtitle">We Connect You With 100M+ Businesses</p>
+                <p class="hero-description">Skip the $100K+ sales team. Our elite squad contacts 3 decision makers at every business you want to reach. GM, District Manager, Regional Manager - we get them ALL scheduling appointments with YOU.</p>
+                
+                <div class="key-stats">
+                    <div class="key-stat"><span class="number">100M+</span><span class="label">Businesses We Reach</span></div>
+                    <div class="key-stat"><span class="number">3</span><span class="label">Decision Makers Each</span></div>
+                    <div class="key-stat"><span class="number">10x</span><span class="label">Cheaper Than Hiring</span></div>
+                    <div class="key-stat"><span class="number">100%</span><span class="label">Guaranteed Results</span></div>
+                </div>
+                
+                <div class="hero-cta">
+                    <a href="#plans" class="btn-hero">See Plans & Pricing</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonials">
+        <div class="container">
+            <h2 class="section-title">What Our Clients Say</h2>
+            <div class="testimonials-grid">
+                <div class="testimonial">
+                    <div class="testimonial-quote">KinectB2B generated 47 qualified appointments in our first month. We closed 12 new clients worth $340K in revenue. This is the real deal.</div>
+                    <div class="testimonial-author">Sarah Johnson</div>
+                    <div class="testimonial-company">CEO, TechSolutions Inc</div>
+                </div>
+                <div class="testimonial">
+                    <div class="testimonial-quote">Finally, a service that actually delivers. Their team reached decision makers we could never get to ourselves. ROI was immediate.</div>
+                    <div class="testimonial-author">Mike Rodriguez</div>
+                    <div class="testimonial-company">VP Sales, GrowthCorp</div>
+                </div>
+                <div class="testimonial">
+                    <div class="testimonial-quote">First appointment turned into a $50K contract. Best investment we've made for business development. Can't recommend them enough.</div>
+                    <div class="testimonial-author">Lisa Chen</div>
+                    <div class="testimonial-company">Founder, InnovateNow</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="plan-selector" id="plans">
+        <div class="container">
+            <div class="selector-header">
+                <h2 class="section-title">Ready to Explode Your Growth?</h2>
+                <p style="text-align: center; font-size: 1.3rem; color: #666; margin-bottom: 3rem;">Select a plan below to learn more and get started</p>
+            </div>
+            
+            <div class="plan-dropdown-container">
+                <select class="plan-dropdown" id="planSelector">
+                    <option value="">Choose Your Business Transformation Plan...</option>
+                    <option value="pro100">Pro Plan 100 - 100 Businesses ($250/month)</option>
+                    <option value="pro200">Pro Plan 200 - 200 Businesses ($500/month)</option>
+                    <option value="pro300">Pro Plan 300 - 300 Businesses ($750/month)</option>
+                    <option value="pro400">Pro Plan 400 - 400 Businesses ($1,000/month)</option>
+                    <option value="pro500">Pro Plan 500 - 500 Businesses ($1,250/month)</option>
+                    <option value="pro600">Pro Plan 600 - 600 Businesses ($1,500/month)</option>
+                    <option value="pro700">Pro Plan 700 - 700 Businesses ($1,750/month)</option>
+                    <option value="pro800">Pro Plan 800 - 800 Businesses ($2,000/month)</option>
+                    <option value="pro900">Pro Plan 900 - 900 Businesses ($2,250/month)</option>
+                    <option value="pro1000">Pro Plan 1000 - 1000 Businesses ($2,500/month) ⭐ MOST POPULAR</option>
+                    <option value="pro1100">Pro Plan 1100 - 1100 Businesses ($2,750/month)</option>
+                    <option value="pro1200">Pro Plan 1200 - 1200 Businesses ($3,000/month)</option>
+                </select>
+            </div>
+            
+            <div class="plan-details" id="planDetails">
+                <div class="plan-header">
+                    <h3 class="plan-name" id="planName">Pro Plan</h3>
+                    <div class="plan-price">$<span id="planPrice">0</span></div>
+                    <div class="plan-period">per month</div>
+                    <div class="annual-savings" id="annualSavings">Save $0 with annual payment!</div>
+                </div>
+                
+                <div class="plan-stats-grid">
+                    <div class="plan-stat"><span class="number" id="businessesCount">0</span><span class="label">Businesses Targeted</span></div>
+                    <div class="plan-stat"><span class="number" id="peopleCount">0</span><span class="label">Decision Makers</span></div>
+                    <div class="plan-stat"><span class="number" id="callsCount">0</span><span class="label">Phone Calls</span></div>
+                    <div class="plan-stat"><span class="number" id="emailsCount">0</span><span class="label">Emails Sent</span></div>
+                    <div class="plan-stat"><span class="number" id="smsCount">0</span><span class="label">SMS Messages</span></div>
+                    <div class="plan-stat"><span class="number" id="touchpointsCount">0</span><span class="label">Total Touchpoints</span></div>
+                </div>
+
+                <div class="guarantee-box">
+                    <div class="guarantee-title">GUARANTEED APPOINTMENTS</div>
+                    <div class="guarantee-goal" id="goalText">Team Goal: 25 Appointments</div>
+                    <div class="guarantee-minimum" id="guaranteeText">Minimum 5 Guaranteed</div>
+                    <div class="guarantee-details">or your money back - no questions asked over 12 months</div>
+                </div>
+                
+                <form name="kinectb2b-contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="contact-form">
+                    <input type="hidden" name="form-name" value="kinectb2b-contact">
+                    <input type="hidden" name="selected-plan" id="selectedPlanField">
+                    <p style="display: none;">
+                        <label>Don't fill this out if you're human: <input name="bot-field" /></label>
+                    </p>
+                    
+                    <div class="form-title">Start Your Campaign Now</div>
+                    
+                    <div class="form-row">
+                        <input type="text" name="name" placeholder="Full Name *" required class="form-input">
+                        <input type="email" name="email" placeholder="Email Address *" required class="form-input">
+                    </div>
+                    <div class="form-row">
+                        <input type="tel" name="phone" placeholder="Phone Number *" required class="form-input">
+                        <input type="text" name="company" placeholder="Company Name *" required class="form-input">
+                    </div>
+                    <div class="form-row">
+                        <input type="text" name="city-state" placeholder="City, State *" required class="form-input">
+                        <input type="text" name="industry" placeholder="Industry *" required class="form-input">
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">Launch My Campaign</button>
+                </form>
+                
+                <div class="trust-indicators">
+                    <div class="trust-item"><span class="trust-icon">✅</span><span>Money Back Guarantee</span></div>
+                    <div class="trust-item"><span class="trust-icon">🔒</span><span>Secure & Private</span></div>
+                    <div class="trust-item"><span class="trust-icon">⚡</span><span>Start Within 48 Hours</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 KinectB2B. All rights reserved. | Transform Your Business Growth Today</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const planData = {
+            pro100: { businesses: 100, monthly: 250, annualDiscount: 2750, annualFull: 3000, guarantees: 5, people: 300, calls: 900, emails: 900, sms: 900, touchpoints: 2700 },
+            pro200: { businesses: 200, monthly: 500, annualDiscount: 5500, annualFull: 6000, guarantees: 10, people: 600, calls: 1800, emails: 1800, sms: 1800, touchpoints: 5400 },
+            pro300: { businesses: 300, monthly: 750, annualDiscount: 8250, annualFull: 9000, guarantees: 15, people: 900, calls: 2700, emails: 2700, sms: 2700, touchpoints: 8100 },
+            pro400: { businesses: 400, monthly: 1000, annualDiscount: 11000, annualFull: 12000, guarantees: 20, people: 1200, calls: 3600, emails: 3600, sms: 3600, touchpoints: 10800 },
+            pro500: { businesses: 500, monthly: 1250, annualDiscount: 13750, annualFull: 15000, guarantees: 25, people: 1500, calls: 4500, emails: 4500, sms: 4500, touchpoints: 13500 },
+            pro600: { businesses: 600, monthly: 1500, annualDiscount: 16500, annualFull: 18000, guarantees: 30, people: 1800, calls: 5400, emails: 5400, sms: 5400, touchpoints: 16200 },
+            pro700: { businesses: 700, monthly: 1750, annualDiscount: 19250, annualFull: 21000, guarantees: 35, people: 2100, calls: 6300, emails: 6300, sms: 6300, touchpoints: 18900 },
+            pro800: { businesses: 800, monthly: 2000, annualDiscount: 22000, annualFull: 24000, guarantees: 40, people: 2400, calls: 7200, emails: 7200, sms: 7200, touchpoints: 21600 },
+            pro900: { businesses: 900, monthly: 2250, annualDiscount: 24750, annualFull: 27000, guarantees: 45, people: 2700, calls: 8100, emails: 8100, sms: 8100, touchpoints: 24300 },
+            pro1000: { businesses: 1000, monthly: 2500, annualDiscount: 27500, annualFull: 30000, guarantees: 50, people: 3000, calls: 9000, emails: 9000, sms: 9000, touchpoints: 27000 },
+            pro1100: { businesses: 1100, monthly: 2750, annualDiscount: 30250, annualFull: 33000, guarantees: 55, people: 3300, calls: 9900, emails: 9900, sms: 9900, touchpoints: 29700 },
+            pro1200: { businesses: 1200, monthly: 3000, annualDiscount: 33000, annualFull: 36000, guarantees: 60, people: 3600, calls: 10800, emails: 10800, sms: 10800, touchpoints: 32400 }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const planSelector = document.getElementById('planSelector');
+            const planDetails = document.getElementById('planDetails');
+            
+            if (planSelector) {
+                planSelector.addEventListener('change', function() {
+                    const value = this.value;
+                    
+                    if (value === '') {
+                        planDetails.classList.remove('show');
+                        return;
+                    }
+                    
+                    const plan = planData[value];
+                    if (!plan) return;
+                    
+                    // Update plan details
+                    document.getElementById('planName').textContent = 'Pro Plan ' + plan.businesses;
+                    document.getElementById('planPrice').textContent = plan.monthly.toLocaleString();
+                    document.getElementById('annualSavings').textContent = 'Save $' + (plan.annualFull - plan.annualDiscount).toLocaleString() + ' with annual payment!';
+                    document.getElementById('businessesCount').textContent = plan.businesses.toLocaleString();
+                    document.getElementById('peopleCount').textContent = plan.people.toLocaleString();
+                    document.getElementById('callsCount').textContent = plan.calls.toLocaleString();
+                    document.getElementById('emailsCount').textContent = plan.emails.toLocaleString();
+                    document.getElementById('smsCount').textContent = plan.sms.toLocaleString();
+                    document.getElementById('touchpointsCount').textContent = plan.touchpoints.toLocaleString();
+                    
+                    // Update guarantees
+                    const teamGoal = plan.guarantees * 5;
+                    document.getElementById('goalText').textContent = 'Team Goal: ' + teamGoal + ' Appointments';
+                    document.getElementById('guaranteeText').textContent = 'Minimum ' + plan.guarantees + ' Guaranteed';
+                    
+                    // Update hidden form field
+                    document.getElementById('selectedPlanField').value = 'Pro Plan ' + plan.businesses + ' - $' + plan.monthly + '/month';
+                    
+                    // Show details
+                    planDetails.classList.add('show');
+                    
+                    // Scroll to form
+                    setTimeout(function() {
+                        planDetails.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 200);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
