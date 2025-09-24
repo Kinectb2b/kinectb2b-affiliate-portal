@@ -1,4 +1,307 @@
-<!DOCTYPE html>
+} catch (error) {
+                console.error('Error loading payments:', error);
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>Error Loading Payments</h3>
+                        <p>There was an error loading payment data.</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function loadQuestionsAdminTab(content) {
+            try {
+                const { data: questions } = await supabase
+                    .from('questions')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (!questions || questions.length === 0) {
+                    content.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">❓</div>
+                            <h3>No Questions Yet</h3>
+                            <p>Affiliate questions will appear here.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                content.innerHTML = `
+                    <h3>Questions & Support (${questions.length})</h3>
+                    ${questions.map(q => `
+                        <div style="border: 1px solid var(--border-gray); border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                                <div>
+                                    <div style="font-size: 0.9rem; color: var(--slate-gray);">
+                                        Affiliate asked - ${new Date(q.created_at).toLocaleDateString()}
+                                    </div>
+                                    <div style="margin-top: 0.5rem;">
+                                        <strong>${q.subject}</strong>
+                                    </div>
+                                </div>
+                                <span class="status-badge status-${q.response ? 'active' : 'pending'}">${q.response ? 'Answered' : 'Pending'}</span>
+                            </div>
+                            <p style="margin-bottom: 1rem;">${q.question}</p>
+                            ${q.response ? `
+                                <div style="background: var(--light-gray); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                                    <div style="font-size: 0.9rem; color: var(--slate-gray); margin-bottom: 0.5rem;">Your response:</div>
+                                    <p>${q.response}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `).join('')}
+                `;
+            } catch (error) {
+                console.error('Error loading questions:', error);
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>Error Loading Questions</h3>
+                        <p>There was an error loading question data.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function loadSettingsAdminTab(content) {
+            content.innerHTML = `
+                <h3>System Settings</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <div class="card">
+                        <h4>Affiliate Program Settings</h4>
+                        <div class="form-group">
+                            <label>Default Commission Rate (%)</label>
+                            <input type="number" value="10" min="0" max="100" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Payment Schedule</label>
+                            <select disabled>
+                                <option>Monthly</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Minimum Payout Amount</label>
+                            <input type="number" value="100" min="0" readonly>
+                        </div>
+                        <button class="btn btn-primary" onclick="showNotification('Settings saved!', 'success')">Save Settings</button>
+                    </div>
+                    
+                    <div class="card">
+                        <h4>Admin Information</h4>
+                        <div class="form-group">
+                            <label>Admin Email</label>
+                            <input type="email" value="robert@kinectb2b.com" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Company Name</label>
+                            <input type="text" value="KinectB2B" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>System Status</label>
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 2rem;">
+                    <h4>Database Statistics</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div style="text-align: center; padding: 1rem; background: var(--light-gray); border-radius: 8px;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--electric-blue);">${document.getElementById('admin-total-affiliates').textContent}</div>
+                            <div>Total Affiliates</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: var(--light-gray); border-radius: 8px;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--electric-blue);">${document.getElementById('admin-total-referrals').textContent}</div>
+                            <div>Total Referrals</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: var(--light-gray); border-radius: 8px;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--success-green);">${document.getElementById('admin-total-commissions').textContent}</div>
+                            <div>Total Commissions</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadSimpleReferralsTab(content) {
+            try {
+                console.log('Loading referrals for admin...');
+                
+                // Get referrals first
+                const { data: referrals, error: referralsError } = await supabase
+                    .from('referrals')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                console.log('Referrals query result:', referrals, referralsError);
+                
+                if (referralsError) {
+                    throw referralsError;
+                }
+                
+                // Get user profiles separately
+                const { data: profiles, error: profilesError } = await supabase
+                    .from('user_profiles')
+                    .select('user_id, full_name, email');
+                
+                console.log('Profiles query result:', profiles, profilesError);
+                
+                if (!referrals || referrals.length === 0) {
+                    content.innerHTML = `
+                        <h3>Referral Management (0)</h3>
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <h3>No Referrals Yet</h3>
+                            <p>Referrals will appear here when affiliates submit them.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Create a profile lookup map
+                const profileMap = {};
+                if (profiles && profiles.length > 0) {
+                    profiles.forEach(profile => {
+                        profileMap[profile.user_id] = profile;
+                    });
+                }
+
+                content.innerHTML = `
+                    <h3>Referral Management (${referrals.length})</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Company</th>
+                                    <th>Contact</th>
+                                    <th>Referred By</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${referrals.map(referral => {
+                                    const profile = profileMap[referral.affiliate_id] || {};
+                                    return `
+                                        <tr>
+                                            <td>
+                                                <strong>${referral.company_name}</strong>
+                                                ${referral.website ? `<br><small><a href="${referral.website}" target="_blank">${referral.website}</a></small>` : ''}
+                                            </td>
+                                            <td>
+                                                ${referral.contact_name}<br>
+                                                <small>${referral.contact_email}</small>
+                                            </td>
+                                            <td>
+                                                <strong>${profile.full_name || 'Unknown Affiliate'}</strong><br>
+                                                <small>${profile.email || ''}</small>
+                                            </td>
+                                            <td>
+                                                <select onchange="updateReferralStatus('${referral.id}', this.value)" style="padding: 0.25rem; border-radius: 4px; border: 1px solid var(--border-gray);">
+                                                    <option value="pending" ${referral.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                                    <option value="contacted" ${referral.status === 'contacted' ? 'selected' : ''}>Contacted</option>
+                                                    <option value="customer" ${referral.status === 'customer' ? 'selected' : ''}>Customer</option>
+                                                    <option value="closed" ${referral.status === 'closed' ? 'selected' : ''}>Closed</option>
+                                                </select>
+                                            </td>
+                                            <td>${new Date(referral.created_at).toLocaleDateString()}</td>
+                                            <td>
+                                                <button class="btn btn-small btn-primary" onclick="viewReferralDetails('${referral.id}')">View</button>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading referrals:', error);
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>Error Loading Referrals</h3>
+                        <p>There was an error loading referral data: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function showSubmitTab() {
+            showTab(null, 'submit');
+        }
+
+        function openQuestionModal() {
+            document.getElementById('question-modal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function setLoading(type, loading) {
+            const loadingEl = document.getElementById(type + '-loading');
+            const textEl = document.getElementById(type + '-text');
+            
+            if (loadingEl && textEl) {
+                if (loading) {
+                    loadingEl.classList.remove('hidden');
+                    textEl.textContent = 'Processing...';
+                } else {
+                    loadingEl.classList.add('hidden');
+                    textEl.textContent = getOriginalText(type);
+                }
+            }
+        }
+
+        function getOriginalText(type) {
+            const texts = {
+                login: 'Login',
+                signup: 'Create Account',
+                referral: 'Submit Referral',
+                question: 'Submit Question'
+            };
+            return texts[type] || 'Submit';
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        // Admin Functions (placeholders for now)
+        function updateReferralStatus(referralId, newStatus) {
+            console.log('Update referral status:', referralId, newStatus);
+            showNotification('Referral status updated!', 'success');
+        }
+
+        function viewReferralDetails(referralId) {
+            console.log('View referral details:', referralId);
+            showNotification('Referral details feature coming soon!', 'warning');
+        }
+
+        function toggleAffiliateStatus(userId, currentStatus) {
+            console.log('Toggle affiliate status:', userId, currentStatus);
+            showNotification('Affiliate status updated!', 'success');
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -312,6 +615,11 @@
         .status-closed {
             background: #FEE2E2;
             color: #DC2626;
+        }
+
+        .status-customer {
+            background: #D1FAE5;
+            color: #059669;
         }
 
         /* Forms */
@@ -1436,7 +1744,41 @@
         // UI Helper Functions
         function showTab(event, tabName) {
             document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
+                content.innerHTML = `
+                    <h3>Payment Management</h3>
+                    ${!payments || payments.length === 0 ? `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💰</div>
+                            <h3>No Payments Yet</h3>
+                            <p>Commission payments will appear here.</p>
+                        </div>
+                    ` : `
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Affiliate</th>
+                                        <th>Amount</th>
+                                        <th>Description</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${payments.map(payment => `
+                                        <tr>
+                                            <td>Affiliate</td>
+                                            <td><strong>${payment.amount.toFixed(2)}</strong></td>
+                                            <td>${payment.description || 'Commission Payment'}</td>
+                                            <td><span class="status-badge status-${payment.status}">${payment.status}</span></td>
+                                            <td>${new Date(payment.created_at).toLocaleDateString()}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `}
+                `;.classList.remove('active');
             });
             
             document.querySelectorAll('.tab').forEach(tab => {
@@ -1532,9 +1874,7 @@
                                 ${affiliates.map(affiliate => `
                                     <tr>
                                         <td>
-                                            <a href="#" onclick="viewAffiliateDetails('${affiliate.user_id}')" style="color: var(--electric-blue); text-decoration: none;">
-                                                <strong>${affiliate.full_name || 'N/A'}</strong>
-                                            </a>
+                                            <strong>${affiliate.full_name || 'N/A'}</strong>
                                         </td>
                                         <td>${affiliate.email}</td>
                                         <td>${affiliate.company || 'N/A'}</td>
@@ -1575,320 +1915,4 @@
                     .select('*')
                     .order('created_at', { ascending: false });
 
-                content.innerHTML = `
-                    <h3>Payment Management</h3>
-                    ${!payments || payments.length === 0 ? `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">💰</div>
-                            <h3>No Payments Yet</h3>
-                            <p>Commission payments will appear here.</p>
-                        </div>
-                    ` : `
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Affiliate</th>
-                                        <th>Amount</th>
-                                        <th>Description</th>
-                                        <th>Status</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${payments.map(payment => `
-                                        <tr>
-                                            <td>Affiliate</td>
-                                            <td><strong>${payment.amount.toFixed(2)}</strong></td>
-                                            <td>${payment.description || 'Commission Payment'}</td>
-                                            <td><span class="status-badge status-${payment.status}">${payment.status}</span></td>
-                                            <td>${new Date(payment.created_at).toLocaleDateString()}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `}
-                `;
-            } catch (error) {
-                console.error('Error loading payments:', error);
-                content.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">⚠️</div>
-                        <h3>Error Loading Payments</h3>
-                        <p>There was an error loading payment data.</p>
-                    </div>
-                `;
-            }
-        }
-
-        async function loadQuestionsAdminTab(content) {
-            try {
-                const { data: questions } = await supabase
-                    .from('questions')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (!questions || questions.length === 0) {
-                    content.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">❓</div>
-                            <h3>No Questions Yet</h3>
-                            <p>Affiliate questions will appear here.</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                content.innerHTML = `
-                    <h3>Questions & Support (${questions.length})</h3>
-                    ${questions.map(q => `
-                        <div style="border: 1px solid var(--border-gray); border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                                <div>
-                                    <div style="font-size: 0.9rem; color: var(--slate-gray);">
-                                        Affiliate asked - ${new Date(q.created_at).toLocaleDateString()}
-                                    </div>
-                                    <div style="margin-top: 0.5rem;">
-                                        <strong>${q.subject}</strong>
-                                    </div>
-                                </div>
-                                <span class="status-badge status-${q.response ? 'active' : 'pending'}">${q.response ? 'Answered' : 'Pending'}</span>
-                            </div>
-                            <p style="margin-bottom: 1rem;">${q.question}</p>
-                            ${q.response ? `
-                                <div style="background: var(--light-gray); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                                    <div style="font-size: 0.9rem; color: var(--slate-gray); margin-bottom: 0.5rem;">Your response:</div>
-                                    <p>${q.response}</p>
-                                </div>
-                            ` : ''}
-                        </div>
-                    `).join('')}
-                `;
-            } catch (error) {
-                console.error('Error loading questions:', error);
-                content.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">⚠️</div>
-                        <h3>Error Loading Questions</h3>
-                        <p>There was an error loading question data.</p>
-                    </div>
-                `;
-            }
-        }
-
-        function loadSettingsAdminTab(content) {
-            content.innerHTML = `
-                <h3>System Settings</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                    <div class="card">
-                        <h4>Affiliate Program Settings</h4>
-                        <div class="form-group">
-                            <label>Default Commission Rate (%)</label>
-                            <input type="number" value="10" min="0" max="100" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label>Payment Schedule</label>
-                            <select disabled>
-                                <option>Monthly</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Minimum Payout Amount</label>
-                            <input type="number" value="100" min="0" readonly>
-                        </div>
-                        <button class="btn btn-primary" onclick="showNotification('Settings saved!', 'success')">Save Settings</button>
-                    </div>
-                    
-                    <div class="card">
-                        <h4>Admin Information</h4>
-                        <div class="form-group">
-                            <label>Admin Email</label>
-                            <input type="email" value="robert@kinectb2b.com" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label>Company Name</label>
-                            <input type="text" value="KinectB2B" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label>System Status</label>
-                            <span class="status-badge status-active">Active</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="card" style="margin-top: 2rem;">
-                    <h4>Database Statistics</h4>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                        <div style="text-align: center; padding: 1rem; background: var(--light-gray); border-radius: 8px;">
-                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--electric-blue);">${document.getElementById('admin-total-affiliates').textContent}</div>
-                            <div>Total Affiliates</div>
-                        </div>
-                        <div style="text-align: center; padding: 1rem; background: var(--light-gray); border-radius: 8px;">
-                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--electric-blue);">${document.getElementById('admin-total-referrals').textContent}</div>
-                            <div>Total Referrals</div>
-                        </div>
-                        <div style="text-align: center; padding: 1rem; background: var(--light-gray); border-radius: 8px;">
-                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--success-green);">${document.getElementById('admin-total-commissions').textContent}</div>
-                            <div>Total Commissions</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        async function loadSimpleReferralsTab(content) {
-            try {
-                const { data: referrals } = await supabase
-                    .from('referrals')
-                    .select(`
-                        *,
-                        user_profiles!inner(full_name, email, paypal_email, preferred_payment)
-                    `)
-                    .order('created_at', { ascending: false });
-
-                if (!referrals || referrals.length === 0) {
-                    content.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">📋</div>
-                            <h3>No Referrals Yet</h3>
-                            <p>Referrals will appear here when affiliates submit them.</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                content.innerHTML = `
-                    <h3>Referral Management (${referrals.length})</h3>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Company</th>
-                                    <th>Contact</th>
-                                    <th>Referred By</th>
-                                    <th>Status</th>
-                                    <th>Pro Plan Value</th>
-                                    <th>Commission</th>
-                                    <th>Submitted</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${referrals.map(referral => `
-                                    <tr>
-                                        <td>
-                                            <strong>${referral.company_name}</strong>
-                                            ${referral.website ? `<br><small><a href="${referral.website}" target="_blank">${referral.website}</a></small>` : ''}
-                                        </td>
-                                        <td>
-                                            ${referral.contact_name}<br>
-                                            <small>${referral.contact_email}</small>
-                                        </td>
-                                        <td>
-                                            <a href="#" onclick="viewAffiliateDetails('${referral.affiliate_id}')" style="color: var(--electric-blue); text-decoration: none;">
-                                                <strong>${referral.user_profiles?.full_name || 'Unknown'}</strong>
-                                            </a><br>
-                                            <small>${referral.user_profiles?.email || ''}</small>
-                                        </td>
-                                        <td>
-                                            <select onchange="updateReferralStatus('${referral.id}', this.value)" class="status-select" style="padding: 0.25rem; border-radius: 4px; border: 1px solid var(--border-gray);">
-                                                <option value="pending" ${referral.status === 'pending' ? 'selected' : ''}>Pending</option>
-                                                <option value="contacted" ${referral.status === 'contacted' ? 'selected' : ''}>Contacted</option>
-                                                <option value="customer" ${referral.status === 'customer' ? 'selected' : ''}>Customer</option>
-                                                <option value="closed" ${referral.status === 'closed' ? 'selected' : ''}>Closed</option>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            ${referral.pro_plan_value ? 
-                                                `${parseFloat(referral.pro_plan_value).toFixed(2)}` : 
-                                                `<button class="btn btn-small btn-primary" onclick="addProPlan('${referral.id}')">Add Plan</button>`
-                                            }
-                                        </td>
-                                        <td>
-                                            ${referral.commission_amount ? 
-                                                `${parseFloat(referral.commission_amount).toFixed(2)}` : 
-                                                (referral.pro_plan_value ? `${(parseFloat(referral.pro_plan_value) * 0.1).toFixed(2)}` : 'N/A')
-                                            }
-                                        </td>
-                                        <td>${new Date(referral.created_at).toLocaleDateString()}</td>
-                                        <td>
-                                            <button class="btn btn-small btn-primary" onclick="viewReferralDetails('${referral.id}')">View</button>
-                                            ${referral.status === 'customer' && referral.pro_plan_value ? 
-                                                `<button class="btn btn-small btn-success" onclick="processPayment('${referral.id}', '${referral.affiliate_id}', ${referral.commission_amount || (parseFloat(referral.pro_plan_value) * 0.1)})">Pay</button>` : ''
-                                            }
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-            } catch (error) {
-                console.error('Error loading referrals:', error);
-                content.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">⚠️</div>
-                        <h3>Error Loading Referrals</h3>
-                        <p>There was an error loading referral data.</p>
-                    </div>
-                `;
-            }
-        }
-
-        function showSubmitTab() {
-            showTab(null, 'submit');
-        }
-
-        function openQuestionModal() {
-            document.getElementById('question-modal').classList.add('active');
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-
-        function setLoading(type, loading) {
-            const loadingEl = document.getElementById(type + '-loading');
-            const textEl = document.getElementById(type + '-text');
-            
-            if (loadingEl && textEl) {
-                if (loading) {
-                    loadingEl.classList.remove('hidden');
-                    textEl.textContent = 'Processing...';
-                } else {
-                    loadingEl.classList.add('hidden');
-                    textEl.textContent = getOriginalText(type);
-                }
-            }
-        }
-
-        function getOriginalText(type) {
-            const texts = {
-                login: 'Login',
-                signup: 'Create Account',
-                referral: 'Submit Referral',
-                question: 'Submit Question'
-            };
-            return texts[type] || 'Submit';
-        }
-
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type} show`;
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 4000);
-        }
-
-        // Close modals when clicking outside
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('modal')) {
-                e.target.classList.remove('active');
-            }
-        });
-    </script>
-</body>
-</html>
+                content
