@@ -4,340 +4,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KinectB2B Affiliate Portal</title>
-    
-    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    
-    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --deep-blue: #0F172A;
-            --electric-blue: #2563EB;
-            --white: #FFFFFF;
-            --slate-gray: #64748B;
-            --light-gray: #F8FAFC;
-            --border-gray: #E2E8F0;
-            --success-green: #10B981;
-            --warning-yellow: #F59E0B;
-            --danger-red: #EF4444;
+            --deep-blue: #0F172A; --electric-blue: #2563EB; --white: #FFFFFF;
+            --slate-gray: #64748B; --light-gray: #F8FAFC; --border-gray: #E2E8F0;
+            --success-green: #10B981; --warning-yellow: #F59E0B; --danger-red: #EF4444;
         }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            line-height: 1.6;
-            color: var(--deep-blue);
-            background-color: var(--light-gray);
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        h1, h2, h3 {
-            font-weight: 800;
-            line-height: 1.2;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 12px 24px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .btn-primary {
-            background-color: var(--electric-blue);
-            color: var(--white);
-        }
-
-        .btn-primary:hover {
-            background-color: #1D4ED8;
-        }
-
-        .btn-success {
-            background-color: var(--success-green);
-            color: var(--white);
-        }
-
-        .btn-danger {
-            background-color: var(--danger-red);
-            color: var(--white);
-        }
-
-        .btn-small {
-            padding: 8px 16px;
-            font-size: 0.9rem;
-        }
-
-        .card {
-            background: var(--white);
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 4px 15px rgba(15, 23, 42, 0.08);
-            margin-bottom: 2rem;
-        }
-
-        /* Header */
-        .header {
-            background: var(--white);
-            padding: 1rem 0;
-            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--deep-blue);
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: var(--slate-gray);
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        /* Login Form */
-        .login-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, var(--deep-blue) 0%, #1E293B 100%);
-            padding: 1rem;
-        }
-
-        .login-card {
-            max-width: 400px;
-            width: 100%;
-        }
-
-        .login-card .card {
-            background: var(--white);
-            border-radius: 16px;
-            padding: 3rem;
-            text-align: center;
-        }
-
-        /* Dashboard Grid */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, var(--electric-blue), #3B82F6);
-            color: var(--white);
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-label {
-            font-size: 1rem;
-            opacity: 0.9;
-        }
-
-        /* Tables */
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-
-        th, td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border-gray);
-        }
-
-        th {
-            background: var(--light-gray);
-            font-weight: 600;
-            color: var(--deep-blue);
-        }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            border-bottom: 2px solid var(--border-gray);
-            margin-bottom: 2rem;
-            overflow-x: auto;
-        }
-
-        .tab {
-            padding: 1rem 2rem;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            color: var(--slate-gray);
-            transition: all 0.3s ease;
-            white-space: nowrap;
-        }
-
-        .tab.active {
-            color: var(--electric-blue);
-            border-bottom: 2px solid var(--electric-blue);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Forms */
-        .form-group {
-            margin-bottom: 1.5rem;
-            text-align: left;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: var(--deep-blue);
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid var(--border-gray);
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        /* Empty states */
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: var(--slate-gray);
-        }
-
-        .empty-state-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        /* Notifications */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            color: var(--white);
-            font-weight: 600;
-            z-index: 1001;
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
-        }
-
-        .notification.success {
-            background: var(--success-green);
-        }
-
-        .notification.error {
-            background: var(--danger-red);
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        /* Status Badges */
-        .status-badge {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-pending {
-            background: #FEF3C7;
-            color: #D97706;
-        }
-
-        .status-contacted {
-            background: #DBEAFE;
-            color: #2563EB;
-        }
-
-        .status-active {
-            background: #D1FAE5;
-            color: #059669;
-        }
-
-        .status-closed {
-            background: #FEE2E2;
-            color: #DC2626;
-        }
-
-        .status-customer {
-            background: #D1FAE5;
-            color: #059669;
-        }
+        body { font-family: 'Inter', sans-serif; line-height: 1.6; color: var(--deep-blue); background-color: var(--light-gray); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        h1, h2, h3 { font-weight: 800; line-height: 1.2; }
+        .btn { display: inline-block; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1rem; transition: all 0.3s ease; border: none; cursor: pointer; text-align: center; }
+        .btn-primary { background-color: var(--electric-blue); color: var(--white); }
+        .btn-primary:hover { background-color: #1D4ED8; }
+        .btn-success { background-color: var(--success-green); color: var(--white); }
+        .btn-danger { background-color: var(--danger-red); color: var(--white); }
+        .btn-small { padding: 8px 16px; font-size: 0.9rem; }
+        .card { background: var(--white); border-radius: 12px; padding: 2rem; box-shadow: 0 4px 15px rgba(15, 23, 42, 0.08); margin-bottom: 2rem; }
+        .header { background: var(--white); padding: 1rem 0; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1); position: sticky; top: 0; z-index: 100; }
+        .header-content { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--deep-blue); }
+        .nav-links { display: flex; gap: 2rem; align-items: center; }
+        .nav-links a { text-decoration: none; color: var(--slate-gray); font-weight: 500; cursor: pointer; }
+        .login-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--deep-blue) 0%, #1E293B 100%); padding: 1rem; }
+        .login-card { max-width: 400px; width: 100%; }
+        .login-card .card { background: var(--white); border-radius: 16px; padding: 3rem; text-align: center; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 3rem; }
+        .stat-card { background: linear-gradient(135deg, var(--electric-blue), #3B82F6); color: var(--white); text-align: center; }
+        .stat-number { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .stat-label { font-size: 1rem; opacity: 0.9; }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border-gray); }
+        th { background: var(--light-gray); font-weight: 600; color: var(--deep-blue); }
+        .tabs { display: flex; border-bottom: 2px solid var(--border-gray); margin-bottom: 2rem; overflow-x: auto; }
+        .tab { padding: 1rem 2rem; background: none; border: none; cursor: pointer; font-weight: 600; color: var(--slate-gray); transition: all 0.3s ease; white-space: nowrap; }
+        .tab.active { color: var(--electric-blue); border-bottom: 2px solid var(--electric-blue); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .form-group { margin-bottom: 1.5rem; text-align: left; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--deep-blue); }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 2px solid var(--border-gray); border-radius: 8px; font-size: 1rem; }
+        .hidden { display: none; }
+        .empty-state { text-align: center; padding: 3rem 1rem; color: var(--slate-gray); }
+        .empty-state-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .notification { position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; border-radius: 8px; color: var(--white); font-weight: 600; z-index: 1001; transform: translateX(400px); transition: transform 0.3s ease; }
+        .notification.success { background: var(--success-green); }
+        .notification.error { background: var(--danger-red); }
+        .notification.show { transform: translateX(0); }
+        .status-badge { padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
+        .status-pending { background: #FEF3C7; color: #D97706; }
+        .status-contacted { background: #DBEAFE; color: #2563EB; }
+        .status-active { background: #D1FAE5; color: #059669; }
+        .status-closed { background: #FEE2E2; color: #DC2626; }
+        .status-customer { background: #D1FAE5; color: #059669; }
     </style>
 </head>
 <body>
-    <!-- Login Section -->
     <div id="login-section" class="login-container">
         <div class="login-card">
             <div class="card">
                 <div class="logo" style="margin-bottom: 2rem;">KinectB2B Affiliates</div>
-                
-                <!-- Login Form -->
                 <div id="login-form">
                     <h2>Login</h2>
                     <form id="loginForm">
@@ -349,9 +78,7 @@
                             <label for="login-password">Password</label>
                             <input type="password" id="login-password" required>
                         </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">
-                            Login
-                        </button>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Login</button>
                     </form>
                     <p style="text-align: center; color: var(--slate-gray); font-size: 0.9rem;">
                         <button onclick="showAdminLogin()" style="background: none; border: none; color: var(--electric-blue); text-decoration: underline; cursor: pointer;">Admin Access</button>
@@ -361,7 +88,6 @@
         </div>
     </div>
 
-    <!-- Header (Hidden until login) -->
     <header class="header hidden" id="main-header">
         <div class="container">
             <div class="header-content">
@@ -374,10 +100,8 @@
         </div>
     </header>
 
-    <!-- Admin Portal -->
     <div id="admin-portal" class="hidden">
         <div class="container" style="padding-top: 2rem;">
-            <!-- Admin Stats -->
             <div class="dashboard-grid">
                 <div class="card stat-card">
                     <div class="stat-number" id="admin-total-affiliates">0</div>
@@ -397,7 +121,6 @@
                 </div>
             </div>
 
-            <!-- Admin Tabs -->
             <div class="card">
                 <div class="tabs">
                     <button class="tab active" onclick="showAdminTab(event, 'affiliates')">Affiliates</button>
@@ -405,8 +128,6 @@
                     <button class="tab" onclick="showAdminTab(event, 'payments-admin')">Payments</button>
                     <button class="tab" onclick="showAdminTab(event, 'questions-admin')">Questions</button>
                 </div>
-
-                <!-- Admin content -->
                 <div id="admin-content">
                     <div class="empty-state">
                         <div class="empty-state-icon">⚙️</div>
@@ -418,42 +139,29 @@
         </div>
     </div>
 
-    <!-- Notification -->
     <div id="notification" class="notification"></div>
 
     <script>
-        // Supabase Configuration
         const SUPABASE_URL = 'https://ngdvepfzmpnfzbecpkhw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5nZHZlcGZ6bXBuZnpiZWNwa2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2Nzg2MzksImV4cCI6MjA3NDI1NDYzOX0.bfkXungCd9GkarpR7E7fayXLStewUcDvROTpd_SevFg';
-        
-        // Initialize Supabase
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
-        // Global state
         let currentUser = null;
         let currentUserRole = null;
 
-        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 KinectB2B Affiliate Portal Loading...');
             initializeApp();
             setupEventListeners();
         });
 
-        // Initialize App
         async function initializeApp() {
             try {
                 const { data: { session } } = await supabase.auth.getSession();
-                if (session) {
-                    await handleUserSession(session.user);
-                }
-
+                if (session) await handleUserSession(session.user);
                 supabase.auth.onAuthStateChange((event, session) => {
-                    if (event === 'SIGNED_IN' && session) {
-                        handleUserSession(session.user);
-                    } else if (event === 'SIGNED_OUT') {
-                        handleSignOut();
-                    }
+                    if (event === 'SIGNED_IN' && session) handleUserSession(session.user);
+                    else if (event === 'SIGNED_OUT') handleSignOut();
                 });
             } catch (error) {
                 console.error('Error initializing app:', error);
@@ -461,24 +169,16 @@
             }
         }
 
-        // Event Listeners
         function setupEventListeners() {
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
         }
 
-        // Auth Functions
         async function handleLogin(e) {
             e.preventDefault();
-            
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
-
             try {
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
                 if (error) throw error;
                 showNotification('Login successful!', 'success');
             } catch (error) {
@@ -488,7 +188,6 @@
 
         async function handleUserSession(user) {
             currentUser = user;
-            
             if (user.email === 'robert@kinectb2b.com' || user.user_metadata?.role === 'admin') {
                 currentUserRole = 'admin';
                 showPortal('admin');
@@ -506,17 +205,12 @@
             await supabase.auth.signOut();
         }
 
-        // Portal Functions
         function showPortal(type) {
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('main-header').classList.remove('hidden');
-            
             const userName = currentUser?.user_metadata?.full_name || currentUser?.name || 'User';
             document.getElementById('user-name').textContent = `Welcome, ${userName}`;
-            
-            if (type === 'admin') {
-                document.getElementById('admin-portal').classList.remove('hidden');
-            }
+            if (type === 'admin') document.getElementById('admin-portal').classList.remove('hidden');
         }
 
         function showLogin() {
@@ -530,22 +224,12 @@
             document.getElementById('login-password').focus();
         }
 
-        // Data Loading
         async function loadAdminData() {
             try {
-                const { data: affiliates } = await supabase
-                    .from('user_profiles')
-                    .select('*')
-                    .eq('role', 'affiliate');
-
-                const { data: referrals } = await supabase
-                    .from('referrals')
-                    .select('*');
-
-                const { data: payments } = await supabase
-                    .from('payments')
-                    .select('*');
-
+                const { data: affiliates } = await supabase.from('user_profiles').select('*').eq('role', 'affiliate');
+                const { data: referrals } = await supabase.from('referrals').select('*');
+                const { data: payments } = await supabase.from('payments').select('*');
+                console.log('Admin data loaded:', { affiliates, referrals, payments });
                 updateAdminStats(affiliates || [], referrals || [], payments || []);
             } catch (error) {
                 console.error('Error loading admin data:', error);
@@ -553,81 +237,48 @@
         }
 
         function updateAdminStats(affiliates = [], referrals = [], payments = []) {
-            document.getElementById('admin-total-affiliates').textContent = affiliates.length;
-            document.getElementById('admin-total-referrals').textContent = referrals.length;
-            document.getElementById('admin-monthly-revenue').textContent = '$0';
-            document.getElementById('admin-total-commissions').textContent = '$0';
+            const totalAffiliates = affiliates.length;
+            const totalReferrals = referrals.length;
+            const totalCommissions = payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const monthlyCommissions = payments.filter(p => p.created_at?.startsWith(currentMonth)).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+            const monthlyRevenue = monthlyCommissions * 10;
+            document.getElementById('admin-total-affiliates').textContent = totalAffiliates;
+            document.getElementById('admin-total-referrals').textContent = totalReferrals;
+            document.getElementById('admin-monthly-revenue').textContent = `$${monthlyRevenue.toFixed(2)}`;
+            document.getElementById('admin-total-commissions').textContent = `$${totalCommissions.toFixed(2)}`;
         }
 
-        // Admin Tab Functions
         function showAdminTab(event, tabName) {
-            document.querySelectorAll('#admin-portal .tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
+            document.querySelectorAll('#admin-portal .tab').forEach(tab => tab.classList.remove('active'));
             const content = document.getElementById('admin-content');
-            
-            if (tabName === 'affiliates') {
-                loadAffiliatesTab(content);
-            } else if (tabName === 'referrals-admin') {
-                loadReferralsTab(content);
-            } else if (tabName === 'payments-admin') {
-                loadPaymentsTab(content);
-            } else if (tabName === 'questions-admin') {
-                loadQuestionsTab(content);
-            }
-            
-            if (event && event.target) {
-                event.target.classList.add('active');
-            }
+            if (tabName === 'affiliates') loadAffiliatesTab(content);
+            else if (tabName === 'referrals-admin') loadReferralsTab(content);
+            else if (tabName === 'payments-admin') loadPaymentsTab(content);
+            else if (tabName === 'questions-admin') loadQuestionsTab(content);
+            if (event && event.target) event.target.classList.add('active');
         }
 
         async function loadAffiliatesTab(content) {
             try {
-                const { data: affiliates } = await supabase
-                    .from('user_profiles')
-                    .select('*')
-                    .eq('role', 'affiliate');
-
+                const { data: affiliates } = await supabase.from('user_profiles').select('*').eq('role', 'affiliate').order('created_at', { ascending: false });
                 content.innerHTML = `
                     <h3>Affiliate Management (${affiliates?.length || 0})</h3>
                     ${!affiliates || affiliates.length === 0 ? `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">👥</div>
-                            <h3>No Affiliates Yet</h3>
-                            <p>New affiliates will appear here when they sign up.</p>
-                        </div>
+                        <div class="empty-state"><div class="empty-state-icon">👥</div><h3>No Affiliates Yet</h3><p>New affiliates will appear here when they sign up.</p></div>
                     ` : `
                         <div class="table-container">
                             <table>
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Company</th>
-                                        <th>Status</th>
-                                        <th>Joined</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
+                                <thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
                                 <tbody>
                                     ${affiliates.map(affiliate => `
                                         <tr>
                                             <td><strong>${affiliate.full_name || 'N/A'}</strong></td>
                                             <td>${affiliate.email}</td>
                                             <td>${affiliate.company || 'N/A'}</td>
-                                            <td>
-                                                <span class="status-badge status-${(affiliate.status || 'active') === 'active' ? 'active' : 'closed'}">
-                                                    ${(affiliate.status || 'active').charAt(0).toUpperCase() + (affiliate.status || 'active').slice(1)}
-                                                </span>
-                                            </td>
+                                            <td><span class="status-badge status-${(affiliate.status || 'active') === 'active' ? 'active' : 'closed'}">${(affiliate.status || 'active').charAt(0).toUpperCase() + (affiliate.status || 'active').slice(1)}</span></td>
                                             <td>${new Date(affiliate.created_at).toLocaleDateString()}</td>
-                                            <td>
-                                                <button class="btn btn-small ${(affiliate.status || 'active') === 'active' ? 'btn-danger' : 'btn-success'}" 
-                                                        onclick="toggleAffiliateStatus('${affiliate.user_id}', '${affiliate.status || 'active'}')">
-                                                    ${(affiliate.status || 'active') === 'active' ? 'Deactivate' : 'Activate'}
-                                                </button>
-                                            </td>
+                                            <td><button class="btn btn-small ${(affiliate.status || 'active') === 'active' ? 'btn-danger' : 'btn-success'}" onclick="toggleAffiliateStatus('${affiliate.user_id}', '${affiliate.status || 'active'}')">${(affiliate.status || 'active') === 'active' ? 'Deactivate' : 'Activate'}</button></td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -642,45 +293,18 @@
 
         async function loadReferralsTab(content) {
             try {
-                const { data: referrals } = await supabase
-                    .from('referrals')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                const { data: profiles } = await supabase
-                    .from('user_profiles')
-                    .select('user_id, full_name, email');
-
+                const { data: referrals } = await supabase.from('referrals').select('*').order('created_at', { ascending: false });
+                const { data: profiles } = await supabase.from('user_profiles').select('user_id, full_name, email');
                 const profileMap = {};
-                if (profiles) {
-                    profiles.forEach(profile => {
-                        profileMap[profile.user_id] = profile;
-                    });
-                }
-
+                if (profiles) profiles.forEach(profile => profileMap[profile.user_id] = profile);
                 content.innerHTML = `
                     <h3>Referral Management (${referrals?.length || 0})</h3>
                     ${!referrals || referrals.length === 0 ? `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">📋</div>
-                            <h3>No Referrals Yet</h3>
-                            <p>Referrals will appear here when affiliates submit them.</p>
-                        </div>
+                        <div class="empty-state"><div class="empty-state-icon">📋</div><h3>No Referrals Yet</h3><p>Referrals will appear here when affiliates submit them.</p></div>
                     ` : `
                         <div class="table-container">
                             <table>
-                                <thead>
-                                    <tr>
-                                        <th>Company</th>
-                                        <th>Contact</th>
-                                        <th>Referred By</th>
-                                        <th>Status</th>
-                                        <th>Pro Plan</th>
-                                        <th>Commission</th>
-                                        <th>Submitted</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
+                                <thead><tr><th>Company</th><th>Contact</th><th>Referred By</th><th>Status</th><th>Pro Plan</th><th>Commission</th><th>Submitted</th><th>Actions</th></tr></thead>
                                 <tbody>
                                     ${referrals.map(referral => {
                                         const profile = profileMap[referral.affiliate_id] || {};
@@ -690,36 +314,11 @@
                                                 <td><strong>${referral.company_name}</strong></td>
                                                 <td>${referral.contact_name}<br><small>${referral.contact_email}</small></td>
                                                 <td><strong>${profile.full_name || 'Unknown'}</strong><br><small>${profile.email || ''}</small></td>
-                                                <td>
-                                                    <select onchange="updateReferralStatus('${referral.id}', this.value)" style="padding: 0.25rem; border-radius: 4px; border: 1px solid var(--border-gray);">
-                                                        <option value="pending" ${referral.status === 'pending' ? 'selected' : ''}>Pending</option>
-                                                        <option value="contacted" ${referral.status === 'contacted' ? 'selected' : ''}>Contacted</option>
-                                                        <option value="customer" ${referral.status === 'customer' ? 'selected' : ''}>Customer</option>
-                                                        <option value="closed" ${referral.status === 'closed' ? 'selected' : ''}>Closed</option>
-                                                    </select>
-                                                </td>
-                                                <td>
-                                                    ${referral.pro_plan_value ? 
-                                                        `<strong>${parseFloat(referral.pro_plan_value).toFixed(2)}</strong>` : 
-                                                        (referral.status === 'customer' ? 
-                                                            `<button class="btn btn-small btn-primary" onclick="selectProPlan('${referral.id}')">Select Plan</button>` : 
-                                                            'N/A'
-                                                        )
-                                                    }
-                                                </td>
-                                                <td>
-                                                    ${referral.pro_plan_value ? 
-                                                        `<strong>${commissionAmount}</strong>` : 
-                                                        'N/A'
-                                                    }
-                                                </td>
+                                                <td><select onchange="updateReferralStatus('${referral.id}', this.value)" style="padding: 0.25rem; border-radius: 4px; border: 1px solid var(--border-gray);"><option value="pending" ${referral.status === 'pending' ? 'selected' : ''}>Pending</option><option value="contacted" ${referral.status === 'contacted' ? 'selected' : ''}>Contacted</option><option value="customer" ${referral.status === 'customer' ? 'selected' : ''}>Customer</option><option value="closed" ${referral.status === 'closed' ? 'selected' : ''}>Closed</option></select></td>
+                                                <td>${referral.pro_plan_value ? `<strong>$${parseFloat(referral.pro_plan_value).toFixed(2)}</strong><br><button class="btn btn-small" onclick="selectProPlan('${referral.id}')" style="background: #f1f5f9; color: #64748B; margin-top: 0.25rem;">Edit Plan</button>` : (referral.status === 'customer' ? `<button class="btn btn-small btn-primary" onclick="selectProPlan('${referral.id}')">Select Plan</button>` : 'N/A')}</td>
+                                                <td>${referral.pro_plan_value ? `<strong>$${commissionAmount}</strong>` : 'N/A'}</td>
                                                 <td>${new Date(referral.created_at).toLocaleDateString()}</td>
-                                                <td>
-                                                    ${referral.status === 'customer' && referral.pro_plan_value && !referral.commission_paid ? 
-                                                        `<button class="btn btn-small btn-success" onclick="markCommissionPaid('${referral.id}', '${referral.affiliate_id}', ${commissionAmount}, '${referral.company_name}')">Mark as Paid</button>` : 
-                                                        (referral.commission_paid ? '<span style="color: var(--success-green);">✓ Paid</span>' : '')
-                                                    }
-                                                </td>
+                                                <td>${referral.status === 'customer' && referral.pro_plan_value && !referral.commission_paid ? `<button class="btn btn-small btn-success" onclick="markCommissionPaid('${referral.id}', '${referral.affiliate_id}', ${commissionAmount}, '${referral.company_name}')">Mark as Paid</button>` : (referral.commission_paid ? '<span style="color: var(--success-green);">✓ Paid</span>' : '')}</td>
                                             </tr>
                                         `;
                                     }).join('')}
@@ -733,57 +332,26 @@
             }
         }
 
-        function loadPaymentsTab(content) {
-            loadPaymentsData(content);
-        }
-
-        async function loadPaymentsData(content) {
+        async function loadPaymentsTab(content) {
             try {
-                const { data: payments } = await supabase
-                    .from('payments')
-                    .select(`
-                        *,
-                        user_profiles!inner(full_name, email)
-                    `)
-                    .order('created_at', { ascending: false });
-
+                const { data: payments } = await supabase.from('payments').select(`*, user_profiles!inner(full_name, email)`).order('created_at', { ascending: false });
                 content.innerHTML = `
                     <h3>Payment Management (${payments?.length || 0})</h3>
                     ${!payments || payments.length === 0 ? `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">💰</div>
-                            <h3>No Payments Yet</h3>
-                            <p>Commission payments will appear here.</p>
-                        </div>
+                        <div class="empty-state"><div class="empty-state-icon">💰</div><h3>No Payments Yet</h3><p>Commission payments will appear here.</p></div>
                     ` : `
                         <div class="table-container">
                             <table>
-                                <thead>
-                                    <tr>
-                                        <th>Affiliate</th>
-                                        <th>Company</th>
-                                        <th>Amount</th>
-                                        <th>Status</th>
-                                        <th>Date</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
+                                <thead><tr><th>Affiliate</th><th>Company</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
                                 <tbody>
                                     ${payments.map(payment => `
                                         <tr>
-                                            <td>
-                                                <strong>${payment.user_profiles?.full_name || 'Unknown'}</strong><br>
-                                                <small>${payment.user_profiles?.email || ''}</small>
-                                            </td>
+                                            <td><strong>${payment.user_profiles?.full_name || 'Unknown'}</strong><br><small>${payment.user_profiles?.email || ''}</small></td>
                                             <td>${payment.referral_company || 'N/A'}</td>
-                                            <td><strong>${parseFloat(payment.amount).toFixed(2)}</strong></td>
-                                            <td>
-                                                <span class="status-badge status-active">Completed</span>
-                                            </td>
+                                            <td><strong>$${parseFloat(payment.amount).toFixed(2)}</strong></td>
+                                            <td><span class="status-badge status-active">Completed</span></td>
                                             <td>${new Date(payment.created_at).toLocaleDateString()}</td>
-                                            <td>
-                                                <span style="color: var(--success-green);">✓ Paid via External Platform</span>
-                                            </td>
+                                            <td><span style="color: var(--success-green);">✓ Paid via External Platform</span></td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -797,45 +365,17 @@
         }
 
         function loadQuestionsTab(content) {
-            content.innerHTML = `
-                <h3>Questions & Support</h3>
-                <div class="empty-state">
-                    <div class="empty-state-icon">❓</div>
-                    <h3>No Questions Yet</h3>
-                    <p>Affiliate questions will appear here.</p>
-                </div>
-            `;
+            content.innerHTML = `<h3>Questions & Support</h3><div class="empty-state"><div class="empty-state-icon">❓</div><h3>No Questions Yet</h3><p>Affiliate questions will appear here.</p></div>`;
         }
 
-        // Utility Functions
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type} show`;
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 4000);
-        }
-
-        // Admin Management Functions
         async function toggleAffiliateStatus(userId, currentStatus) {
             const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-            
             try {
-                const { error } = await supabase
-                    .from('user_profiles')
-                    .update({ status: newStatus })
-                    .eq('user_id', userId);
-                
+                const { error } = await supabase.from('user_profiles').update({ status: newStatus }).eq('user_id', userId);
                 if (error) throw error;
-                
                 showNotification(`Affiliate ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully!`, 'success');
-                
-                // Reload the affiliates tab
                 const content = document.getElementById('admin-content');
                 loadAffiliatesTab(content);
-                
             } catch (error) {
                 console.error('Error updating affiliate status:', error);
                 showNotification('Error updating affiliate status', 'error');
@@ -844,22 +384,11 @@
 
         async function updateReferralStatus(referralId, newStatus) {
             try {
-                const { error } = await supabase
-                    .from('referrals')
-                    .update({ 
-                        status: newStatus,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', referralId);
-                
+                const { error } = await supabase.from('referrals').update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', referralId);
                 if (error) throw error;
-                
                 showNotification('Referral status updated successfully!', 'success');
-                
-                // Reload the referrals tab
                 const content = document.getElementById('admin-content');
                 loadReferralsTab(content);
-                
             } catch (error) {
                 console.error('Error updating referral status:', error);
                 showNotification('Error updating referral status', 'error');
@@ -868,31 +397,16 @@
 
         function selectProPlan(referralId) {
             const planOptions = [
-                { value: 250, label: 'Pro Plan 100 - $250/month' },
-                { value: 500, label: 'Pro Plan 200 - $500/month' },
-                { value: 750, label: 'Pro Plan 300 - $750/month' },
-                { value: 1000, label: 'Pro Plan 400 - $1000/month' },
-                { value: 1250, label: 'Pro Plan 500 - $1250/month' },
-                { value: 1500, label: 'Pro Plan 600 - $1500/month' },
-                { value: 1750, label: 'Pro Plan 700 - $1750/month' },
-                { value: 2000, label: 'Pro Plan 800 - $2000/month' },
-                { value: 2250, label: 'Pro Plan 900 - $2250/month' },
-                { value: 2500, label: 'Pro Plan 1000 - $2500/month' },
-                { value: 2750, label: 'Pro Plan 1100 - $2750/month' },
-                { value: 3000, label: 'Pro Plan 1200 - $3000/month' }
+                { value: 250, label: 'Pro Plan 100 - $250/month' }, { value: 500, label: 'Pro Plan 200 - $500/month' },
+                { value: 750, label: 'Pro Plan 300 - $750/month' }, { value: 1000, label: 'Pro Plan 400 - $1000/month' },
+                { value: 1250, label: 'Pro Plan 500 - $1250/month' }, { value: 1500, label: 'Pro Plan 600 - $1500/month' },
+                { value: 1750, label: 'Pro Plan 700 - $1750/month' }, { value: 2000, label: 'Pro Plan 800 - $2000/month' },
+                { value: 2250, label: 'Pro Plan 900 - $2250/month' }, { value: 2500, label: 'Pro Plan 1000 - $2500/month' },
+                { value: 2750, label: 'Pro Plan 1100 - $2750/month' }, { value: 3000, label: 'Pro Plan 1200 - $3000/month' }
             ];
-
-            const planSelect = planOptions.map(plan => 
-                `<option value="${plan.value}">${plan.label}</option>`
-            ).join('');
-
+            const planSelect = planOptions.map(plan => `<option value="${plan.value}">${plan.label}</option>`).join('');
             const modal = document.createElement('div');
-            modal.style.cssText = `
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(0,0,0,0.5); display: flex; align-items: center;
-                justify-content: center; z-index: 1000;
-            `;
-            
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;';
             modal.innerHTML = `
                 <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
                     <h3 style="margin-bottom: 1rem;">Select Pro Plan</h3>
@@ -904,7 +418,6 @@
                             <option value="custom">Custom Plan (Enter manually)</option>
                         </select>
                     </div>
-                    
                     <div id="custom-plan-section" style="display: none; margin-bottom: 1rem;">
                         <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Custom Plan Details:</label>
                         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
@@ -912,19 +425,16 @@
                             <input type="number" id="custom-plan-price" placeholder="Monthly price" style="padding: 12px; border: 2px solid #E2E8F0; border-radius: 8px;">
                         </div>
                     </div>
-                    
                     <div style="background: #F8FAFC; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
                         <div style="font-size: 0.9rem; color: #64748B;">Commission will be calculated at 10% of monthly price</div>
                         <div id="commission-preview" style="font-weight: 600; color: #059669; margin-top: 0.5rem;"></div>
                     </div>
-                    
                     <div style="display: flex; gap: 1rem;">
                         <button class="btn btn-primary" onclick="savePlanSelection('${referralId}')">Save Plan</button>
                         <button class="btn" onclick="this.closest('div').parentElement.remove()" style="background: #f1f5f9; color: #64748B;">Cancel</button>
                     </div>
                 </div>
             `;
-            
             document.body.appendChild(modal);
         }
 
@@ -932,7 +442,6 @@
             const selectValue = document.getElementById('plan-select').value;
             const customSection = document.getElementById('custom-plan-section');
             const commissionPreview = document.getElementById('commission-preview');
-            
             if (selectValue === 'custom') {
                 customSection.style.display = 'block';
                 commissionPreview.textContent = '';
@@ -940,7 +449,7 @@
                 customSection.style.display = 'none';
                 if (selectValue) {
                     const commission = (parseFloat(selectValue) * 0.1).toFixed(2);
-                    commissionPreview.textContent = `Commission: ${commission}`;
+                    commissionPreview.textContent = `Commission: $${commission}`;
                 } else {
                     commissionPreview.textContent = '';
                 }
@@ -950,21 +459,16 @@
         async function savePlanSelection(referralId) {
             const planSelect = document.getElementById('plan-select');
             const planValue = planSelect.value;
-            
             let finalPrice, planName;
-            
             if (planValue === 'custom') {
                 const customPrice = document.getElementById('custom-plan-price').value;
                 const customName = document.getElementById('custom-plan-name').value;
-                
                 if (!customPrice || !customName) {
                     showNotification('Please enter custom plan name and price', 'error');
                     return;
                 }
-                
                 finalPrice = parseFloat(customPrice);
                 planName = customName;
-                
             } else if (planValue) {
                 finalPrice = parseFloat(planValue);
                 planName = planSelect.options[planSelect.selectedIndex].text.split(' - ')[0];
@@ -972,108 +476,63 @@
                 showNotification('Please select a plan', 'error');
                 return;
             }
-
             try {
-                // First try with both columns
-                const { error } = await supabase
-                    .from('referrals')
-                    .update({ 
-                        pro_plan_value: finalPrice,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', referralId);
-                
+                const { error } = await supabase.from('referrals').update({ pro_plan_value: finalPrice, updated_at: new Date().toISOString() }).eq('id', referralId);
                 if (error) {
                     console.error('Error details:', error);
                     throw error;
                 }
-                
                 showNotification(`${planName} updated successfully!`, 'success');
-                
-                // Close modal
                 const modal = document.querySelector('[style*="position: fixed"]');
                 if (modal) modal.remove();
-                
-                // Reload the referrals tab
                 const content = document.getElementById('admin-content');
                 loadReferralsTab(content);
-                
             } catch (error) {
                 console.error('Error saving plan selection:', error);
                 showNotification(`Error: ${error.message}`, 'error');
             }
         }
 
-        async function processCommission(referralId, affiliateId, commissionAmount, companyName) {
-            if (!confirm(`Process ${commissionAmount} commission payment for ${companyName}?`)) {
-                return;
-            }
-
+        async function markCommissionPaid(referralId, affiliateId, commissionAmount, companyName) {
+            console.log('markCommissionPaid called with:', { referralId, affiliateId, commissionAmount, companyName });
+            if (!confirm(`Mark $${commissionAmount} commission as paid for ${companyName}?`)) return;
             try {
-                // Create payment record
-                const { error: paymentError } = await supabase
-                    .from('payments')
-                    .insert([{
-                        affiliate_id: affiliateId,
-                        referral_id: referralId,
-                        amount: parseFloat(commissionAmount),
-                        referral_company: companyName,
-                        description: `Commission for ${companyName} referral`,
-                        status: 'pending',
-                        created_at: new Date().toISOString()
-                    }]);
-
-                if (paymentError) throw paymentError;
-
-                // Mark referral as commission paid
-                const { error: referralError } = await supabase
-                    .from('referrals')
-                    .update({ 
-                        commission_paid: true,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', referralId);
-
-                if (referralError) throw referralError;
-
-                showNotification('Commission payment created successfully!', 'success');
-                
-                // Reload the referrals tab
+                console.log('Creating payment record...');
+                const { data: paymentData, error: paymentError } = await supabase.from('payments').insert([{
+                    affiliate_id: affiliateId,
+                    referral_id: referralId,
+                    amount: parseFloat(commissionAmount),
+                    referral_company: companyName,
+                    description: `Commission for ${companyName} referral`,
+                    status: 'completed',
+                    created_at: new Date().toISOString()
+                }]).select();
+                if (paymentError) {
+                    console.error('Payment error:', paymentError);
+                    throw paymentError;
+                }
+                console.log('Payment created:', paymentData);
+                console.log('Updating referral...');
+                const { error: referralError } = await supabase.from('referrals').update({ commission_paid: true, updated_at: new Date().toISOString() }).eq('id', referralId);
+                if (referralError) {
+                    console.error('Referral error:', referralError);
+                    throw referralError;
+                }
+                showNotification('Commission marked as paid successfully!', 'success');
+                await loadAdminData();
                 const content = document.getElementById('admin-content');
                 loadReferralsTab(content);
-                
             } catch (error) {
-                console.error('Error processing commission:', error);
-                showNotification('Error processing commission payment', 'error');
+                console.error('Error marking commission as paid:', error);
+                showNotification(`Error: ${error.message}`, 'error');
             }
         }
 
-        async function markPaymentComplete(paymentId) {
-            if (!confirm('Mark this payment as completed?')) {
-                return;
-            }
-
-            try {
-                const { error } = await supabase
-                    .from('payments')
-                    .update({ 
-                        status: 'completed',
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', paymentId);
-                
-                if (error) throw error;
-                
-                showNotification('Payment marked as completed!', 'success');
-                
-                // Reload the payments tab
-                const content = document.getElementById('admin-content');
-                loadPaymentsData(content);
-                
-            } catch (error) {
-                console.error('Error marking payment complete:', error);
-                showNotification('Error updating payment status', 'error');
-            }
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            setTimeout(() => notification.classList.remove('show'), 4000);
         }
     </script>
 </body>
