@@ -1478,6 +1478,8 @@
                 loadPaymentsAdminTab(content);
             } else if (tabName === 'questions-admin') {
                 loadQuestionsAdminTab(content);
+            } else if (tabName === 'settings') {
+                loadSettingsAdminTab(content);
             } else {
                 content.innerHTML = `
                     <div class="empty-state">
@@ -1658,6 +1660,66 @@
                     </div>
                 `;
             }
+        }
+
+        function loadSettingsAdminTab(content) {
+            content.innerHTML = `
+                <h3>System Settings</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <div class="card">
+                        <h4>Affiliate Program Settings</h4>
+                        <div class="form-group">
+                            <label>Default Commission Rate (%)</label>
+                            <input type="number" value="10" min="0" max="100" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Payment Schedule</label>
+                            <select disabled>
+                                <option>Monthly</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Minimum Payout Amount</label>
+                            <input type="number" value="100" min="0" readonly>
+                        </div>
+                        <button class="btn btn-primary" onclick="showNotification('Settings saved!', 'success')">Save Settings</button>
+                    </div>
+                    
+                    <div class="card">
+                        <h4>Admin Information</h4>
+                        <div class="form-group">
+                            <label>Admin Email</label>
+                            <input type="email" value="robert@kinectb2b.com" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Company Name</label>
+                            <input type="text" value="KinectB2B" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>System Status</label>
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 2rem;">
+                    <h4>Database Statistics</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div style="text-align: center; padding: 1rem; background: var(--light-gray); border-radius: 8px;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--electric-blue);">${document.getElementById('admin-total-affiliates').textContent}</div>
+                            <div>Total Affiliates</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: var(--light-gray); border-radius: 8px;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--electric-blue);">${document.getElementById('admin-total-referrals').textContent}</div>
+                            <div>Total Referrals</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: var(--light-gray); border-radius: 8px;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--success-green);">${document.getElementById('admin-total-commissions').textContent}</div>
+                            <div>Total Commissions</div>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         async function loadSimpleReferralsTab(content) {
