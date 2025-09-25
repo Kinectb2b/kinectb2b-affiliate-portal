@@ -1913,6 +1913,162 @@
                 e.target.classList.remove('active');
             }
         });
-    </script>
-</body>
-</html>
+ // Commission calculator for program info
+function calculateProgramCommission() {
+    const select = document.getElementById('program-plan-calc');
+    const results = document.getElementById('program-calc-results');
+    const monthly = document.getElementById('program-monthly');
+    const total = document.getElementById('program-total');
+    
+    if (select.value) {
+        const planValue = parseFloat(select.value);
+        const commission = planValue * 0.1;
+        monthly.textContent = `$${commission.toFixed(0)}`;
+        total.textContent = `$${(commission * 12).toFixed(0)}`;
+        results.style.display = 'block';
+    } else {
+        results.style.display = 'none';
+    }
+}
+
+// Question submission
+async function submitQuestion(e) {
+    e.preventDefault();
+    const questionText = document.getElementById('question-text').value.trim();
+    
+    try {
+        const { error } = await supabase
+            .from('questions')
+            .insert([{
+                affiliate_id: currentUser.id,
+                question: questionText,
+                status: 'pending',
+                created_at: new Date().toISOString()
+            }]);
+        
+        if (error) throw error;
+        
+        showNotification('Question submitted!', 'success');
+        document.getElementById('question-text').value = '';
+        await loadAffiliateData();
+    } catch (error) {
+        showNotification('Error: ' + error.message, 'error');
+    }
+}
+
+// Render questions
+function renderQuestions(questions = []) {
+    const container = document.getElementById('questions-list');
+    
+    if (questions.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No questions yet</p></div>';
+        return;
+    }
+    
+    container.innerHTML = questions.map(q => `
+        <div style="background: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid ${q.status === 'answered' ? 'var(--success-green)' : 'var(--warning-yellow)'};">
+            <p><strong>Q:</strong> ${q.question}</p>
+            <small style="color: var(--slate-gray);">${new Date(q.created_at).toLocaleString()}</small>
+            ${q.answer ? `<p style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-gray);"><strong>A:</strong> ${q.answer}</p>` : '<p style="margin-top: 0.5rem; color: var(--warning-yellow);"><em>Pending response...</em></p>'}
+        </div>
+    `).join('');
+}
+
+// Load active clients
+function loadAdminActiveClients() {
+    const clients = window.adminData?.referrals.filter(r => r.status === 'customer') || [];
+    const container = document.getElementById('admin-active-clients-list');
+    
+    if (clients.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><h3>No Active Clients</h3></div>';
+        return;
+    }
+    
+    container.innerHTML = `
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Current Plan</th>
+                        <th>Monthly Value</th>
+                        <th>Payments Made</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${clients.map(client => {
+                        const clientPayments = window.adminData?.payments.filter(p => p.referral_id === client.id) || [];
+                        return `
+                            <tr>
+                                <td><strong>${client.company_name}</strong></td>
+                                <td>$${parseFloat(client.pro_plan_value || 0).toFixed(0)}/month</td>
+                                <td><strong style="color: var(--success-green);">$${parseFloat(client.pro_plan_value || 0).toFixed(0)}</strong></td>
+                                <td>${clientPayments.length} / 12</td>
+                                <td>
+                                    <button class="btn btn-small btn-primary" onclick="manageClient('${client.id}')">Manage</button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+// Manage client modal
+function manageClient(referralId) {
+    const client = window.adminData.referrals.find(r => r.id === referralId);
+    const payments = window.adminData.payments.filter(p => p.referral_id === referralId);
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h3>Manage Client: ${client.company_name}</h3>
+            <div style="margin: 2rem 0;">
+                <p><strong>Current Plan:</strong> $${parseFloat(client.pro_plan_value).toFixed(0)}/month</p>
+                <p><strong>Payments Made:</strong> ${payments.length} / 12</p>
+            </div>
+            <div style="display: grid; gap: 1rem;">
+                <button class="btn btn-primary" onclick="recordPayment('${client.id}', ${client.pro_plan_value}, '${client.company_name}', '${client.affiliate_id}'); this.closest('.modal').remove();">Record Payment</button>
+                <button class="btn" onclick="changePlan('${client.id}'); this.closest('.modal').remove();" style="background: var(--warning-yellow); color: white;">Change Plan</button>
+                <button class="btn" onclick="this.closest('.modal').remove();" style="background: var(--light-gray); color: var(--slate-gray);">Close</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Record payment
+async function recordPayment(referralId, amount, companyName, affiliateId) {
+    const customAmount = prompt('Enter payment amount:', amount);
+    if (!customAmount) return;
+    
+    const commission = parseFloat(customAmount) * 0.1;
+    const paidDate = new Date().toISOString();
+    const clearedDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    
+    try {
+        const { error } = await supabase
+            .from('payments')
+            .insert([{
+                affiliate_id: affiliateId,
+                referral_id: referralId,
+                amount: commission,
+                referral_company: companyName,
+                status: 'paid',
+                paid_date: paidDate,
+                expected_cleared_date: clearedDate,
+                created_at: paidDate
+            }]);
+        
+        if (error) throw error;
+        
+        showNotification('Payment recorded!', 'success');
+        await loadAdminData();
+    } catch (error) {
+        showNotification('Error: ' + error.message, 'error');
+    }
+}
