@@ -1574,7 +1574,10 @@
                 console.error('Error loading admin data:', error);
                 showNotification('Error loading admin data', 'error');
             }
-        }
+        }const setTextSafe = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+};
 
         function updateAdminStats(affiliates = [], referrals = [], payments = []) {
             const totalAffiliates = affiliates.length;
@@ -1583,15 +1586,14 @@
             const customers = referrals.filter(r => r.status === 'customer');
             const monthlyRevenue = customers.reduce((sum, c) => sum + (parseFloat(c.pro_plan_value) || 0), 0);
             
-            document.getElementById('admin-total-affiliates').textContent = totalAffiliates;
-            document.getElementById('admin-total-referrals').textContent = totalReferrals;
-            document.getElementById('admin-pending-referrals').textContent = pendingReferrals;
-            document.getElementById('admin-monthly-revenue').textContent = `${monthlyRevenue.toFixed(2)}`;
-            
-            document.getElementById('referrals-count').textContent = totalReferrals;
-            document.getElementById('affiliates-count').textContent = totalAffiliates;
-            document.getElementById('active-clients-count').textContent = customers.length;
-            document.getElementById('questions-count').textContent = window.adminData?.questions?.filter(q => q.status === 'pending').length || 0;
+            setTextSafe('admin-total-affiliates', totalAffiliates);
+            setTextSafe('admin-total-referrals', totalReferrals);
+setTextSafe('admin-new-referrals', newReferrals);
+            setTextSafe('admin-monthly-revenue', monthlyRevenue.toFixed(2));
+            setTextSafe('referrals-count').textContent = totalReferrals;
+            setTextSafe('affiliates-count').textContent = totalAffiliates;
+            setTextSafe('active-clients-count').textContent = customers.length;
+            setTextSafe('questions-count').textContent = window.adminData?.questions?.filter(q => q.status === 'pending').length || 0;
         }
 
         function showAdminTab(event, tabName) {
