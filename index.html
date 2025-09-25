@@ -16,390 +16,6 @@
             --gradient-green: linear-gradient(135deg, #10B981, #059669);
         }
 
-        // Admin Action Functions
-        async function updateReferralStatus(referralId, newStatus) {
-            try {
-                const { error } = await supabase
-                    .from('referrals')
-                    .update({ 
-                        status: newStatus,
-                        admin_viewed: true,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', referralId);
-                
-                if (error) throw error;
-                
-                showNotification(`Referral status updated to ${newStatus}`, 'success');
-                await loadAdminData();
-                
-            } catch (error) {
-                console.error('Error updating referral status:', error);
-                showNotification('Error updating referral status', 'error');
-            }
-        }
-
-        function selectProPlan(referralId) {
-            const planOptions = [
-                { value: 250, label: 'Pro Plan 100 - $250/month', commission: 25 },
-                { value: 500, label: 'Pro Plan 200 - $500/month', commission: 50 },
-                { value: 750, label: 'Pro Plan 300 - $750/month', commission: 75 },
-                { value: 1000, label: 'Pro Plan 400 - $1,000/month', commission: 100 },
-                { value: 1250, label: 'Pro Plan 500 - $1,250/month', commission: 125 },
-                { value: 1500, label: 'Pro Plan 600 - $1,500/month', commission: 150 },
-                { value: 1750, label: 'Pro Plan 700 - $1,750/month', commission: 175 },
-                { value: 2000, label: 'Pro Plan 800 - $2,000/month', commission: 200 },
-                { value: 2250, label: 'Pro Plan 900 - $2,250/month', commission: 225 },
-                { value: 2500, label: 'Pro Plan 1000 - $2,500/month', commission: 250 },
-                { value: 2750, label: 'Pro Plan 1100 - $2,750/month', commission: 275 },
-                { value: 3000, label: 'Pro Plan 1200 - $3,000/month', commission: 300 }
-            ];
-            
-            const modal = document.createElement('div');
-            modal.className = 'modal active';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                        <h3>Select Pro Plan</h3>
-                        <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
-                    </div>
-                    <div style="margin-bottom: 2rem;">
-                        <label style="display: block; margin-bottom: 1rem; font-weight: 600;">Choose the plan this customer selected:</label>
-                        <select id="plan-select" onchange="updatePlanPreview()" style="width: 100%; padding: 12px; border: 2px solid var(--border-gray); border-radius: 8px; margin-bottom: 1rem;">
-                            <option value="">Select a plan...</option>
-                            ${planOptions.map(plan => `<option value="${plan.value}" data-commission="${plan.commission}">${plan.label}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div id="plan-preview" style="display: none; margin-bottom: 2rem; padding: 1rem; background: var(--light-gray); border-radius: 8px;">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; text-align: center;">
-                            <div>
-                                <strong>Monthly Commission</strong>
-                                <div id="monthly-commission-preview" style="font-size: 1.5rem; color: var(--success-green); font-weight: bold;">$0</div>
-                            </div>
-                            <div>
-                                <strong>12-Month Total</strong>
-                                <div id="yearly-commission-preview" style="font-size: 1.5rem; color: var(--success-green); font-weight: bold;">$0</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 1rem;">
-                        <button class="btn btn-primary" onclick="savePlanSelection('${referralId}')">Save Plan & Create Payment Schedule</button>
-                        <button class="btn" onclick="this.closest('.modal').remove()" style="background: var(--light-gray); color: var(--slate-gray);">Cancel</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-            
-            // Add the preview function to window so it can be called from HTML
-            window.updatePlanPreview = function() {
-                const select = document.getElementById('plan-select');
-                const preview = document.getElementById('plan-preview');
-                const monthlyPreview = document.getElementById('monthly-commission-preview');
-                const yearlyPreview = document.getElementById('yearly-commission-preview');
-                
-                if (select.value) {
-                    const option = select.selectedOptions[0];
-                    const commission = parseFloat(option.dataset.commission);
-                    monthlyPreview.textContent = `${commission}`;
-                    yearlyPreview.textContent = `${(commission * 12)}`;
-                    preview.style.display = 'block';
-                } else {
-                    preview.style.display = 'none';
-                }
-            };
-        }
-
-        async function savePlanSelection(referralId) {
-            const select = document.getElementById('plan-select');
-            const planValue = parseFloat(select.value);
-            
-            if (!planValue) {
-                showNotification('Please select a plan', 'error');
-                return;
-            }
-            
-            try {
-                // Update referral with plan value
-                const { error: referralError } = await supabase
-                    .from('referrals')
-                    .update({ 
-                        pro_plan_value: planValue,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', referralId);
-                
-                if (referralError) throw referralError;
-                
-                // Create pending payment record
-                const referral = window.adminData.referrals.find(r => r.id === referralId);
-                if (referral) {
-                    const commission = planValue * 0.1;
-                    const { error: paymentError } = await supabase
-                        .from('payments')
-                        .insert([{
-                            affiliate_id: referral.affiliate_id,
-                            referral_id: referralId,
-                            amount: commission,
-                            referral_company: referral.company_name,
-                            status: 'pending',
-                            due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
-                            remaining_months: 12,
-                            created_at: new Date().toISOString()
-                        }]);
-                    
-                    if (paymentError) console.warn('Payment creation error:', paymentError);
-                }
-                
-                showNotification('Plan selected and payment schedule created!', 'success');
-                document.querySelector('.modal').remove();
-                await loadAdminData();
-                
-            } catch (error) {
-                console.error('Error saving plan selection:', error);
-                showNotification(`Error: ${error.message}`, 'error');
-            }
-        }
-
-        async function markCommissionPaid(referralId, affiliateId, commissionAmount, companyName) {
-            if (!confirm(`Mark ${commissionAmount} commission as paid for ${companyName}?`)) return;
-            
-            try {
-                // Create payment record
-                const { error: paymentError } = await supabase
-                    .from('payments')
-                    .insert([{
-                        affiliate_id: affiliateId,
-                        referral_id: referralId,
-                        amount: parseFloat(commissionAmount),
-                        referral_company: companyName,
-                        status: 'paid',
-                        payment_date: new Date().toISOString(),
-                        created_at: new Date().toISOString()
-                    }]);
-                
-                if (paymentError) throw paymentError;
-                
-                // Mark referral as commission paid
-                const { error: referralError } = await supabase
-                    .from('referrals')
-                    .update({ 
-                        commission_paid: true,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', referralId);
-                
-                if (referralError) throw referralError;
-                
-                showNotification('Commission marked as paid!', 'success');
-                await loadAdminData();
-                
-            } catch (error) {
-                console.error('Error marking commission as paid:', error);
-                showNotification(`Error: ${error.message}`, 'error');
-            }
-        }
-
-        async function updateAffiliateStatus(userId, newStatus) {
-            try {
-                const { error } = await supabase
-                    .from('user_profiles')
-                    .update({ 
-                        status: newStatus,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('user_id', userId);
-                
-                if (error) throw error;
-                
-                showNotification(`Affiliate status updated to ${newStatus}`, 'success');
-                await loadAdminData();
-                
-            } catch (error) {
-                console.error('Error updating affiliate status:', error);
-                showNotification('Error updating affiliate status', 'error');
-            }
-        }
-
-        function viewNotes(referralId) {
-            const referral = window.adminData.referrals.find(r => r.id === referralId);
-            if (!referral || !referral.notes) return;
-            
-            // Extract notes part (after "Notes:")
-            const notesMatch = referral.notes.match(/Notes: ([\s\S]+)/);
-            const notes = notesMatch ? notesMatch[1] : referral.notes;
-            
-            const modal = document.createElement('div');
-            modal.className = 'modal active';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                        <h3>Referral Notes - ${referral.company_name}</h3>
-                        <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
-                    </div>
-                    <div style="background: var(--light-gray); padding: 1.5rem; border-radius: 8px; white-space: pre-wrap; font-family: system-ui;">
-                        ${notes}
-                    </div>
-                    <div style="margin-top: 2rem;">
-                        <button class="btn btn-primary" onclick="this.closest('.modal').remove()">Close</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-        }
-
-        function viewAffiliateDetails(userId) {
-            const affiliate = window.adminData.affiliates.find(a => a.user_id === userId);
-            const referrals = window.adminData.referrals.filter(r => r.affiliate_id === userId);
-            const payments = window.adminData.payments.filter(p => p.affiliate_id === userId);
-            
-            if (!affiliate) return;
-            
-            const totalEarned = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
-            const activeClients = referrals.filter(r => r.status === 'customer').length;
-            
-            const modal = document.createElement('div');
-            modal.className = 'modal active';
-            modal.innerHTML = `
-                <div class="modal-content" style="max-width: 800px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                        <h3>Affiliate Details - ${affiliate.full_name || 'Unknown'}</h3>
-                        <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-                        <div>
-                            <h4>Contact Information</h4>
-                            <p><strong>Name:</strong> ${affiliate.full_name || 'N/A'}</p>
-                            <p><strong>Email:</strong> ${affiliate.email}</p>
-                            <p><strong>Phone:</strong> ${affiliate.phone || 'N/A'}</p>
-                            <p><strong>Company:</strong> ${affiliate.company || 'N/A'}</p>
-                            <p><strong>Affiliate Code:</strong> ${affiliate.affiliate_code || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <h4>Performance</h4>
-                            <p><strong>Total Referrals:</strong> ${referrals.length}</p>
-                            <p><strong>Active Clients:</strong> ${activeClients}</p>
-                            <p><strong>Total Earned:</strong> ${totalEarned.toFixed(2)}</p>
-                            <p><strong>Joined:</strong> ${new Date(affiliate.created_at).toLocaleDateString()}</p>
-                            <p><strong>Status:</strong> ${affiliate.status || 'active'}</p>
-                        </div>
-                    </div>
-                    
-                    ${referrals.length > 0 ? `
-                        <h4>Recent Referrals</h4>
-                        <div style="max-height: 300px; overflow-y: auto;">
-                            ${referrals.slice(0, 10).map(referral => `
-                                <div style="padding: 1rem; border: 1px solid var(--border-gray); border-radius: 8px; margin-bottom: 1rem;">
-                                    <strong>${referral.company_name}</strong> - <span class="status-badge status-${referral.status}">${referral.status}</span><br>
-                                    <small>${referral.contact_name} • ${new Date(referral.created_at).toLocaleDateString()}</small>
-                                    ${referral.pro_plan_value ? `<br><small>Plan Value: ${parseFloat(referral.pro_plan_value).toFixed(2)}/month</small>` : ''}
-                                </div>
-                            `).join('')}
-                        </div>
-                    ` : '<p>No referrals yet</p>'}
-                    
-                    <div style="margin-top: 2rem;">
-                        <button class="btn btn-primary" onclick="this.closest('.modal').remove()">Close</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-        }
-
-        function filterReferrals() {
-            const filter = document.getElementById('status-filter').value;
-            // Reload referrals with filter applied
-            loadAdminReferrals();
-            // You could implement actual filtering logic here if needed
-        }
-
-        function filterAffiliates() {
-            const filter = document.getElementById('affiliate-status-filter').value;
-            // Reload affiliates with filter applied
-            loadAdminAffiliates();
-            // You could implement actual filtering logic here if needed
-        }
-
-        async function markAllNotificationsRead() {
-            try {
-                const { error } = await supabase
-                    .from('referrals')
-                    .update({ admin_viewed: true })
-                    .eq('admin_viewed', false);
-                
-                if (error) throw error;
-                
-                showNotification('All notifications marked as read', 'success');
-                await loadAdminData();
-                
-            } catch (error) {
-                console.error('Error marking notifications as read:', error);
-                showNotification('Error updating notifications', 'error');
-            }
-        }
-
-        function exportAffiliates() {
-            const affiliates = window.adminData?.affiliates || [];
-            if (affiliates.length === 0) {
-                showNotification('No affiliates to export', 'error');
-                return;
-            }
-            
-            const csvContent = [
-                ['Name', 'Email', 'Phone', 'Company', 'Affiliate Code', 'Status', 'Joined Date'].join(','),
-                ...affiliates.map(a => [
-                    a.full_name || '',
-                    a.email || '',
-                    a.phone || '',
-                    a.company || '',
-                    a.affiliate_code || '',
-                    a.status || 'active',
-                    new Date(a.created_at).toLocaleDateString()
-                ].join(','))
-            ].join('\n');
-            
-            const blob = new Blob([csvContent], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `affiliates_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-            
-            showNotification('Affiliates list exported successfully', 'success');
-        }
-
-        function exportPayments() {
-            const payments = window.adminData?.payments || [];
-            if (payments.length === 0) {
-                showNotification('No payments to export', 'error');
-                return;
-            }
-            
-            const csvContent = [
-                ['Date', 'Affiliate', 'Company', 'Amount', 'Status'].join(','),
-                ...payments.map(p => {
-                    const affiliate = window.adminData.affiliates.find(a => a.user_id === p.affiliate_id);
-                    return [
-                        new Date(p.created_at).toLocaleDateString(),
-                        affiliate?.full_name || 'Unknown',
-                        p.referral_company || '',
-                        p.amount || '0',
-                        p.status || 'paid'
-                    ].join(',');
-                })
-            ].join('\n');
-            
-            const blob = new Blob([csvContent], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `payments_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-            
-            showNotification('Payments report exported successfully', 'success');
-        }
         body { font-family: 'Inter', sans-serif; line-height: 1.6; color: var(--deep-blue); }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
         h1, h2, h3 { font-weight: 800; line-height: 1.2; }
@@ -411,7 +27,7 @@
         .btn-small { padding: 8px 16px; font-size: 0.9rem; }
         .btn-large { padding: 18px 36px; font-size: 1.2rem; font-weight: 800; }
         .card { background: var(--white); border-radius: 12px; padding: 2rem; box-shadow: 0 4px 15px rgba(15, 23, 42, 0.08); margin-bottom: 2rem; }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .notification { position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; border-radius: 8px; color: var(--white); font-weight: 600; z-index: 1001; transform: translateX(400px); transition: transform 0.3s ease; }
         .notification.success { background: var(--success-green); }
         .notification.error { background: var(--danger-red); }
@@ -438,14 +54,14 @@
         /* Login/Signup Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
         .modal.active { display: flex; }
-        .modal-content { background: var(--white); border-radius: 16px; padding: 3rem; max-width: 500px; width: 100%; color: var(--deep-blue); }
+        .modal-content { background: var(--white); border-radius: 16px; padding: 3rem; max-width: 500px; width: 100%; color: var(--deep-blue); position: relative; max-height: 90vh; overflow-y: auto; }
         .form-group { margin-bottom: 1.5rem; text-align: left; }
         .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--deep-blue); }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 2px solid var(--border-gray); border-radius: 8px; font-size: 1rem; transition: all 0.3s ease; }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--electric-blue); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
         
-        /* Dashboard Styles */
-        .dashboard { background: var(--light-gray); min-height: 100vh; }
+        /* Dashboard Styles - FIXED SPACING ISSUE */
+        .dashboard { background: var(--light-gray); min-height: 100vh; padding-top: 0; }
         .header { background: var(--white); padding: 1rem 0; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1); position: sticky; top: 0; z-index: 100; }
         .header-content { display: flex; justify-content: space-between; align-items: center; }
         .nav-links { display: flex; gap: 2rem; align-items: center; }
@@ -478,6 +94,11 @@
         .affiliate-code { font-size: 2rem; font-weight: 800; background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 8px; margin: 1rem 0; font-family: monospace; }
         .copy-button { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; }
         .copy-button:hover { background: rgba(255,255,255,0.3); }
+        
+        /* New button styles for read/unread functionality */
+        .read-button { background: var(--warning-yellow); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; border: none; cursor: pointer; }
+        .read-button:hover { background: #D97706; }
+        .unread-indicator { background: var(--danger-red); color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -647,7 +268,7 @@
         </header>
 
         <!-- Affiliate Dashboard -->
-        <div id="affiliate-dashboard" class="container" style="padding-top: 2rem;">
+        <div id="affiliate-dashboard" class="container" style="padding: 2rem 20px;">
             <!-- Affiliate Code Card -->
             <div class="card affiliate-code-card">
                 <h3>Your Personal Affiliate Code</h3>
@@ -1054,7 +675,7 @@
     </div>
 
     <!-- Admin Dashboard -->
-    <div id="admin-dashboard" class="container hidden" style="padding-top: 2rem;">
+    <div id="admin-dashboard" class="container hidden" style="padding: 2rem 20px;">
         <!-- Admin Stats Dashboard -->
         <div class="dashboard-grid">
             <div class="card stat-card">
@@ -1297,8 +918,8 @@
                 const monthly = parseFloat(monthlyPrice) * 0.1;
                 const yearly = monthly * 12;
                 
-                monthlyDiv.textContent = `$${monthly.toFixed(0)}`;
-                yearlyDiv.textContent = `$${yearly.toFixed(0)}`;
+                monthlyDiv.textContent = `${monthly.toFixed(0)}`;
+                yearlyDiv.textContent = `${yearly.toFixed(0)}`;
                 results.style.display = 'block';
             } else {
                 results.style.display = 'none';
@@ -1900,7 +1521,7 @@
         });
 
         // =============================================================================
-        // ADMIN FUNCTIONS
+        // ADMIN FUNCTIONS - FIXED ISSUES
         // =============================================================================
 
         async function loadAdminData() {
@@ -2051,7 +1672,12 @@
                                 return `
                                     <tr style="${isNew ? 'background: #FEF3C7;' : ''}">
                                         <td style="text-align: center;">
-                                            ${isNew ? '<span style="color: var(--warning-yellow); font-size: 1.2rem;">🔔</span>' : ''}
+                                            ${isNew ? 
+                                                `<button class="read-button" onclick="markReferralAsRead('${referral.id}')" title="Mark as read">
+                                                    <span class="unread-indicator">●</span>
+                                                </button>` : 
+                                                '<span style="color: var(--success-green);">✓</span>'
+                                            }
                                         </td>
                                         <td>
                                             <strong>${referral.company_name}</strong>
@@ -2078,12 +1704,12 @@
                                             </select>
                                         </td>
                                         <td>
-                                            ${referral.status === 'customer' ? 
-                                                (referral.pro_plan_value ? 
-                                                    `<strong>${parseFloat(referral.pro_plan_value).toFixed(2)}/month</strong><br><button class="btn btn-small" onclick="editProPlan('${referral.id}', ${referral.pro_plan_value})" style="background: var(--light-gray); color: var(--slate-gray);">Edit</button>` :
-                                                    `<button class="btn btn-small btn-primary" onclick="selectProPlan('${referral.id}')">Select Plan</button>`
-                                                ) :
-                                                'N/A'
+                                            ${referral.pro_plan_value ? 
+                                                `<strong>${parseFloat(referral.pro_plan_value).toFixed(2)}/month</strong><br><button class="btn btn-small" onclick="editProPlan('${referral.id}', ${referral.pro_plan_value})" style="background: var(--light-gray); color: var(--slate-gray);">Edit</button>` :
+                                                (referral.status === 'customer' ? 
+                                                    `<button class="btn btn-small btn-primary" onclick="selectProPlan('${referral.id}')">Select Plan</button>` : 
+                                                    'N/A'
+                                                )
                                             }
                                         </td>
                                         <td>
@@ -2318,6 +1944,561 @@
                     `;
                 }).join('') :
                 '<p>No recent activity</p>';
+        }
+
+        // FIXED ADMIN ACTION FUNCTIONS
+
+        // Mark individual referral as read
+        async function markReferralAsRead(referralId) {
+            try {
+                const { error } = await supabase
+                    .from('referrals')
+                    .update({ 
+                        admin_viewed: true,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', referralId);
+                
+                if (error) throw error;
+                
+                showNotification('Referral marked as read', 'success');
+                await loadAdminData();
+                
+            } catch (error) {
+                console.error('Error marking referral as read:', error);
+                showNotification('Error marking referral as read', 'error');
+            }
+        }
+
+        // Update referral status and trigger plan selection for customers
+        async function updateReferralStatus(referralId, newStatus) {
+            try {
+                const { error } = await supabase
+                    .from('referrals')
+                    .update({ 
+                        status: newStatus,
+                        admin_viewed: true,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', referralId);
+                
+                if (error) throw error;
+                
+                showNotification(`Referral status updated to ${newStatus}`, 'success');
+                await loadAdminData();
+                
+                // FIXED: Auto-trigger plan selection when status becomes 'customer'
+                if (newStatus === 'customer') {
+                    const referral = window.adminData.referrals.find(r => r.id === referralId);
+                    if (referral && !referral.pro_plan_value) {
+                        setTimeout(() => {
+                            selectProPlan(referralId);
+                        }, 500);
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error updating referral status:', error);
+                showNotification('Error updating referral status', 'error');
+            }
+        }
+
+        // FIXED: Pro plan selection function
+        function selectProPlan(referralId) {
+            const planOptions = [
+                { value: 250, label: 'Pro Plan 100 - $250/month', commission: 25 },
+                { value: 500, label: 'Pro Plan 200 - $500/month', commission: 50 },
+                { value: 750, label: 'Pro Plan 300 - $750/month', commission: 75 },
+                { value: 1000, label: 'Pro Plan 400 - $1,000/month', commission: 100 },
+                { value: 1250, label: 'Pro Plan 500 - $1,250/month', commission: 125 },
+                { value: 1500, label: 'Pro Plan 600 - $1,500/month', commission: 150 },
+                { value: 1750, label: 'Pro Plan 700 - $1,750/month', commission: 175 },
+                { value: 2000, label: 'Pro Plan 800 - $2,000/month', commission: 200 },
+                { value: 2250, label: 'Pro Plan 900 - $2,250/month', commission: 225 },
+                { value: 2500, label: 'Pro Plan 1000 - $2,500/month', commission: 250 },
+                { value: 2750, label: 'Pro Plan 1100 - $2,750/month', commission: 275 },
+                { value: 3000, label: 'Pro Plan 1200 - $3,000/month', commission: 300 }
+            ];
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>Select Pro Plan</h3>
+                        <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                    </div>
+                    <div style="margin-bottom: 2rem;">
+                        <label style="display: block; margin-bottom: 1rem; font-weight: 600;">Choose the plan this customer selected:</label>
+                        <select id="plan-select" onchange="updatePlanPreview()" style="width: 100%; padding: 12px; border: 2px solid var(--border-gray); border-radius: 8px; margin-bottom: 1rem;">
+                            <option value="">Select a plan...</option>
+                            ${planOptions.map(plan => `<option value="${plan.value}" data-commission="${plan.commission}">${plan.label}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div id="plan-preview" style="display: none; margin-bottom: 2rem; padding: 1rem; background: var(--light-gray); border-radius: 8px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; text-align: center;">
+                            <div>
+                                <strong>Monthly Commission</strong>
+                                <div id="monthly-commission-preview" style="font-size: 1.5rem; color: var(--success-green); font-weight: bold;">$0</div>
+                            </div>
+                            <div>
+                                <strong>12-Month Total</strong>
+                                <div id="yearly-commission-preview" style="font-size: 1.5rem; color: var(--success-green); font-weight: bold;">$0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary" onclick="savePlanSelection('${referralId}')">Save Plan & Create Payment Schedule</button>
+                        <button class="btn" onclick="this.closest('.modal').remove()" style="background: var(--light-gray); color: var(--slate-gray);">Cancel</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Add the preview function to window so it can be called from HTML
+            window.updatePlanPreview = function() {
+                const select = document.getElementById('plan-select');
+                const preview = document.getElementById('plan-preview');
+                const monthlyPreview = document.getElementById('monthly-commission-preview');
+                const yearlyPreview = document.getElementById('yearly-commission-preview');
+                
+                if (select.value) {
+                    const option = select.selectedOptions[0];
+                    const commission = parseFloat(option.dataset.commission);
+                    monthlyPreview.textContent = `${commission}`;
+                    yearlyPreview.textContent = `${(commission * 12)}`;
+                    preview.style.display = 'block';
+                } else {
+                    preview.style.display = 'none';
+                }
+            };
+        }
+
+        async function savePlanSelection(referralId) {
+            const select = document.getElementById('plan-select');
+            const planValue = parseFloat(select.value);
+            
+            if (!planValue) {
+                showNotification('Please select a plan', 'error');
+                return;
+            }
+            
+            try {
+                // Update referral with plan value
+                const { error: referralError } = await supabase
+                    .from('referrals')
+                    .update({ 
+                        pro_plan_value: planValue,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', referralId);
+                
+                if (referralError) throw referralError;
+                
+                // Create pending payment record
+                const referral = window.adminData.referrals.find(r => r.id === referralId);
+                if (referral) {
+                    const commission = planValue * 0.1;
+                    const { error: paymentError } = await supabase
+                        .from('payments')
+                        .insert([{
+                            affiliate_id: referral.affiliate_id,
+                            referral_id: referralId,
+                            amount: commission,
+                            referral_company: referral.company_name,
+                            status: 'pending',
+                            due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+                            remaining_months: 12,
+                            created_at: new Date().toISOString()
+                        }]);
+                    
+                    if (paymentError) console.warn('Payment creation error:', paymentError);
+                }
+                
+                showNotification('Plan selected and payment schedule created!', 'success');
+                document.querySelector('.modal').remove();
+                await loadAdminData();
+                
+            } catch (error) {
+                console.error('Error saving plan selection:', error);
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function markCommissionPaid(referralId, affiliateId, commissionAmount, companyName) {
+            if (!confirm(`Mark ${commissionAmount} commission as paid for ${companyName}?`)) return;
+            
+            try {
+                // Create payment record
+                const { error: paymentError } = await supabase
+                    .from('payments')
+                    .insert([{
+                        affiliate_id: affiliateId,
+                        referral_id: referralId,
+                        amount: parseFloat(commissionAmount),
+                        referral_company: companyName,
+                        status: 'paid',
+                        payment_date: new Date().toISOString(),
+                        created_at: new Date().toISOString()
+                    }]);
+                
+                if (paymentError) throw paymentError;
+                
+                // Mark referral as commission paid
+                const { error: referralError } = await supabase
+                    .from('referrals')
+                    .update({ 
+                        commission_paid: true,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', referralId);
+                
+                if (referralError) throw referralError;
+                
+                showNotification('Commission marked as paid!', 'success');
+                await loadAdminData();
+                
+            } catch (error) {
+                console.error('Error marking commission as paid:', error);
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function updateAffiliateStatus(userId, newStatus) {
+            try {
+                const { error } = await supabase
+                    .from('user_profiles')
+                    .update({ 
+                        status: newStatus,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('user_id', userId);
+                
+                if (error) throw error;
+                
+                showNotification(`Affiliate status updated to ${newStatus}`, 'success');
+                await loadAdminData();
+                
+            } catch (error) {
+                console.error('Error updating affiliate status:', error);
+                showNotification('Error updating affiliate status', 'error');
+            }
+        }
+
+        function viewNotes(referralId) {
+            const referral = window.adminData.referrals.find(r => r.id === referralId);
+            if (!referral || !referral.notes) return;
+            
+            // Extract notes part (after "Notes:")
+            const notesMatch = referral.notes.match(/Notes: ([\s\S]+)/);
+            const notes = notesMatch ? notesMatch[1] : referral.notes;
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>Referral Notes - ${referral.company_name}</h3>
+                        <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                    </div>
+                    <div style="background: var(--light-gray); padding: 1.5rem; border-radius: 8px; white-space: pre-wrap; font-family: system-ui;">
+                        ${notes}
+                    </div>
+                    <div style="margin-top: 2rem;">
+                        <button class="btn btn-primary" onclick="this.closest('.modal').remove()">Close</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // FIXED: Affiliate details view function
+        function viewAffiliateDetails(userId) {
+            const affiliate = window.adminData.affiliates.find(a => a.user_id === userId);
+            const referrals = window.adminData.referrals.filter(r => r.affiliate_id === userId);
+            const payments = window.adminData.payments.filter(p => p.affiliate_id === userId);
+            
+            if (!affiliate) return;
+            
+            const totalEarned = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+            const activeClients = referrals.filter(r => r.status === 'customer').length;
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 800px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>Affiliate Details - ${affiliate.full_name || 'Unknown'}</h3>
+                        <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                        <div>
+                            <h4>Contact Information</h4>
+                            <p><strong>Name:</strong> ${affiliate.full_name || 'N/A'}</p>
+                            <p><strong>Email:</strong> ${affiliate.email}</p>
+                            <p><strong>Phone:</strong> ${affiliate.phone || 'N/A'}</p>
+                            <p><strong>Company:</strong> ${affiliate.company || 'N/A'}</p>
+                            <p><strong>Affiliate Code:</strong> ${affiliate.affiliate_code || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <h4>Performance</h4>
+                            <p><strong>Total Referrals:</strong> ${referrals.length}</p>
+                            <p><strong>Active Clients:</strong> ${activeClients}</p>
+                            <p><strong>Total Earned:</strong> ${totalEarned.toFixed(2)}</p>
+                            <p><strong>Joined:</strong> ${new Date(affiliate.created_at).toLocaleDateString()}</p>
+                            <p><strong>Status:</strong> ${affiliate.status || 'active'}</p>
+                        </div>
+                    </div>
+                    
+                    ${referrals.length > 0 ? `
+                        <h4>Recent Referrals</h4>
+                        <div style="max-height: 300px; overflow-y: auto;">
+                            ${referrals.slice(0, 10).map(referral => `
+                                <div style="padding: 1rem; border: 1px solid var(--border-gray); border-radius: 8px; margin-bottom: 1rem;">
+                                    <strong>${referral.company_name}</strong> - <span class="status-badge status-${referral.status}">${referral.status}</span><br>
+                                    <small>${referral.contact_name} • ${new Date(referral.created_at).toLocaleDateString()}</small>
+                                    ${referral.pro_plan_value ? `<br><small>Plan Value: ${parseFloat(referral.pro_plan_value).toFixed(2)}/month</small>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : '<p>No referrals yet</p>'}
+                    
+                    <div style="margin-top: 2rem;">
+                        <button class="btn btn-primary" onclick="this.closest('.modal').remove()">Close</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function filterReferrals() {
+            const filter = document.getElementById('status-filter').value;
+            // Reload referrals with filter applied
+            loadAdminReferrals();
+            // You could implement actual filtering logic here if needed
+        }
+
+        function filterAffiliates() {
+            const filter = document.getElementById('affiliate-status-filter').value;
+            // Reload affiliates with filter applied
+            loadAdminAffiliates();
+            // You could implement actual filtering logic here if needed
+        }
+
+        async function markAllNotificationsRead() {
+            try {
+                const { error } = await supabase
+                    .from('referrals')
+                    .update({ admin_viewed: true })
+                    .eq('admin_viewed', false);
+                
+                if (error) throw error;
+                
+                showNotification('All notifications marked as read', 'success');
+                await loadAdminData();
+                
+            } catch (error) {
+                console.error('Error marking notifications as read:', error);
+                showNotification('Error updating notifications', 'error');
+            }
+        }
+
+        function exportAffiliates() {
+            const affiliates = window.adminData?.affiliates || [];
+            if (affiliates.length === 0) {
+                showNotification('No affiliates to export', 'error');
+                return;
+            }
+            
+            const csvContent = [
+                ['Name', 'Email', 'Phone', 'Company', 'Affiliate Code', 'Status', 'Joined Date'].join(','),
+                ...affiliates.map(a => [
+                    a.full_name || '',
+                    a.email || '',
+                    a.phone || '',
+                    a.company || '',
+                    a.affiliate_code || '',
+                    a.status || 'active',
+                    new Date(a.created_at).toLocaleDateString()
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `affiliates_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            showNotification('Affiliates list exported successfully', 'success');
+        }
+
+        function exportPayments() {
+            const payments = window.adminData?.payments || [];
+            if (payments.length === 0) {
+                showNotification('No payments to export', 'error');
+                return;
+            }
+            
+            const csvContent = [
+                ['Date', 'Affiliate', 'Company', 'Amount', 'Status'].join(','),
+                ...payments.map(p => {
+                    const affiliate = window.adminData.affiliates.find(a => a.user_id === p.affiliate_id);
+                    return [
+                        new Date(p.created_at).toLocaleDateString(),
+                        affiliate?.full_name || 'Unknown',
+                        p.referral_company || '',
+                        p.amount || '0',
+                        p.status || 'paid'
+                    ].join(',');
+                })
+            ].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `payments_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            showNotification('Payments report exported successfully', 'success');
+        }
+
+        // Edit pro plan function
+        function editProPlan(referralId, currentValue) {
+            const planOptions = [
+                { value: 250, label: 'Pro Plan 100 - $250/month' },
+                { value: 500, label: 'Pro Plan 200 - $500/month' },
+                { value: 750, label: 'Pro Plan 300 - $750/month' },
+                { value: 1000, label: 'Pro Plan 400 - $1,000/month' },
+                { value: 1250, label: 'Pro Plan 500 - $1,250/month' },
+                { value: 1500, label: 'Pro Plan 600 - $1,500/month' },
+                { value: 1750, label: 'Pro Plan 700 - $1,750/month' },
+                { value: 2000, label: 'Pro Plan 800 - $2,000/month' },
+                { value: 2250, label: 'Pro Plan 900 - $2,250/month' },
+                { value: 2500, label: 'Pro Plan 1000 - $2,500/month' },
+                { value: 2750, label: 'Pro Plan 1100 - $2,750/month' },
+                { value: 3000, label: 'Pro Plan 1200 - $3,000/month' }
+            ];
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>Edit Pro Plan</h3>
+                        <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                    </div>
+                    <div style="margin-bottom: 2rem;">
+                        <label style="display: block; margin-bottom: 1rem; font-weight: 600;">Current plan: ${currentValue}/month</label>
+                        <label style="display: block; margin-bottom: 1rem; font-weight: 600;">Select new plan:</label>
+                        <select id="edit-plan-select" style="width: 100%; padding: 12px; border: 2px solid var(--border-gray); border-radius: 8px;">
+                            ${planOptions.map(plan => `<option value="${plan.value}" ${plan.value == currentValue ? 'selected' : ''}>${plan.label}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary" onclick="saveEditedPlan('${referralId}')">Update Plan</button>
+                        <button class="btn" onclick="this.closest('.modal').remove()" style="background: var(--light-gray); color: var(--slate-gray);">Cancel</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        async function saveEditedPlan(referralId) {
+            const select = document.getElementById('edit-plan-select');
+            const planValue = parseFloat(select.value);
+            
+            try {
+                const { error } = await supabase
+                    .from('referrals')
+                    .update({ 
+                        pro_plan_value: planValue,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', referralId);
+                
+                if (error) throw error;
+                
+                showNotification('Plan updated successfully!', 'success');
+                document.querySelector('.modal').remove();
+                await loadAdminData();
+                
+            } catch (error) {
+                console.error('Error updating plan:', error);
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Payment details view
+        function viewPaymentDetails(paymentId) {
+            const payment = window.adminData.payments.find(p => p.id === paymentId);
+            const affiliate = window.adminData.affiliates.find(a => a.user_id === payment.affiliate_id);
+            
+            if (!payment) return;
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>Payment Details</h3>
+                        <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                    </div>
+                    <div style="background: var(--light-gray); padding: 2rem; border-radius: 8px;">
+                        <p><strong>Payment ID:</strong> ${payment.id}</p>
+                        <p><strong>Affiliate:</strong> ${affiliate?.full_name || 'Unknown'} (${affiliate?.email || 'N/A'})</p>
+                        <p><strong>Company:</strong> ${payment.referral_company || 'N/A'}</p>
+                        <p><strong>Amount:</strong> ${parseFloat(payment.amount).toFixed(2)}</p>
+                        <p><strong>Status:</strong> ${payment.status}</p>
+                        <p><strong>Payment Date:</strong> ${new Date(payment.created_at).toLocaleDateString()}</p>
+                        <p><strong>Payment Method:</strong> ${payment.payment_method || 'Bank Transfer'}</p>
+                        ${payment.due_date ? `<p><strong>Due Date:</strong> ${new Date(payment.due_date).toLocaleDateString()}</p>` : ''}
+                        ${payment.remaining_months ? `<p><strong>Remaining Months:</strong> ${payment.remaining_months}</p>` : ''}
+                    </div>
+                    <div style="margin-top: 2rem;">
+                        <button class="btn btn-primary" onclick="this.closest('.modal').remove()">Close</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Process all pending payments (placeholder function)
+        async function processAllPendingPayments() {
+            const pendingPayments = window.adminData?.payments?.filter(p => p.status === 'pending') || [];
+            
+            if (pendingPayments.length === 0) {
+                showNotification('No pending payments to process', 'error');
+                return;
+            }
+            
+            if (!confirm(`Process ${pendingPayments.length} pending payments?`)) return;
+            
+            try {
+                for (const payment of pendingPayments) {
+                    const { error } = await supabase
+                        .from('payments')
+                        .update({
+                            status: 'paid',
+                            payment_date: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', payment.id);
+                    
+                    if (error) console.error('Error processing payment:', error);
+                }
+                
+                showNotification(`${pendingPayments.length} payments processed successfully!`, 'success');
+                await loadAdminData();
+                
+            } catch (error) {
+                console.error('Error processing payments:', error);
+                showNotification('Error processing payments', 'error');
+            }
         }
     </script>
 </body>
