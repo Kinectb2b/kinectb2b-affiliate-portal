@@ -33,12 +33,11 @@
         .notification.error { background: var(--danger-red); }
         .notification.show { transform: translateX(0); }
         
-        /* Landing Page */
         .landing-page { background: linear-gradient(135deg, var(--deep-blue) 0%, #1E293B 50%, var(--electric-blue) 100%); min-height: 100vh; color: white; }
         .landing-nav { padding: 1rem 0; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
         .nav-content { display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 2rem; font-weight: 800; color: white; }
-        .nav-login { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 8px 16px; border-radius: 8px; color: white; text-decoration: none; font-weight: 600; transition: all 0.3s ease; }
+        .nav-login { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 8px 16px; border-radius: 8px; color: white; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; }
         .nav-login:hover { background: rgba(255,255,255,0.2); }
         .hero { padding: 6rem 0; text-align: center; }
         .hero h1 { font-size: 4rem; margin-bottom: 1.5rem; background: linear-gradient(135deg, #fff, #e2e8f0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
@@ -51,7 +50,6 @@
         .feature-icon { font-size: 3rem; margin-bottom: 1rem; }
         .calculator-section { background: rgba(255,255,255,0.05); padding: 4rem 0; margin: 4rem 0; border-radius: 20px; }
         
-        /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
         .modal.active { display: flex; }
         .modal-content { background: var(--white); border-radius: 16px; padding: 3rem; max-width: 500px; width: 100%; color: var(--deep-blue); position: relative; max-height: 90vh; overflow-y: auto; }
@@ -60,7 +58,6 @@
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 2px solid var(--border-gray); border-radius: 8px; font-size: 1rem; transition: all 0.3s ease; }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--electric-blue); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
         
-        /* Dashboard */
         .dashboard { background: var(--light-gray); min-height: 100vh; }
         .header { background: var(--white); padding: 1rem 0; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1); position: sticky; top: 0; z-index: 100; }
         .header-content { display: flex; justify-content: space-between; align-items: center; }
@@ -94,11 +91,8 @@
         .affiliate-code { font-size: 2rem; font-weight: 800; background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 8px; margin: 1rem 0; font-family: monospace; }
         .copy-button { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; }
         .copy-button:hover { background: rgba(255,255,255,0.3); }
-        
         .read-button { background: var(--warning-yellow); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; border: none; cursor: pointer; }
         .read-button:hover { background: #D97706; }
-
-        /* About KinectB2B styles */
         .about-kinectb2b { background: var(--gradient-blue); color: white; padding: 2rem; border-radius: 16px; margin-bottom: 2rem; }
         .about-kinectb2b h4 { margin-bottom: 1rem; }
         .about-kinectb2b p { margin-bottom: 1rem; opacity: 0.9; }
@@ -109,13 +103,12 @@
     </style>
 </head>
 <body>
-    <!-- Landing Page -->
     <div id="landing-page" class="landing-page">
         <nav class="landing-nav">
             <div class="container">
                 <div class="nav-content">
                     <div class="logo">KinectB2B Affiliates</div>
-                    <a href="javascript:void(0)" onclick="showLoginModal()" class="nav-login">Login / Sign Up</a>
+                    <a onclick="showLoginModal()" class="nav-login">Login / Sign Up</a>
                 </div>
             </div>
         </nav>
@@ -202,7 +195,6 @@
         </div>
     </div>
 
-    <!-- Auth Modal -->
     <div id="auth-modal" class="modal">
         <div class="modal-content">
             <div style="text-align: center; margin-bottom: 2rem;">
@@ -244,34 +236,428 @@
         </div>
     </div>
 
+    <div id="dashboard" class="dashboard hidden">
+        <header class="header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo">KinectB2B Affiliates</div>
+                    <nav class="nav-links">
+                        <span id="user-name">Loading...</span>
+                        <a onclick="logout()">Logout</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <div id="affiliate-dashboard" class="container">
+            <div class="card affiliate-code-card">
+                <h3>Your Personal Affiliate Code</h3>
+                <p>Share this code with businesses to get credit for referrals</p>
+                <div class="affiliate-code" id="affiliate-code">Loading...</div>
+                <button class="copy-button" onclick="copyAffiliateCode()">📋 Copy Code</button>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="card stat-card">
+                    <div class="stat-number" id="total-referrals">0</div>
+                    <div class="stat-label">Total Referrals</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-number" id="active-clients">0</div>
+                    <div class="stat-label">Active Clients</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-number" id="monthly-earnings">$0</div>
+                    <div class="stat-label">This Month's Earnings</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-number" id="total-earnings">$0</div>
+                    <div class="stat-label">Total Earned</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab(event, 'submit-referral')">Submit Referral</button>
+                    <button class="tab" onclick="showTab(event, 'my-referrals')">My Referrals</button>
+                    <button class="tab" onclick="showTab(event, 'payments')">Payments</button>
+                    <button class="tab" onclick="showTab(event, 'profile')">Profile</button>
+                    <button class="tab" onclick="showTab(event, 'about-kinectb2b')">About KinectB2B</button>
+                    <button class="tab" onclick="showTab(event, 'program-info')">Program Info</button>
+                </div>
+
+                <div id="submit-referral-content" class="tab-content active">
+                    <h3>Submit New Referral</h3>
+                    <form id="referral-form">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                            <div>
+                                <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Company Information</h4>
+                                <div class="form-group">
+                                    <label for="ref-company">Company Name *</label>
+                                    <input type="text" id="ref-company" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="ref-website">Website</label>
+                                    <input type="url" id="ref-website" placeholder="https://...">
+                                </div>
+                                <div class="form-group">
+                                    <label for="ref-industry">Industry Type</label>
+                                    <select id="ref-industry">
+                                        <option value="">Select industry...</option>
+                                        <option value="Healthcare">Healthcare</option>
+                                        <option value="Technology">Technology</option>
+                                        <option value="Finance">Finance</option>
+                                        <option value="Real Estate">Real Estate</option>
+                                        <option value="Legal">Legal</option>
+                                        <option value="Consulting">Consulting</option>
+                                        <option value="Manufacturing">Manufacturing</option>
+                                        <option value="Construction">Construction</option>
+                                        <option value="Education">Education</option>
+                                        <option value="Retail">Retail</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Contact Information</h4>
+                                <div class="form-group">
+                                    <label for="ref-contact-name">Contact Name *</label>
+                                    <input type="text" id="ref-contact-name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="ref-email">Email Address</label>
+                                    <input type="email" id="ref-email">
+                                </div>
+                                <div class="form-group">
+                                    <label for="ref-phone">Phone Number *</label>
+                                    <input type="tel" id="ref-phone" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="ref-location">Location (City, State) *</label>
+                                    <input type="text" id="ref-location" placeholder="e.g., Miami, FL" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="ref-notes">Additional Notes</label>
+                            <textarea id="ref-notes" rows="4" placeholder="Tell us about their business, current challenges, why they'd be a good fit, or any other relevant information..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-large">Submit Referral</button>
+                    </form>
+                </div>
+
+                <div id="my-referrals-content" class="tab-content">
+                    <h3>My Referrals</h3>
+                    <div id="referrals-list">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <h3>No Referrals Yet</h3>
+                            <p>Submit your first referral to start earning commissions!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="payments-content" class="tab-content">
+                    <h3>Payment History</h3>
+                    <div id="payments-list">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💰</div>
+                            <h3>No Payments Yet</h3>
+                            <p>Your payments will appear here once your referrals become clients!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="profile-content" class="tab-content">
+                    <h3>My Profile</h3>
+                    
+                    <form id="profile-form" style="max-width: 800px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <div>
+                                <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Personal Information</h4>
+                                <div class="form-group">
+                                    <label for="profile-name">Full Name</label>
+                                    <input type="text" id="profile-name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-company">Company Name (Optional)</label>
+                                    <input type="text" id="profile-company" placeholder="Your company or personal brand">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-phone">Phone Number</label>
+                                    <input type="tel" id="profile-phone">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-address">Full Address</label>
+                                    <textarea id="profile-address" rows="3" placeholder="Street address, City, State, ZIP"></textarea>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Payment Information</h4>
+                                <div class="form-group">
+                                    <label for="payment-method">Preferred Payment Method</label>
+                                    <select id="payment-method" onchange="showPaymentFields()">
+                                        <option value="">Select payment method...</option>
+                                        <option value="zelle">Zelle</option>
+                                        <option value="cashapp">CashApp</option>
+                                        <option value="paypal">PayPal</option>
+                                        <option value="ach">ACH Bank Transfer</option>
+                                    </select>
+                                </div>
+                                
+                                <div id="zelle-fields" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="zelle-email">Zelle Email</label>
+                                        <input type="email" id="zelle-email" placeholder="your@email.com">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="zelle-phone">Zelle Phone (if different)</label>
+                                        <input type="tel" id="zelle-phone" placeholder="(555) 123-4567">
+                                    </div>
+                                </div>
+                                
+                                <div id="cashapp-fields" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="cashapp-tag">CashApp Cashtag</label>
+                                        <input type="text" id="cashapp-tag" placeholder="$YourCashtag">
+                                    </div>
+                                </div>
+                                
+                                <div id="paypal-fields" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="paypal-email">PayPal Email</label>
+                                        <input type="email" id="paypal-email" placeholder="your@paypal.com">
+                                    </div>
+                                </div>
+                                
+                                <div id="ach-fields" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="bank-name">Bank Name</label>
+                                        <input type="text" id="bank-name" placeholder="Bank Name">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="account-number">Account Number</label>
+                                        <input type="text" id="account-number" placeholder="Account Number">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="routing-number">Routing Number</label>
+                                        <input type="text" id="routing-number" placeholder="Routing Number">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="account-type">Account Type</label>
+                                        <select id="account-type">
+                                            <option value="checking">Checking</option>
+                                            <option value="savings">Savings</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid var(--border-gray);">
+                            <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Account Information</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                                <div>
+                                    <p><strong>Affiliate Since:</strong> <span id="affiliate-since">Loading...</span></p>
+                                    <p><strong>Total Referrals:</strong> <span id="profile-total-referrals">0</span></p>
+                                </div>
+                                <div>
+                                    <p><strong>Status:</strong> <span class="status-badge status-active">Active</span></p>
+                                    <p><strong>Affiliate Code:</strong> <span id="profile-affiliate-code">Loading...</span></p>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="about-kinectb2b-content" class="tab-content">
+                    <div style="max-width: 900px;">
+                        <h3>About KinectB2B</h3>
+                        
+                        <div class="about-kinectb2b">
+                            <h4>🚀 Who We Are</h4>
+                            <p>KinectB2B is a leading B2B lead generation company that specializes in helping businesses connect with qualified prospects and grow their revenue. We use advanced targeting, proven strategies, and cutting-edge technology to deliver high-quality leads that convert into customers.</p>
+                            
+                            <h4>💼 What We Do</h4>
+                            <ul>
+                                <li><strong>Lead Generation:</strong> We generate qualified B2B leads for businesses across various industries</li>
+                                <li><strong>Appointment Setting:</strong> Our team schedules qualified appointments with decision-makers</li>
+                                <li><strong>Sales Development:</strong> We help businesses build robust sales pipelines</li>
+                                <li><strong>Marketing Automation:</strong> Advanced systems to nurture leads and drive conversions</li>
+                                <li><strong>Performance Analytics:</strong> Detailed reporting and ROI tracking for every campaign</li>
+                            </ul>
+                            
+                            <a href="https://www.kinectb2b.com" target="_blank" class="website-link">
+                                🌐 Visit KinectB2B.com to Learn More
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="program-info-content" class="tab-content">
+                    <div style="max-width: 800px;">
+                        <h3>Affiliate Program Information</h3>
+                        
+                        <div style="background: var(--gradient-blue); color: white; padding: 2rem; border-radius: 12px; margin-bottom: 3rem; text-align: center;">
+                            <h4 style="font-size: 2rem; margin-bottom: 1rem;">How You Get Paid</h4>
+                            <p style="font-size: 1.2rem; opacity: 0.9;">Earn 10% commission every month for 12 consecutive months on every active client you refer!</p>
+                        </div>
+
+                        <div style="margin-bottom: 3rem;">
+                            <h4 style="color: var(--electric-blue); margin-bottom: 1rem;">📋 How It Works</h4>
+                            <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px;">
+                                <div style="display: grid; gap: 1.5rem;">
+                                    <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                                        <div style="background: var(--electric-blue); color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">1</div>
+                                        <div><strong>Submit Referral:</strong> You refer a business that needs lead generation services through your affiliate portal.</div>
+                                    </div>
+                                    <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                                        <div style="background: var(--electric-blue); color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">2</div>
+                                        <div><strong>We Handle Sales:</strong> Our professional sales team contacts and sells the client on our services.</div>
+                                    </div>
+                                    <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                                        <div style="background: var(--success-green); color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">3</div>
+                                        <div><strong>Client Conversion:</strong> When they sign up for a Pro Plan, you start earning immediately.</div>
+                                    </div>
+                                    <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                                        <div style="background: var(--success-green); color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">4</div>
+                                        <div><strong>Get Paid Monthly:</strong> Receive 10% of their monthly payment for 12 months straight!</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background: var(--gradient-green); color: white; padding: 2rem; border-radius: 12px;">
+                            <h4 style="margin-bottom: 1rem;">🎯 Best Referral Prospects</h4>
+                            <p style="margin-bottom: 1rem;">Look for businesses that:</p>
+                            <ul style="margin: 0; padding-left: 1.5rem;">
+                                <li>Need more leads or appointments</li>
+                                <li>Currently spend money on marketing/advertising</li>
+                                <li>Offer high-value services ($1,000+ per client)</li>
+                                <li>Have 5+ employees and are ready to scale</li>
+                                <li>Are B2B companies (our specialty!)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="admin-dashboard" class="container hidden">
+            <div class="dashboard-grid">
+                <div class="card stat-card">
+                    <div class="stat-number" id="admin-total-affiliates">0</div>
+                    <div class="stat-label">Total Affiliates</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-number" id="admin-total-referrals">0</div>
+                    <div class="stat-label">Total Referrals</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-number" id="admin-pending-referrals">0</div>
+                    <div class="stat-label">🔔 New Referrals</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-number" id="admin-monthly-revenue">$0</div>
+                    <div class="stat-label">Monthly Revenue</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab active" onclick="showAdminTab(event, 'referrals')">Referrals (<span id="referrals-count">0</span>)</button>
+                    <button class="tab" onclick="showAdminTab(event, 'affiliates')">Affiliates (<span id="affiliates-count">0</span>)</button>
+                    <button class="tab" onclick="showAdminTab(event, 'payments')">Payments</button>
+                </div>
+
+                <div id="admin-referrals-content" class="tab-content active">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>Referral Management</h3>
+                        <button class="btn btn-small btn-success" onclick="markAllNotificationsRead()">Mark All Read</button>
+                    </div>
+                    <div id="admin-referrals-list">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <h3>Loading Referrals...</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-affiliates-content" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>Affiliate Management</h3>
+                        <button class="btn btn-small btn-primary" onclick="exportAffiliates()">Export List</button>
+                    </div>
+                    <div id="admin-affiliates-list">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">👥</div>
+                            <h3>Loading Affiliates...</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-payments-content" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>Payment Management</h3>
+                        <button class="btn btn-small btn-primary" onclick="showAddPaymentModal()">Add Manual Payment</button>
+                    </div>
+                    <div id="admin-payments-list">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💰</div>
+                            <h3>Loading Payments...</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="notification" class="notification"></div>
 
     <script>
-        const SUPABASE_URL = 'https://ngdvepfzmpnfzbecpkhw.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5nZHZlcGZ6bXBuZnpiZWNwa2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2Nzg2MzksImV4cCI6MjA3NDI1NDYzOX0.bfkXungCd9GkarpR7E7fayXLStewUcDvROTpd_SevFg';
-        
         let supabase;
         let currentUser = null;
         let isSignupMode = true;
 
         document.addEventListener('DOMContentLoaded', function() {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            supabase = window.supabase.createClient(
+                'https://ngdvepfzmpnfzbecpkhw.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5nZHZlcGZ6bXBuZnpiZWNwa2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2Nzg2MzksImV4cCI6MjA3NDI1NDYzOX0.bfkXungCd9GkarpR7E7fayXLStewUcDvROTpd_SevFg'
+            );
             initializeApp();
+            setupEventListeners();
         });
 
-        async function initializeApp() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                handleUserSession(session.user);
-            }
+        function setupEventListeners() {
+            document.getElementById('auth-form').addEventListener('submit', handleAuth);
+            document.getElementById('referral-form').addEventListener('submit', handleReferralSubmit);
             
-            supabase.auth.onAuthStateChange((event, session) => {
-                if (event === 'SIGNED_IN' && session) {
-                    handleUserSession(session.user);
-                } else if (event === 'SIGNED_OUT') {
-                    showLandingPage();
+            const profileForm = document.getElementById('profile-form');
+            if (profileForm) {
+                profileForm.addEventListener('submit', handleProfileUpdate);
+            }
+        }
+
+        async function initializeApp() {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    await handleUserSession(session.user);
                 }
-            });
+                
+                supabase.auth.onAuthStateChange((event, session) => {
+                    if (event === 'SIGNED_IN' && session) {
+                        handleUserSession(session.user);
+                    } else if (event === 'SIGNED_OUT') {
+                        showLandingPage();
+                    }
+                });
+            } catch (error) {
+                console.error('Error initializing app:', error);
+            }
         }
 
         function showLoginModal() {
@@ -288,6 +674,7 @@
 
         function closeAuthModal() {
             document.getElementById('auth-modal').classList.remove('active');
+            document.getElementById('auth-form').reset();
         }
 
         function toggleAuthMode() {
@@ -340,58 +727,335 @@
             }
         }
 
-        function handleUserSession(user) {
-            currentUser = user;
-            showNotification('Login successful!', 'success');
-        }
-
-        function showLandingPage() {
-            document.getElementById('landing-page').classList.remove('hidden');
-        }
-
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type} show`;
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 4000);
-        }
-
-        // Auth form handler
-        document.getElementById('auth-form').addEventListener('submit', async function(e) {
+        async function handleAuth(e) {
             e.preventDefault();
             
-            const email = document.getElementById('auth-email').value;
+            const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value;
             
-            try {
-                if (isSignupMode) {
-                    const name = document.getElementById('auth-name').value;
-                    const { data, error } = await supabase.auth.signUp({
-                        email: email,
-                        password: password,
-                        options: {
-                            data: { full_name: name }
-                        }
-                    });
-                    
-                    if (error) throw error;
-                    showNotification('Account created! Check email for verification.', 'success');
-                    closeAuthModal();
-                } else {
-                    const { data, error } = await supabase.auth.signInWithPassword({
-                        email: email,
-                        password: password
-                    });
-                    
-                    if (error) throw error;
-                    closeAuthModal();
-                }
-            } catch (error) {
-                showNotification(error.message, 'error');
+            if (!email || !password) {
+                showNotification('Please fill in all fields', 'error');
+                return;
             }
-        });
-    </script>
-</body>
-</html>
+            
+            if (isSignupMode) {
+                await handleSignup(email, password);
+            } else {
+                await handleLogin(email, password);
+            }
+        }
+
+        async function handleLogin(email, password) {
+            try {
+                showNotification('Logging in...', 'success');
+                
+                const { data, error } = await supabase.auth.signInWithPassword({ 
+                    email: email, 
+                    password: password 
+                });
+                
+                if (error) throw error;
+                showNotification('Login successful!', 'success');
+                
+            } catch (error) {
+                showNotification('Login failed: ' + error.message, 'error');
+            }
+        }
+
+        async function handleSignup(email, password) {
+            const name = document.getElementById('auth-name').value.trim();
+            const confirmPassword = document.getElementById('auth-confirm').value;
+            
+            if (!name) {
+                showNotification('Please enter your full name', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showNotification('Passwords do not match', 'error');
+                return;
+            }
+            
+            try {
+                showNotification('Creating account...', 'success');
+                
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            full_name: name
+                        }
+                    }
+                });
+                
+                if (error) throw error;
+                
+                if (data.user) {
+                    const affiliateCode = generateAffiliateCode(name);
+                    
+                    try {
+                        await supabase
+                            .from('user_profiles')
+                            .insert({
+                                user_id: data.user.id,
+                                email: email,
+                                full_name: name,
+                                role: 'affiliate',
+                                status: 'active',
+                                affiliate_code: affiliateCode,
+                                created_at: new Date().toISOString()
+                            });
+                    } catch (profileError) {
+                        console.warn('Failed to create profile:', profileError);
+                    }
+                }
+                
+                showNotification('Account created! Please check your email for verification.', 'success');
+                closeAuthModal();
+                
+            } catch (error) {
+                showNotification('Signup failed: ' + error.message, 'error');
+            }
+        }
+
+        function generateAffiliateCode(name) {
+            const namePart = name.replace(/[^a-zA-Z]/g, '').substring(0, 4).toUpperCase();
+            const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+            return namePart + randomPart;
+        }
+
+        async function handleUserSession(user) {
+            currentUser = user;
+            
+            if (user.email === 'robert@kinectb2b.com') {
+                await showAdminDashboard();
+            } else {
+                await showAffiliateDashboard();
+            }
+        }
+
+        async function showAdminDashboard() {
+            document.getElementById('landing-page').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('affiliate-dashboard').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.remove('hidden');
+            
+            closeAuthModal();
+            document.getElementById('user-name').textContent = 'Admin - Robert';
+            await loadAdminData();
+        }
+
+        async function showAffiliateDashboard() {
+            document.getElementById('landing-page').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('affiliate-dashboard').classList.remove('hidden');
+            document.getElementById('admin-dashboard').classList.add('hidden');
+            
+            closeAuthModal();
+            await loadAffiliateData();
+        }
+
+        async function loadAffiliateData() {
+            if (!currentUser) return;
+            
+            try {
+                const { data: profile } = await supabase
+                    .from('user_profiles')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .single();
+                
+                if (profile) {
+                    document.getElementById('user-name').textContent = profile.full_name || 'User';
+                    document.getElementById('affiliate-code').textContent = profile.affiliate_code || generateAffiliateCode(profile.full_name || currentUser.email);
+                    
+                    // Load profile form data
+                    const profileNameEl = document.getElementById('profile-name');
+                    const profileCompanyEl = document.getElementById('profile-company');
+                    const profilePhoneEl = document.getElementById('profile-phone');
+                    const profileAddressEl = document.getElementById('profile-address');
+                    const affiliateSinceEl = document.getElementById('affiliate-since');
+                    const profileAffiliateCodeEl = document.getElementById('profile-affiliate-code');
+                    
+                    if (profileNameEl && profile.full_name) profileNameEl.value = profile.full_name;
+                    if (profileCompanyEl && profile.company) profileCompanyEl.value = profile.company;
+                    if (profilePhoneEl && profile.phone) profilePhoneEl.value = profile.phone;
+                    if (profileAddressEl && profile.address) profileAddressEl.value = profile.address;
+                    if (affiliateSinceEl) affiliateSinceEl.textContent = new Date(profile.created_at).toLocaleDateString();
+                    if (profileAffiliateCodeEl) profileAffiliateCodeEl.textContent = profile.affiliate_code || generateAffiliateCode(profile.full_name || currentUser.email);
+                    
+                    // Load payment information
+                    const paymentMethodEl = document.getElementById('payment-method');
+                    if (paymentMethodEl && profile.payment_method) {
+                        paymentMethodEl.value = profile.payment_method;
+                        showPaymentFields();
+                        
+                        if (profile.payment_method === 'zelle') {
+                            const zelleEmailEl = document.getElementById('zelle-email');
+                            const zellePhoneEl = document.getElementById('zelle-phone');
+                            if (zelleEmailEl && profile.zelle_email) zelleEmailEl.value = profile.zelle_email;
+                            if (zellePhoneEl && profile.zelle_phone) zellePhoneEl.value = profile.zelle_phone;
+                        } else if (profile.payment_method === 'cashapp') {
+                            const cashappTagEl = document.getElementById('cashapp-tag');
+                            if (cashappTagEl && profile.cashapp_tag) cashappTagEl.value = profile.cashapp_tag;
+                        } else if (profile.payment_method === 'paypal') {
+                            const paypalEmailEl = document.getElementById('paypal-email');
+                            if (paypalEmailEl && profile.paypal_email) paypalEmailEl.value = profile.paypal_email;
+                        } else if (profile.payment_method === 'ach') {
+                            const bankNameEl = document.getElementById('bank-name');
+                            const accountNumberEl = document.getElementById('account-number');
+                            const routingNumberEl = document.getElementById('routing-number');
+                            const accountTypeEl = document.getElementById('account-type');
+                            if (bankNameEl && profile.bank_name) bankNameEl.value = profile.bank_name;
+                            if (accountNumberEl && profile.account_number) accountNumberEl.value = profile.account_number;
+                            if (routingNumberEl && profile.routing_number) routingNumberEl.value = profile.routing_number;
+                            if (accountTypeEl && profile.account_type) accountTypeEl.value = profile.account_type;
+                        }
+                    }
+                } else {
+                    const affiliateCode = generateAffiliateCode(currentUser.email);
+                    document.getElementById('affiliate-code').textContent = affiliateCode;
+                    const profileAffiliateCodeEl = document.getElementById('profile-affiliate-code');
+                    if (profileAffiliateCodeEl) profileAffiliateCodeEl.textContent = affiliateCode;
+                    const affiliateSinceEl = document.getElementById('affiliate-since');
+                    if (affiliateSinceEl) affiliateSinceEl.textContent = 'Just joined!';
+                }
+                
+                const { data: referrals } = await supabase
+                    .from('referrals')
+                    .select('*')
+                    .eq('affiliate_id', currentUser.id)
+                    .order('created_at', { ascending: false });
+                
+                const { data: payments } = await supabase
+                    .from('payments')
+                    .select('*')
+                    .eq('affiliate_id', currentUser.id)
+                    .order('created_at', { ascending: false });
+                
+                updateDashboardStats(referrals || [], payments || []);
+                renderReferrals(referrals || []);
+                renderPayments(payments || []);
+                
+                // Update profile total referrals
+                const profileTotalReferralsEl = document.getElementById('profile-total-referrals');
+                if (profileTotalReferralsEl) {
+                    profileTotalReferralsEl.textContent = (referrals || []).length;
+                }
+                
+            } catch (error) {
+                console.error('Error loading affiliate data:', error);
+            }
+        }
+
+        function showPaymentFields() {
+            const method = document.getElementById('payment-method');
+            if (!method) return;
+            
+            const methodValue = method.value;
+            
+            const zelleFields = document.getElementById('zelle-fields');
+            const cashappFields = document.getElementById('cashapp-fields');
+            const paypalFields = document.getElementById('paypal-fields');
+            const achFields = document.getElementById('ach-fields');
+            
+            if (zelleFields) zelleFields.style.display = 'none';
+            if (cashappFields) cashappFields.style.display = 'none';
+            if (paypalFields) paypalFields.style.display = 'none';
+            if (achFields) achFields.style.display = 'none';
+            
+            if (methodValue && document.getElementById(methodValue + '-fields')) {
+                document.getElementById(methodValue + '-fields').style.display = 'block';
+            }
+        }
+
+        async function handleProfileUpdate(e) {
+            e.preventDefault();
+            
+            const paymentMethodEl = document.getElementById('payment-method');
+            const paymentMethod = paymentMethodEl ? paymentMethodEl.value : '';
+            let paymentData = {};
+            
+            if (paymentMethod === 'zelle') {
+                const zelleEmailEl = document.getElementById('zelle-email');
+                const zellePhoneEl = document.getElementById('zelle-phone');
+                paymentData = {
+                    payment_method: 'zelle',
+                    zelle_email: zelleEmailEl ? zelleEmailEl.value.trim() || null : null,
+                    zelle_phone: zellePhoneEl ? zellePhoneEl.value.trim() || null : null
+                };
+            } else if (paymentMethod === 'cashapp') {
+                const cashappTagEl = document.getElementById('cashapp-tag');
+                paymentData = {
+                    payment_method: 'cashapp',
+                    cashapp_tag: cashappTagEl ? cashappTagEl.value.trim() || null : null
+                };
+            } else if (paymentMethod === 'paypal') {
+                const paypalEmailEl = document.getElementById('paypal-email');
+                paymentData = {
+                    payment_method: 'paypal',
+                    paypal_email: paypalEmailEl ? paypalEmailEl.value.trim() || null : null
+                };
+            } else if (paymentMethod === 'ach') {
+                const bankNameEl = document.getElementById('bank-name');
+                const accountNumberEl = document.getElementById('account-number');
+                const routingNumberEl = document.getElementById('routing-number');
+                const accountTypeEl = document.getElementById('account-type');
+                paymentData = {
+                    payment_method: 'ach',
+                    bank_name: bankNameEl ? bankNameEl.value.trim() || null : null,
+                    account_number: accountNumberEl ? accountNumberEl.value.trim() || null : null,
+                    routing_number: routingNumberEl ? routingNumberEl.value.trim() || null : null,
+                    account_type: accountTypeEl ? accountTypeEl.value || null : null
+                };
+            }
+            
+            const profileNameEl = document.getElementById('profile-name');
+            const profileCompanyEl = document.getElementById('profile-company');
+            const profilePhoneEl = document.getElementById('profile-phone');
+            const profileAddressEl = document.getElementById('profile-address');
+            
+            const profileData = {
+                full_name: profileNameEl ? profileNameEl.value.trim() : '',
+                company: profileCompanyEl ? profileCompanyEl.value.trim() || null : null,
+                phone: profilePhoneEl ? profilePhoneEl.value.trim() || null : null,
+                address: profileAddressEl ? profileAddressEl.value.trim() || null : null,
+                updated_at: new Date().toISOString(),
+                ...paymentData
+            };
+
+            try {
+                showNotification('Updating profile...', 'success');
+                
+                const { error } = await supabase
+                    .from('user_profiles')
+                    .update(profileData)
+                    .eq('user_id', currentUser.id);
+
+                if (error) throw error;
+                
+                showNotification('Profile updated successfully!', 'success');
+                
+                if (profileData.full_name) {
+                    document.getElementById('user-name').textContent = profileData.full_name;
+                }
+
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        function updateDashboardStats(referrals, payments) {
+            const totalReferrals = referrals.length;
+            const activeClients = referrals.filter(r => r.status === 'customer').length;
+            const totalEarnings = payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const monthlyEarnings = payments
+                .filter(p => p.created_at && p.created_at.startsWith(currentMonth))
+                .reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+
+            document.getElementById('total-referrals').textContent = totalReferrals;
+            document.getElementById('active-clients').textContent = activeClients;
+            document.getElementById('monthly-earnings
