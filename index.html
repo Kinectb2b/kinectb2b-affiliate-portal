@@ -98,6 +98,15 @@
         .read-button { background: var(--warning-yellow); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; border: none; cursor: pointer; }
         .read-button:hover { background: #D97706; }
         .unread-indicator { background: var(--danger-red); color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; }
+
+        /* About KinectB2B styles */
+        .about-kinectb2b { background: var(--gradient-blue); color: white; padding: 2rem; border-radius: 16px; margin-bottom: 2rem; }
+        .about-kinectb2b h4 { margin-bottom: 1rem; }
+        .about-kinectb2b p { margin-bottom: 1rem; opacity: 0.9; }
+        .about-kinectb2b ul { margin: 1rem 0; padding-left: 1.5rem; }
+        .about-kinectb2b li { margin-bottom: 0.5rem; opacity: 0.9; }
+        .website-link { background: rgba(255,255,255,0.2); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block; margin-top: 1rem; font-weight: 600; transition: all 0.3s ease; }
+        .website-link:hover { background: rgba(255,255,255,0.3); color: white; }
     </style>
 </head>
 <body>
@@ -284,6 +293,7 @@
                     <button class="tab" onclick="showTab(event, 'my-referrals')">My Referrals</button>
                     <button class="tab" onclick="showTab(event, 'payments')">Payments</button>
                     <button class="tab" onclick="showTab(event, 'profile')">Profile</button>
+                    <button class="tab" onclick="showTab(event, 'about-kinectb2b')">About KinectB2B</button>
                     <button class="tab" onclick="showTab(event, 'program-info')">Program Info</button>
                 </div>
 
@@ -485,6 +495,66 @@
                             <button type="submit" class="btn btn-primary">Update Profile</button>
                         </div>
                     </form>
+                </div>
+
+                <div id="about-kinectb2b-content" class="tab-content">
+                    <div style="max-width: 900px;">
+                        <h3>About KinectB2B</h3>
+                        
+                        <div class="about-kinectb2b">
+                            <h4>🚀 Who We Are</h4>
+                            <p>KinectB2B is a leading B2B lead generation company that specializes in helping businesses connect with qualified prospects and grow their revenue. We use advanced targeting, proven strategies, and cutting-edge technology to deliver high-quality leads that convert into customers.</p>
+                            
+                            <h4>💼 What We Do</h4>
+                            <ul>
+                                <li><strong>Lead Generation:</strong> We generate qualified B2B leads for businesses across various industries</li>
+                                <li><strong>Appointment Setting:</strong> Our team schedules qualified appointments with decision-makers</li>
+                                <li><strong>Sales Development:</strong> We help businesses build robust sales pipelines</li>
+                                <li><strong>Marketing Automation:</strong> Advanced systems to nurture leads and drive conversions</li>
+                                <li><strong>Performance Analytics:</strong> Detailed reporting and ROI tracking for every campaign</li>
+                            </ul>
+                            
+                            <h4>🎯 Our Specialty Industries</h4>
+                            <p>We excel at generating leads for:</p>
+                            <ul>
+                                <li>Healthcare & Medical Services</li>
+                                <li>Technology & Software Companies</li>
+                                <li>Financial Services & Insurance</li>
+                                <li>Real Estate & Property Management</li>
+                                <li>Legal & Professional Services</li>
+                                <li>Consulting & Business Services</li>
+                                <li>Manufacturing & Industrial</li>
+                                <li>Construction & Engineering</li>
+                            </ul>
+                            
+                            <h4>📈 Proven Results</h4>
+                            <p>Our clients typically see:</p>
+                            <ul>
+                                <li>300%+ increase in qualified leads within 90 days</li>
+                                <li>50%+ improvement in conversion rates</li>
+                                <li>Millions in additional revenue generated</li>
+                                <li>Average ROI of 4:1 or better</li>
+                            </ul>
+                            
+                            <a href="https://www.kinectb2b.com" target="_blank" class="website-link">
+                                🌐 Visit KinectB2B.com to Learn More
+                            </a>
+                        </div>
+                        
+                        <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px; margin-top: 2rem;">
+                            <h4 style="color: var(--electric-blue); margin-bottom: 1rem;">Why Refer KinectB2B?</h4>
+                            <p>When you refer a business to KinectB2B, you're not just earning commissions - you're helping businesses grow and succeed. Our proven track record means your referrals will see real results, making them more likely to stay as long-term clients and ensuring your commissions keep coming for the full 12 months.</p>
+                            
+                            <p><strong>Perfect referrals are businesses that:</strong></p>
+                            <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+                                <li>Need more qualified leads and appointments</li>
+                                <li>Have a proven sales process but need more prospects</li>
+                                <li>Offer high-value services ($1,000+ per client)</li>
+                                <li>Are ready to invest in growth and scale their business</li>
+                                <li>Currently spend money on marketing but aren't getting results</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="program-info-content" class="tab-content">
@@ -1013,10 +1083,10 @@
                                             ${referral.contact_phone ? `<small>${referral.contact_phone}</small>` : ''}
                                         </td>
                                         <td><span class="status-badge status-${statusClass}">${statusClass.charAt(0).toUpperCase() + statusClass.slice(1)}</span></td>
-                                        <td>${referral.pro_plan_value ? `$${parseFloat(referral.pro_plan_value).toFixed(2)}/month` : 'TBD'}</td>
+                                        <td>${referral.pro_plan_value ? `${parseFloat(referral.pro_plan_value).toFixed(2)}/month` : 'TBD'}</td>
                                         <td>
                                             ${referral.pro_plan_value ? 
-                                                `<strong style="color: var(--success-green);">$${commission}/month</strong><br><small>($${(commission * 12).toFixed(2)} total)</small>` : 
+                                                `<strong style="color: var(--success-green);">${commission}/month</strong><br><small>(${(commission * 12).toFixed(2)} total)</small>` : 
                                                 '<span style="color: var(--slate-gray);">TBD</span>'
                                             }
                                         </td>
@@ -1065,7 +1135,7 @@
                                     ${upcomingPayments.map(payment => `
                                         <tr>
                                             <td><strong>${payment.referral_company || 'Commission Payment'}</strong></td>
-                                            <td style="color: var(--warning-yellow); font-weight: 600;">$${parseFloat(payment.amount).toFixed(2)}</td>
+                                            <td style="color: var(--warning-yellow); font-weight: 600;">${parseFloat(payment.amount).toFixed(2)}</td>
                                             <td>${payment.due_date ? new Date(payment.due_date).toLocaleDateString() : 'Within 30 days'}</td>
                                             <td><span class="status-badge status-upcoming">Upcoming</span></td>
                                         </tr>
@@ -1186,6 +1256,7 @@
             }
         }
 
+        // FIXED: Updated handleProfileUpdate function to remove problematic database fields
         async function handleProfileUpdate(e) {
             e.preventDefault();
             
@@ -1218,13 +1289,12 @@
                 };
             }
             
+            // FIXED: Removed ssn_last_four and tax_id fields that don't exist in database
             const profileData = {
                 full_name: document.getElementById('profile-name').value.trim(),
                 company: document.getElementById('profile-company').value.trim() || null,
                 phone: document.getElementById('profile-phone').value.trim() || null,
                 address: document.getElementById('profile-address').value.trim() || null,
-                ssn_last_four: document.getElementById('profile-ssn').value.trim() || null,
-                tax_id: document.getElementById('profile-tax-id').value.trim() || null,
                 updated_at: new Date().toISOString(),
                 ...paymentData
             };
@@ -1817,10 +1887,7 @@
                             <p><strong>Status:</strong> ${affiliate.status || 'active'}</p>
                         </div>
                         <div>
-                            <h4 style="color: var(--warning-yellow); margin-bottom: 1rem;">Tax & Payment Info</h4>
-                            <p><strong>SSN (Last 4):</strong> ${affiliate.ssn_last_four || 'N/A'}</p>
-                            <p><strong>Tax ID/EIN:</strong> ${affiliate.tax_id || 'N/A'}</p>
-                            <hr style="margin: 1rem 0;">
+                            <h4 style="color: var(--warning-yellow); margin-bottom: 1rem;">Payment Info</h4>
                             ${paymentInfo}
                         </div>
                     </div>
@@ -1882,7 +1949,7 @@
             }
             
             const csvContent = [
-                ['Name', 'Email', 'Phone', 'Company', 'Affiliate Code', 'Address', 'SSN Last 4', 'Tax ID', 'Payment Method'].join(','),
+                ['Name', 'Email', 'Phone', 'Company', 'Affiliate Code', 'Address', 'Payment Method'].join(','),
                 ...affiliates.map(a => [
                     a.full_name || '',
                     a.email || '',
@@ -1890,8 +1957,6 @@
                     a.company || '',
                     a.affiliate_code || '',
                     a.address || '',
-                    a.ssn_last_four || '',
-                    a.tax_id || '',
                     a.payment_method || ''
                 ].join(','))
             ].join('\n');
