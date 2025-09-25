@@ -701,8 +701,28 @@
             isSignupMode = !isSignupMode;
             updateAuthModal();
         }
+}
+    }
 
-        function updateAuthModal() {
+    function showSignupModal() {
+        isSignupMode = true;
+        updateAuthModal();
+        document.getElementById('auth-modal').classList.add('active');
+    }
+
+    function showLoginModal() {
+        isSignupMode = false;
+        updateAuthModal();
+        document.getElementById('auth-modal').classList.add('active');
+    }
+
+    function scrollToCalculator() {
+    document.getElementById('calculator-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function updateAuthModal() {
+        
+        
             const title = document.getElementById('auth-title');
             const subtitle = document.getElementById('auth-subtitle');
             const submitBtn = document.getElementById('auth-submit');
