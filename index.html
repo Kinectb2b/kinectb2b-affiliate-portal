@@ -1216,6 +1216,21 @@
                 }
             }
             
+            const location = document.getElementById('ref-location').value.trim();
+            
+            // Build notes with all additional info
+            let notesContent = '';
+            if (industryValue) {
+                notesContent += `Industry: ${industryValue}\n`;
+            }
+            if (location) {
+                notesContent += `Location: ${location}\n`;
+            }
+            const additionalNotes = document.getElementById('ref-notes').value.trim();
+            if (additionalNotes) {
+                notesContent += `\nNotes: ${additionalNotes}`;
+            }
+            
             const referralData = {
                 affiliate_id: currentUser.id,
                 company_name: document.getElementById('ref-company').value.trim(),
@@ -1223,19 +1238,10 @@
                 contact_name: document.getElementById('ref-contact-name').value.trim(),
                 contact_email: document.getElementById('ref-email').value.trim() || null,
                 contact_phone: document.getElementById('ref-phone').value.trim(),
-                location: document.getElementById('ref-location').value.trim(),
-                notes: document.getElementById('ref-notes').value.trim() || null,
+                notes: notesContent || null,
                 status: 'pending',
                 created_at: new Date().toISOString()
             };
-
-            // Add industry to notes if specified
-            if (industryValue) {
-                const industryNote = `Industry: ${industryValue}`;
-                referralData.notes = referralData.notes ? 
-                    `${industryNote}\n\n${referralData.notes}` : 
-                    industryNote;
-            }
 
             try {
                 showNotification('Submitting referral...', 'success');
