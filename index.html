@@ -1070,7 +1070,11 @@
                                             <small>${referral.contact_email}</small>
                                             ${referral.contact_phone ? `<br><small>${referral.contact_phone}</small>` : ''}
                                         </td>
-                                        <td>${referral.industry_type || 'N/A'}</td>
+                                        <td>
+                                            ${referral.notes && referral.notes.includes('Industry:') ? 
+                                                referral.notes.split('\n')[0].replace('Industry: ', '') : 'N/A'
+                                            }
+                                        </td>
                                         <td><span class="status-badge status-${statusClass}">${statusClass.charAt(0).toUpperCase() + statusClass.slice(1)}</span></td>
                                         <td>${referral.pro_plan_value ? `${parseFloat(referral.pro_plan_value).toFixed(2)}/month` : 'TBD'}</td>
                                         <td>
@@ -1216,7 +1220,6 @@
                 affiliate_id: currentUser.id,
                 company_name: document.getElementById('ref-company').value.trim(),
                 website: document.getElementById('ref-website').value.trim() || null,
-                industry_type: industryValue || null,
                 contact_name: document.getElementById('ref-contact-name').value.trim(),
                 contact_email: document.getElementById('ref-email').value.trim() || null,
                 contact_phone: document.getElementById('ref-phone').value.trim(),
@@ -1225,6 +1228,14 @@
                 status: 'pending',
                 created_at: new Date().toISOString()
             };
+
+            // Add industry to notes if specified
+            if (industryValue) {
+                const industryNote = `Industry: ${industryValue}`;
+                referralData.notes = referralData.notes ? 
+                    `${industryNote}\n\n${referralData.notes}` : 
+                    industryNote;
+            }
 
             try {
                 showNotification('Submitting referral...', 'success');
