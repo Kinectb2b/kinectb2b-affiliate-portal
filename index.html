@@ -936,16 +936,6 @@
         }
 
         // Auth functions
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            if (notification) {
-                notification.textContent = message;
-                notification.className = `notification ${type} show`;
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                }, 4000);
-            }
-        }
         async function handleAuth(e) {
             e.preventDefault();
             
@@ -1051,26 +1041,7 @@
             const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
             return `${namePart}${randomPart}`;
         }
-async function showAffiliateDashboard() {
-            document.getElementById('landing-page').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-            document.getElementById('affiliate-dashboard').classList.remove('hidden');
-            document.getElementById('admin-dashboard').classList.add('hidden');
-            
-            closeAuthModal();
-            loadAffiliateData();
-        }
 
-        async function showAdminDashboard() {
-            document.getElementById('landing-page').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-            document.getElementById('affiliate-dashboard').classList.add('hidden');
-            document.getElementById('admin-dashboard').classList.remove('hidden');
-            
-            closeAuthModal();
-            document.getElementById('user-name').textContent = 'Admin - Robert';
-            await loadAdminData();
-        }
         async function handleUserSession(user) {
             currentUser = user;
             
@@ -1095,7 +1066,26 @@ async function showAffiliateDashboard() {
             closeAuthModal();
         }
 
-        
+        function showAffiliateDashboard() {
+            document.getElementById('landing-page').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('affiliate-dashboard').classList.remove('hidden');
+            document.getElementById('admin-dashboard').classList.add('hidden');
+            
+            closeAuthModal();
+            loadAffiliateData();
+        }
+
+        async function showAdminDashboard() {
+            document.getElementById('landing-page').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('affiliate-dashboard').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.remove('hidden');
+            
+            closeAuthModal();
+            document.getElementById('user-name').textContent = 'Admin - Robert';
+            await loadAdminData();
+        }
 
         function showPaymentFields() {
             const method = document.getElementById('payment-method').value;
@@ -1278,234 +1268,6 @@ async function showAffiliateDashboard() {
                                     </tr>
                                 `;
                             }).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        }
-
-        async function answerQuestion(questionId, question, currentAnswer) {
-            const answer = prompt(`Question: ${question}\n\nYour answer:`, currentAnswer);
-            if (!answer) return;
-            
-            try {
-                const { error } = await supabase
-                    .from('questions')
-                    .update({ answer: answer, status: 'answered', answered_at: new Date().toISOString() })
-                    .eq('id', questionId);
-                
-                if (error) throw error;
-                
-                showNotification('Answer saved!', 'success');
-                await loadAdminData();
-            } catch (error) {
-                showNotification('Error: ' + error.message, 'error');
-            }
-        }
-
-        async function markReferralAsRead(referralId) {
-            try {
-                const { error } = await supabase
-                    .from('referrals')
-                    .update({ admin_viewed: true })
-                    .eq('id', referralId);
-                
-                if (error) throw error;
-                
-                showNotification('Marked as read', 'success');
-                await loadAdminData();
-            } catch (error) {
-                showNotification('Error: ' + error.message, 'error');
-            }
-        }
-
-        async function updateReferralStatus(referralId, newStatus) {
-            try {
-                const updates = { status: newStatus, admin_viewed: true };
-                
-                if (newStatus === 'customer') {
-                    const planOptions = [
-                        { value: 250, label: 'Pro Plan 100' },
-                        { value: 500, label: 'Pro Plan 200' },
-                        { value: 750, label: 'Pro Plan 300' },
-                        { value: 1000, label: 'Pro Plan 400' },
-                        { value: 1250, label: 'Pro Plan 500' },
-                        { value: 1500, label: 'Pro Plan 600' },
-                        { value: 1750, label: 'Pro Plan 700' },
-                        { value: 2000, label: 'Pro Plan 800' },
-                        { value: 2250, label: 'Pro Plan 900' },
-                        { value: 2500, label: 'Pro Plan 1000' },
-                        { value: 2750, label: 'Pro Plan 1100' },
-                        { value: 3000, label: 'Pro Plan 1200' }
-                    ];
-                    
-                    const selectOptions = planOptions.map(p => `<option value="${p.value}">${p.label} - ${p.value}/mo</option>`).join('');
-                    const modal = document.createElement('div');
-                    modal.className = 'modal active';
-                    modal.innerHTML = `
-                        <div class="modal-content">
-                            <h3>Select Pro Plan</h3>
-                            <select id="plan-value-select" style="width: 100%; padding: 12px; margin: 1rem 0; border: 2px solid var(--border-gray); border-radius: 8px;">
-                                <option value="">Choose plan...</option>
-                                ${selectOptions}
-                            </select>
-                            <div style="display: flex; gap: 1rem;">
-                                <button class="btn btn-primary" onclick="savePlanAndStatus('${referralId}', '${newStatus}')">Save</button>
-                                <button class="btn" onclick="this.closest('.modal').remove()" style="background: var(--light-gray); color: var(--slate-gray);">Cancel</button>
-                            </div>
-                        </div>
-                    `;
-                    document.body.appendChild(modal);
-                    return;
-                }
-                
-                const { error } = await supabase
-                    .from('referrals')
-                    .update(updates)
-                    .eq('id', referralId);
-                
-                if (error) throw error;
-                
-                showNotification(`Status updated to ${newStatus}`, 'success');
-                await loadAdminData();
-            } catch (error) {
-                showNotification('Error: ' + error.message, 'error');
-            }
-        }
-
-        async function savePlanAndStatus(referralId, status) {
-            const select = document.getElementById('plan-value-select');
-            const planValue = parseFloat(select.value);
-            
-            if (!planValue) {
-                showNotification('Please select a plan', 'error');
-                return;
-            }
-            
-            const planText = select.options[select.selectedIndex].text;
-            const planName = planText.split(' - ')[0];
-            
-            try {
-                const { error } = await supabase
-                    .from('referrals')
-                    .update({ 
-                        status: status,
-                        pro_plan_value: planValue,
-                        pro_plan_name: planName,
-                        admin_viewed: true
-                    })
-                    .eq('id', referralId);
-                
-                if (error) throw error;
-                
-                document.querySelector('.modal').remove();
-                showNotification('Client activated with ' + planName, 'success');
-                await loadAdminData();
-            } catch (error) {
-                showNotification('Error: ' + error.message, 'error');
-            }
-        }
-
-        async function deleteReferral(referralId, companyName) {
-            if (!confirm(`Delete referral for ${companyName}?`)) return;
-            
-            try {
-                const { error } = await supabase.from('referrals').delete().eq('id', referralId);
-                if (error) throw error;
-                showNotification('Referral deleted', 'success');
-                await loadAdminData();
-            } catch (error) {
-                showNotification('Error: ' + error.message, 'error');
-            }
-        }
-
-        async function deleteAffiliate(userId, affiliateName) {
-            if (!confirm(`Delete affiliate "${affiliateName}"?`)) return;
-            
-            try {
-                const { error } = await supabase.from('user_profiles').delete().eq('user_id', userId);
-                if (error) throw error;
-                showNotification('Affiliate deleted', 'success');
-                await loadAdminData();
-            } catch (error) {
-                showNotification('Error: ' + error.message, 'error');
-            }
-        }
-
-        async function deletePayment(paymentId) {
-            if (!confirm('Delete this payment?')) return;
-            
-            try {
-                const { error } = await supabase.from('payments').delete().eq('id', paymentId);
-                if (error) throw error;
-                showNotification('Payment deleted', 'success');
-                await loadAdminData();
-            } catch (error) {
-                showNotification('Error: ' + error.message, 'error');
-            }
-        }
-
-        async function markAllNotificationsRead() {
-            try {
-                const { error } = await supabase.from('referrals').update({ admin_viewed: true }).eq('admin_viewed', false);
-                if (error) throw error;
-                showNotification('All marked as read', 'success');
-                await loadAdminData();
-            } catch (error) {
-                showNotification('Error: ' + error.message, 'error');
-            }
-        }
-
-        async function markAllAffiliatesRead() {
-            try {
-                const { error } = await supabase.from('user_profiles').update({ admin_viewed: true }).eq('admin_viewed', false);
-                if (error) throw error;
-                showNotification('All affiliates marked as seen', 'success');
-                await loadAdminData();
-            } catch (error) {
-                showNotification('Error: ' + error.message, 'error');
-            }
-        }
-
-        function exportAffiliates() {
-            const affiliates = window.adminData?.affiliates || [];
-            if (affiliates.length === 0) {
-                showNotification('No affiliates to export', 'error');
-                return;
-            }
-            
-            const csvContent = [
-                ['Name', 'Email', 'Phone', 'Company', 'Affiliate Code', 'Status'].join(','),
-                ...affiliates.map(a => [
-                    a.full_name || '',
-                    a.email || '',
-                    a.phone || '',
-                    a.company || '',
-                    a.affiliate_code || '',
-                    a.status || 'active'
-                ].join(','))
-            ].join('\n');
-            
-            const blob = new Blob([csvContent], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `affiliates_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-            
-            showNotification('Affiliates exported', 'success');
-        }
-
-        // Modal click outside to close
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('modal')) {
-                e.target.classList.remove('active');
-            }
-        });
-    </script>
-</body>
-</html>
                         </tbody>
                     </table>
                 </div>
@@ -1827,7 +1589,16 @@ async function showAffiliateDashboard() {
             });
         }
 
-        
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            if (notification) {
+                notification.textContent = message;
+                notification.className = `notification ${type} show`;
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 4000);
+            }
+        }
 
         function showProfileEdit() {
             document.getElementById('profile-view').style.display = 'none';
@@ -2504,15 +2275,4 @@ async function showAffiliateDashboard() {
                             </tr>
                         </thead>
                         <tbody>
-                            ${questions.map(q => {
-                                const affiliate = affiliateMap[q.affiliate_id] || {};
-                                return `
-                                    <tr>
-                                        <td>${new Date(q.created_at).toLocaleDateString()}</td>
-                                        <td><strong>${affiliate.full_name || 'Unknown'}</strong></td>
-                                        <td>${q.question}</td>
-                                        <td><span class="status-badge status-${q.status === 'answered' ? 'active' : 'pending'}">${q.status}</span></td>
-                                        <td><button class="btn btn-small btn-primary" onclick="answerQuestion('${q.id}', '${q.question.replace(/'/g, "\\'")}', '${(q.answer || '').replace(/'/g, "\\'")}')">Answer</button></td>
-                                    </tr>
-                                `;
-                            }).join('')}
+                            ${questions
