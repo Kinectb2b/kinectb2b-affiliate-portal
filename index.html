@@ -1577,22 +1577,25 @@
         }
 
         function updateAdminStats(affiliates = [], referrals = [], payments = []) {
-            const totalAffiliates = affiliates.length;
-            const totalReferrals = referrals.length;
-            const pendingReferrals = referrals.filter(r => r.status === 'pending' && !r.admin_viewed).length;
-            const customers = referrals.filter(r => r.status === 'customer');
-            const monthlyRevenue = customers.reduce((sum, c) => sum + (parseFloat(c.pro_plan_value) || 0), 0);
-            
-            document.getElementById('admin-total-affiliates').textContent = totalAffiliates;
-            document.getElementById('admin-total-referrals').textContent = totalReferrals;
-            document.getElementById('admin-pending-referrals').textContent = pendingReferrals;
-            document.getElementById('admin-monthly-revenue').textContent = `${monthlyRevenue.toFixed(2)}`;
-            
-            document.getElementById('referrals-count').textContent = totalReferrals;
-            document.getElementById('affiliates-count').textContent = totalAffiliates;
-            document.getElementById('active-clients-count').textContent = customers.length;
-            document.getElementById('questions-count').textContent = window.adminData?.questions?.filter(q => q.status === 'pending').length || 0;
-        }
+    const safeSet = (id, val) => { 
+        const el = document.getElementById(id); 
+        if (el) el.textContent = val; 
+    };
+    
+    const totalAffiliates = affiliates.length;
+    const activeReferrals = referrals.filter(r => r.status !== 'customer').length;
+    const newReferrals = referrals.filter(r => r.status === 'pending' && !r.admin_viewed).length;
+    const newAffiliates = affiliates.filter(a => !a.admin_viewed).length;
+    
+    safeSet('admin-total-affiliates', totalAffiliates);
+    safeSet('admin-total-referrals', activeReferrals);
+    safeSet('admin-new-referrals', newReferrals);
+    safeSet('admin-new-affiliates', newAffiliates);
+    safeSet('referrals-count', activeReferrals);
+    safeSet('affiliates-count', totalAffiliates);
+    safeSet('active-clients-count', referrals.filter(r => r.status === 'customer').length);
+    safeSet('questions-count', window.adminData?.questions?.filter(q => q.status === 'pending').length || 0);
+}
 
         function showAdminTab(event, tabName) {
             document.querySelectorAll('#admin-dashboard .tab').forEach(tab => {
