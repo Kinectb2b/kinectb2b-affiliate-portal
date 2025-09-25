@@ -380,7 +380,26 @@
                 <div id="profile-content" class="tab-content">
                     <h3>My Profile</h3>
                     
-                    <form id="profile-form" style="max-width: 800px;">
+                    <div id="profile-view" style="max-width: 800px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                            <div>
+                                <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Personal Information</h4>
+                                <p><strong>Name:</strong> <span id="view-name">-</span></p>
+                                <p><strong>Company:</strong> <span id="view-company">-</span></p>
+                                <p><strong>Phone:</strong> <span id="view-phone">-</span></p>
+                                <p><strong>Address:</strong> <span id="view-address">-</span></p>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Payment Information</h4>
+                                <p><strong>Method:</strong> <span id="view-payment">-</span></p>
+                                <p id="view-payment-details">-</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="showProfileEdit()">Update Personal Info</button>
+                        <button class="btn" onclick="showPaymentEdit()" style="background: var(--success-green); color: white; margin-left: 1rem;">Update Payment Info</button>
+                    </div>
+
+                    <form id="profile-form" style="max-width: 800px; display: none;">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                             <div>
                                 <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Personal Information</h4>
@@ -427,7 +446,7 @@
                                     <input type="text" id="profile-tax-id" placeholder="Optional for business entities">
                                 </div>
                             </div>
-                            <div>
+                            <div id="payment-edit-section">
                                 <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Payment Information</h4>
                                 <div class="form-group">
                                     <label for="payment-method">Preferred Payment Method</label>
@@ -501,7 +520,8 @@
                                     <p><strong>Affiliate Code:</strong> <span id="profile-affiliate-code">Loading...</span></p>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <button type="button" class="btn" onclick="cancelProfileEdit()" style="background: var(--light-gray); color: var(--slate-gray); margin-left: 1rem;">Cancel</button>
                         </div>
                     </form>
                 </div>
@@ -634,12 +654,12 @@
                     <div class="stat-label">Total Referrals</div>
                 </div>
                 <div class="card stat-card">
-                    <div class="stat-number" id="admin-pending-referrals">0</div>
-                    <div class="stat-label">🔔 New Referrals</div>
+                    <div class="stat-number" id="admin-new-affiliates">0</div>
+                    <div class="stat-label">🔔 New Affiliates</div>
                 </div>
                 <div class="card stat-card">
-                    <div class="stat-number" id="admin-monthly-revenue">$0</div>
-                    <div class="stat-label">Monthly Revenue</div>
+                    <div class="stat-number" id="admin-pending-questions">0</div>
+                    <div class="stat-label">💬 Pending Questions</div>
                 </div>
             </div>
 
