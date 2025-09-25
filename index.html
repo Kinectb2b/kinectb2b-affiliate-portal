@@ -1051,7 +1051,26 @@
             const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
             return `${namePart}${randomPart}`;
         }
+async function showAffiliateDashboard() {
+            document.getElementById('landing-page').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('affiliate-dashboard').classList.remove('hidden');
+            document.getElementById('admin-dashboard').classList.add('hidden');
+            
+            closeAuthModal();
+            loadAffiliateData();
+        }
 
+        async function showAdminDashboard() {
+            document.getElementById('landing-page').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('affiliate-dashboard').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.remove('hidden');
+            
+            closeAuthModal();
+            document.getElementById('user-name').textContent = 'Admin - Robert';
+            await loadAdminData();
+        }
         async function handleUserSession(user) {
             currentUser = user;
             
@@ -1076,26 +1095,7 @@
             closeAuthModal();
         }
 
-        async function showAffiliateDashboard() {
-            document.getElementById('landing-page').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-            document.getElementById('affiliate-dashboard').classList.remove('hidden');
-            document.getElementById('admin-dashboard').classList.add('hidden');
-            
-            closeAuthModal();
-            loadAffiliateData();
-        }
-
-        async function showAdminDashboard() {
-            document.getElementById('landing-page').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-            document.getElementById('affiliate-dashboard').classList.add('hidden');
-            document.getElementById('admin-dashboard').classList.remove('hidden');
-            
-            closeAuthModal();
-            document.getElementById('user-name').textContent = 'Admin - Robert';
-            await loadAdminData();
-        }
+        
 
         function showPaymentFields() {
             const method = document.getElementById('payment-method').value;
