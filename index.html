@@ -321,7 +321,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="ref-industry">Industry Type</label>
-                                    <select id="ref-industry">
+                                    <select id="ref-industry" onchange="handleIndustryChange()">
                                         <option value="">Select industry...</option>
                                         <option value="Healthcare">Healthcare</option>
                                         <option value="Technology">Technology</option>
@@ -333,8 +333,12 @@
                                         <option value="Construction">Construction</option>
                                         <option value="Education">Education</option>
                                         <option value="Retail">Retail</option>
-                                        <option value="Other">Other</option>
+                                        <option value="Other">Other (specify below)</option>
                                     </select>
+                                </div>
+                                <div class="form-group" id="custom-industry-group" style="display: none;">
+                                    <label for="ref-custom-industry">Specify Industry</label>
+                                    <input type="text" id="ref-custom-industry" placeholder="e.g., Agriculture, Entertainment, etc.">
                                 </div>
                             </div>
                             <div>
@@ -344,16 +348,16 @@
                                     <input type="text" id="ref-contact-name" required>
                                 </div>
                                 <div class="form-group">
-                                    <label for="ref-email">Email Address *</label>
-                                    <input type="email" id="ref-email" required>
+                                    <label for="ref-email">Email Address</label>
+                                    <input type="email" id="ref-email">
                                 </div>
                                 <div class="form-group">
-                                    <label for="ref-phone">Phone Number</label>
-                                    <input type="tel" id="ref-phone">
+                                    <label for="ref-phone">Phone Number *</label>
+                                    <input type="tel" id="ref-phone" required>
                                 </div>
                                 <div class="form-group">
-                                    <label for="ref-location">Location (City, State)</label>
-                                    <input type="text" id="ref-location" placeholder="e.g., Miami, FL">
+                                    <label for="ref-location">Location (City, State) *</label>
+                                    <input type="text" id="ref-location" placeholder="e.g., Miami, FL" required>
                                 </div>
                             </div>
                         </div>
@@ -960,8 +964,8 @@
                 
                 if (profile) {
                     document.getElementById('user-name').textContent = `${profile.full_name || 'User'}`;
-                    document.getElementById('affiliate-code').textContent = profile.affiliate_code || 'Loading...';
-                    document.getElementById('profile-affiliate-code').textContent = profile.affiliate_code || 'Loading...';
+                    document.getElementById('affiliate-code').textContent = profile.affiliate_code || generateAffiliateCode(profile.full_name || currentUser.email);
+                    document.getElementById('profile-affiliate-code').textContent = profile.affiliate_code || generateAffiliateCode(profile.full_name || currentUser.email);
                     document.getElementById('affiliate-since').textContent = new Date(profile.created_at).toLocaleDateString();
                     
                     // Load profile form
@@ -972,10 +976,15 @@
                     if (profile.social_facebook) document.getElementById('profile-facebook').value = profile.social_facebook;
                     if (profile.social_instagram) document.getElementById('profile-instagram').value = profile.social_instagram;
                     if (profile.social_linkedin) document.getElementById('profile-linkedin').value = profile.social_linkedin;
-                    if (profile.social_tiktok) document.getElementById('profile-tiktok').value = profile.social_tiktok;
                     if (profile.social_twitter) document.getElementById('profile-twitter').value = profile.social_twitter;
                     if (profile.social_youtube) document.getElementById('profile-youtube').value = profile.social_youtube;
                     if (profile.social_website) document.getElementById('profile-website').value = profile.social_website;
+                } else {
+                    // If no profile exists, create basic data
+                    const affiliateCode = generateAffiliateCode(currentUser.email);
+                    document.getElementById('affiliate-code').textContent = affiliateCode;
+                    document.getElementById('profile-affiliate-code').textContent = affiliateCode;
+                    document.getElementById('affiliate-since').textContent = 'Just joined!';
                 }
                 
                 // Load referrals
@@ -1061,7 +1070,7 @@
                                             <small>${referral.contact_email}</small>
                                             ${referral.contact_phone ? `<br><small>${referral.contact_phone}</small>` : ''}
                                         </td>
-                                        <td>${referral.industry || 'N/A'}</td>
+                                        <td>${referral.industry_type || 'N/A'}</td>
                                         <td><span class="status-badge status-${statusClass}">${statusClass.charAt(0).toUpperCase() + statusClass.slice(1)}</span></td>
                                         <td>${referral.pro_plan_value ? `${parseFloat(referral.pro_plan_value).toFixed(2)}/month` : 'TBD'}</td>
                                         <td>
@@ -1176,18 +1185,42 @@
         }
 
         // Referral Form Functions
+        function handleIndustryChange() {
+            const industrySelect = document.getElementById('ref-industry');
+            const customGroup = document.getElementById('custom-industry-group');
+            
+            if (industrySelect.value === 'Other') {
+                customGroup.style.display = 'block';
+            } else {
+                customGroup.style.display = 'none';
+                document.getElementById('ref-custom-industry').value = '';
+            }
+        }
+
         async function handleReferralSubmit(e) {
             e.preventDefault();
+            
+            // Get industry value (either selected or custom)
+            let industryValue = document.getElementById('ref-industry').value;
+            if (industryValue === 'Other') {
+                const customIndustry = document.getElementById('ref-custom-industry').value.trim();
+                if (customIndustry) {
+                    industryValue = customIndustry;
+                } else {
+                    showNotification('Please specify the industry type', 'error');
+                    return;
+                }
+            }
             
             const referralData = {
                 affiliate_id: currentUser.id,
                 company_name: document.getElementById('ref-company').value.trim(),
                 website: document.getElementById('ref-website').value.trim() || null,
-                industry: document.getElementById('ref-industry').value || null,
+                industry_type: industryValue || null,
                 contact_name: document.getElementById('ref-contact-name').value.trim(),
-                contact_email: document.getElementById('ref-email').value.trim(),
-                contact_phone: document.getElementById('ref-phone').value.trim() || null,
-                location: document.getElementById('ref-location').value.trim() || null,
+                contact_email: document.getElementById('ref-email').value.trim() || null,
+                contact_phone: document.getElementById('ref-phone').value.trim(),
+                location: document.getElementById('ref-location').value.trim(),
                 notes: document.getElementById('ref-notes').value.trim() || null,
                 status: 'pending',
                 created_at: new Date().toISOString()
@@ -1207,6 +1240,7 @@
                 
                 // Reset form
                 document.getElementById('referral-form').reset();
+                document.getElementById('custom-industry-group').style.display = 'none';
                 
                 // Switch to My Referrals tab
                 showTab(null, 'my-referrals');
@@ -1232,7 +1266,6 @@
                 social_facebook: document.getElementById('profile-facebook').value.trim() || null,
                 social_instagram: document.getElementById('profile-instagram').value.trim() || null,
                 social_linkedin: document.getElementById('profile-linkedin').value.trim() || null,
-                social_tiktok: document.getElementById('profile-tiktok').value.trim() || null,
                 social_twitter: document.getElementById('profile-twitter').value.trim() || null,
                 social_youtube: document.getElementById('profile-youtube').value.trim() || null,
                 social_website: document.getElementById('profile-website').value.trim() || null,
