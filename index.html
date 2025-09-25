@@ -115,8 +115,8 @@
             <div class="card">
                 <div class="logo" style="margin-bottom: 2rem;">KinectB2B Affiliates</div>
                 <div id="login-form">
-                    <h2>Login</h2>
-                    <form id="loginForm">
+                    <h2 id="form-title">Login</h2>
+                    <form id="authForm">
                         <div class="form-group">
                             <label for="login-email">Email</label>
                             <input type="email" id="login-email" required>
@@ -125,10 +125,30 @@
                             <label for="login-password">Password</label>
                             <input type="password" id="login-password" required>
                         </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Login</button>
+                        
+                        <!-- Additional fields for signup (hidden by default) -->
+                        <div id="signup-fields" style="display: none;">
+                            <div class="form-group">
+                                <label for="signup-name">Full Name</label>
+                                <input type="text" id="signup-name">
+                            </div>
+                            <div class="form-group">
+                                <label for="signup-confirm-password">Confirm Password</label>
+                                <input type="password" id="signup-confirm-password">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" id="auth-button" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Login</button>
                     </form>
-                    <p style="text-align: center; color: var(--slate-gray); font-size: 0.9rem;">
-                        <button onclick="showAdminLogin()" style="background: none; border: none; color: var(--electric-blue); text-decoration: underline; cursor: pointer;">Admin Access</button>
+                    
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <button id="toggle-mode" onclick="toggleAuthMode()" style="background: none; border: none; color: var(--electric-blue); text-decoration: underline; cursor: pointer; font-size: 0.9rem;">
+                            Need an account? Sign up here
+                        </button>
+                    </div>
+                    
+                    <p style="text-align: center; color: var(--slate-gray); font-size: 0.9rem; border-top: 1px solid var(--border-gray); padding-top: 1rem;">
+                        <button onclick="showAdminLogin()" style="background: none; border: none; color: var(--slate-gray); text-decoration: underline; cursor: pointer;">Admin Access</button>
                     </p>
                 </div>
             </div>
@@ -237,6 +257,7 @@
         let supabase;
         let currentUser = null;
         let currentUserRole = null;
+        let isSignupMode = false;
 
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 KinectB2B Affiliate Portal Loading...');
@@ -278,25 +299,45 @@
         }
 
         function setupEventListeners() {
-            const loginForm = document.getElementById('loginForm');
-            if (loginForm) {
-                loginForm.addEventListener('submit', handleLogin);
-                console.log('Login form event listener added');
+            const authForm = document.getElementById('authForm');
+            if (authForm) {
+                authForm.addEventListener('submit', handleAuth);
+                console.log('Auth form event listener added');
             } else {
-                console.error('Login form not found!');
+                console.error('Auth form not found!');
             }
         }
 
-        async function handleLogin(e) {
+        function toggleAuthMode() {
+            isSignupMode = !isSignupMode;
+            const formTitle = document.getElementById('form-title');
+            const authButton = document.getElementById('auth-button');
+            const toggleButton = document.getElementById('toggle-mode');
+            const signupFields = document.getElementById('signup-fields');
+            
+            if (isSignupMode) {
+                formTitle.textContent = 'Create Account';
+                authButton.textContent = 'Sign Up';
+                toggleButton.textContent = 'Already have an account? Login here';
+                signupFields.style.display = 'block';
+            } else {
+                formTitle.textContent = 'Login';
+                authButton.textContent = 'Login';
+                toggleButton.textContent = 'Need an account? Sign up here';
+                signupFields.style.display = 'none';
+            }
+        }
+
+        async function handleAuth(e) {
             e.preventDefault();
-            console.log('Login form submitted');
+            console.log(isSignupMode ? 'Signup form submitted' : 'Login form submitted');
             
             const emailInput = document.getElementById('login-email');
             const passwordInput = document.getElementById('login-password');
             
             if (!emailInput || !passwordInput) {
-                console.error('Login inputs not found');
-                showNotification('Login form error', 'error');
+                console.error('Auth inputs not found');
+                showNotification('Form error', 'error');
                 return;
             }
             
@@ -308,6 +349,14 @@
                 return;
             }
             
+            if (isSignupMode) {
+                await handleSignup(email, password);
+            } else {
+                await handleLogin(email, password);
+            }
+        }
+
+        async function handleLogin(email, password) {
             console.log('Attempting login for:', email);
             
             try {
@@ -329,6 +378,83 @@
             } catch (error) {
                 console.error('Login failed:', error);
                 showNotification(`Login failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function handleSignup(email, password) {
+            console.log('Attempting signup for:', email);
+            
+            const nameInput = document.getElementById('signup-name');
+            const confirmPasswordInput = document.getElementById('signup-confirm-password');
+            
+            const fullName = nameInput.value.trim();
+            const confirmPassword = confirmPasswordInput.value;
+            
+            if (!fullName) {
+                showNotification('Please enter your full name', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showNotification('Passwords do not match', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showNotification('Password must be at least 6 characters', 'error');
+                return;
+            }
+            
+            try {
+                showNotification('Creating account...', 'success');
+                
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            full_name: fullName
+                        }
+                    }
+                });
+                
+                if (error) {
+                    console.error('Signup error:', error);
+                    throw error;
+                }
+                
+                console.log('Signup successful:', data);
+                
+                // Create user profile
+                if (data.user) {
+                    try {
+                        const { error: profileError } = await supabase
+                            .from('user_profiles')
+                            .insert({
+                                user_id: data.user.id,
+                                email: email,
+                                full_name: fullName,
+                                role: 'affiliate',
+                                status: 'active',
+                                created_at: new Date().toISOString()
+                            });
+                        
+                        if (profileError) {
+                            console.warn('Profile creation error:', profileError);
+                        }
+                    } catch (profileError) {
+                        console.warn('Failed to create profile:', profileError);
+                    }
+                }
+                
+                showNotification('Account created successfully! Please check your email for verification.', 'success');
+                
+                // Switch back to login mode
+                toggleAuthMode();
+                
+            } catch (error) {
+                console.error('Signup failed:', error);
+                showNotification(`Signup failed: ${error.message}`, 'error');
             }
         }
 
