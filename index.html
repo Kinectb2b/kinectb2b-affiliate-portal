@@ -409,14 +409,6 @@
                                     <label for="profile-address">Full Address</label>
                                     <textarea id="profile-address" rows="3" placeholder="Street address, City, State, ZIP"></textarea>
                                 </div>
-                                <div class="form-group">
-                                    <label for="profile-ssn">SSN (Last 4 Digits - for tax purposes)</label>
-                                    <input type="text" id="profile-ssn" placeholder="1234" maxlength="4">
-                                </div>
-                                <div class="form-group">
-                                    <label for="profile-tax-id">Tax ID/EIN (if applicable)</label>
-                                    <input type="text" id="profile-tax-id" placeholder="Optional for business entities">
-                                </div>
                             </div>
                             <div>
                                 <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Payment Information</h4>
@@ -661,7 +653,10 @@
                 </div>
 
                 <div id="admin-payments-content" class="tab-content">
-                    <h3>Payment Management</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>Payment Management</h3>
+                        <button class="btn btn-small btn-primary" onclick="showAddPaymentModal()">Add Manual Payment</button>
+                    </div>
                     <div id="admin-payments-list">
                         <div class="empty-state">
                             <div class="empty-state-icon">💰</div>
@@ -968,13 +963,11 @@
                     document.getElementById('profile-affiliate-code').textContent = profile.affiliate_code || generateAffiliateCode(profile.full_name || currentUser.email);
                     document.getElementById('affiliate-since').textContent = new Date(profile.created_at).toLocaleDateString();
                     
-                    // Load profile form
+                    // Load profile form - only use existing database fields
                     if (profile.full_name) document.getElementById('profile-name').value = profile.full_name;
                     if (profile.company) document.getElementById('profile-company').value = profile.company;
                     if (profile.phone) document.getElementById('profile-phone').value = profile.phone;
                     if (profile.address) document.getElementById('profile-address').value = profile.address;
-                    if (profile.ssn_last_four) document.getElementById('profile-ssn').value = profile.ssn_last_four;
-                    if (profile.tax_id) document.getElementById('profile-tax-id').value = profile.tax_id;
                     
                     // Load payment information
                     if (profile.payment_method) {
@@ -1528,6 +1521,7 @@
                                                 `<button class="btn btn-small btn-success" onclick="markCommissionPaid('${referral.id}', '${referral.affiliate_id}', ${commission}, '${referral.company_name}')">Mark Paid</button>` :
                                                 (referral.commission_paid ? '<span style="color: var(--success-green);">✅ Paid</span>' : '')
                                             }
+                                            <br><button class="btn btn-small btn-danger" onclick="deleteReferral('${referral.id}', '${referral.company_name}')" style="margin-top: 0.5rem;">Delete</button>
                                         </td>
                                     </tr>
                                 `;
@@ -1824,7 +1818,216 @@
             }
         }
 
-        function viewAffiliateDetails(userId) {
+        async function deleteReferral(referralId, companyName) {
+            if (!confirm(`Are you sure you want to delete the referral for "${companyName}"? This cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                // First delete any related payments
+                const { error: paymentsError } = await supabase
+                    .from('payments')
+                    .delete()
+                    .eq('referral_id', referralId);
+                
+                if (paymentsError) console.warn('Error deleting related payments:', paymentsError);
+                
+                // Then delete the referral
+                const { error } = await supabase
+                    .from('referrals')
+                    .delete()
+                    .eq('id', referralId);
+                
+                if (error) throw error;
+                
+                showNotification(`Referral for "${companyName}" deleted successfully`, 'success');
+                await loadAdminData();
+                
+            } catch (error) {
+                console.error('Error deleting referral:', error);
+                showNotification(`Error deleting referral: ${error.message}`, 'error');
+            }
+        }
+
+        async function deletePayment(paymentId, companyName, amount) {
+            if (!confirm(`Are you sure you want to delete the ${amount} payment for "${companyName}"? This cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                const { error } = await supabase
+                    .from('payments')
+                    .delete()
+                    .eq('id', paymentId);
+                
+                if (error) throw error;
+                
+                showNotification(`Payment of ${amount} for "${companyName}" deleted successfully`, 'success');
+                await loadAdminData();
+                
+            } catch (error) {
+                console.error('Error deleting payment:', error);
+                showNotification(`Error deleting payment: ${error.message}`, 'error');
+            }
+        }
+
+        function showAddPaymentModal() {
+            const affiliates = window.adminData?.affiliates || [];
+            const referrals = window.adminData?.referrals || [];
+            
+            if (affiliates.length === 0) {
+                showNotification('No affiliates available to add payments for', 'error');
+                return;
+            }
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 600px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>Add Manual Payment</h3>
+                        <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                    </div>
+                    
+                    <form id="manual-payment-form">
+                        <div class="form-group">
+                            <label for="payment-affiliate">Select Affiliate *</label>
+                            <select id="payment-affiliate" required onchange="updateReferralDropdown()">
+                                <option value="">Choose affiliate...</option>
+                                ${affiliates.map(affiliate => `
+                                    <option value="${affiliate.user_id}" data-name="${affiliate.full_name || 'Unknown'}" data-code="${affiliate.affiliate_code || 'N/A'}">
+                                        ${affiliate.full_name || 'Unknown'} (${affiliate.affiliate_code || 'N/A'}) - ${affiliate.email}
+                                    </option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="payment-referral">Link to Referral (Optional)</label>
+                            <select id="payment-referral">
+                                <option value="">No specific referral - manual payment</option>
+                            </select>
+                            <small style="color: var(--slate-gray);">Select a referral to link this payment, or leave blank for manual payment</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="payment-amount">Payment Amount *</label>
+                            <input type="number" id="payment-amount" step="0.01" min="0" placeholder="0.00" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="payment-company">Company Name *</label>
+                            <input type="text" id="payment-company" placeholder="Company name for this payment" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="payment-notes">Notes (Optional)</label>
+                            <textarea id="payment-notes" rows="3" placeholder="Additional notes about this payment..."></textarea>
+                        </div>
+                        
+                        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                            <button type="submit" class="btn btn-primary">Add Payment</button>
+                            <button type="button" onclick="this.closest('.modal').remove()" class="btn" style="background: var(--light-gray); color: var(--slate-gray);">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Add form handler
+            document.getElementById('manual-payment-form').addEventListener('submit', handleManualPayment);
+        }
+
+        function updateReferralDropdown() {
+            const affiliateSelect = document.getElementById('payment-affiliate');
+            const referralSelect = document.getElementById('payment-referral');
+            const companyInput = document.getElementById('payment-company');
+            
+            const selectedAffiliateId = affiliateSelect.value;
+            
+            if (!selectedAffiliateId) {
+                referralSelect.innerHTML = '<option value="">No specific referral - manual payment</option>';
+                companyInput.value = '';
+                return;
+            }
+            
+            const referrals = window.adminData?.referrals || [];
+            const affiliateReferrals = referrals.filter(r => r.affiliate_id === selectedAffiliateId);
+            
+            referralSelect.innerHTML = `
+                <option value="">No specific referral - manual payment</option>
+                ${affiliateReferrals.map(referral => `
+                    <option value="${referral.id}" data-company="${referral.company_name}" data-value="${referral.pro_plan_value || 0}">
+                        ${referral.company_name} - ${referral.status} - ${referral.pro_plan_value ? parseFloat(referral.pro_plan_value).toFixed(2) : '0.00'}/month
+                    </option>
+                `).join('')}
+            `;
+            
+            // Auto-fill company name and amount when referral is selected
+            referralSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                if (selectedOption.value) {
+                    companyInput.value = selectedOption.dataset.company || '';
+                    const suggestedAmount = parseFloat(selectedOption.dataset.value) * 0.1;
+                    if (suggestedAmount > 0) {
+                        document.getElementById('payment-amount').value = suggestedAmount.toFixed(2);
+                    }
+                } else {
+                    companyInput.value = '';
+                    document.getElementById('payment-amount').value = '';
+                }
+            });
+        }
+
+        async function handleManualPayment(e) {
+            e.preventDefault();
+            
+            const affiliateId = document.getElementById('payment-affiliate').value;
+            const referralId = document.getElementById('payment-referral').value || null;
+            const amount = parseFloat(document.getElementById('payment-amount').value);
+            const companyName = document.getElementById('payment-company').value.trim();
+            const notes = document.getElementById('payment-notes').value.trim();
+            
+            if (!affiliateId || !amount || !companyName) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            try {
+                showNotification('Adding payment...', 'success');
+                
+                const paymentData = {
+                    affiliate_id: affiliateId,
+                    amount: amount,
+                    referral_company: companyName,
+                    status: 'paid',
+                    created_at: new Date().toISOString()
+                };
+                
+                if (referralId) {
+                    paymentData.referral_id = referralId;
+                }
+                
+                if (notes) {
+                    paymentData.notes = notes;
+                }
+                
+                const { error } = await supabase
+                    .from('payments')
+                    .insert([paymentData]);
+                
+                if (error) throw error;
+                
+                showNotification('Payment added successfully!', 'success');
+                document.querySelector('.modal').remove();
+                await loadAdminData();
+                
+            } catch (error) {
+                console.error('Error adding manual payment:', error);
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
             const affiliate = window.adminData.affiliates.find(a => a.user_id === userId);
             const referrals = window.adminData.referrals.filter(r => r.affiliate_id === userId);
             const payments = window.adminData.payments.filter(p => p.affiliate_id === userId);
