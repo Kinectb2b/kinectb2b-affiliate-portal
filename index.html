@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KinectB2B Affiliate Portal</title>
+    <title>KinectB2B Affiliate Program - Earn 10% Monthly Commission!</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -12,27 +12,62 @@
             --deep-blue: #0F172A; --electric-blue: #2563EB; --white: #FFFFFF;
             --slate-gray: #64748B; --light-gray: #F8FAFC; --border-gray: #E2E8F0;
             --success-green: #10B981; --warning-yellow: #F59E0B; --danger-red: #EF4444;
+            --gradient-blue: linear-gradient(135deg, #2563EB, #3B82F6);
+            --gradient-green: linear-gradient(135deg, #10B981, #059669);
         }
-        body { font-family: 'Inter', sans-serif; line-height: 1.6; color: var(--deep-blue); background-color: var(--light-gray); }
+        body { font-family: 'Inter', sans-serif; line-height: 1.6; color: var(--deep-blue); }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
         h1, h2, h3 { font-weight: 800; line-height: 1.2; }
-        .btn { display: inline-block; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1rem; transition: all 0.3s ease; border: none; cursor: pointer; text-align: center; }
-        .btn-primary { background-color: var(--electric-blue); color: var(--white); }
-        .btn-primary:hover { background-color: #1D4ED8; }
-        .btn-success { background-color: var(--success-green); color: var(--white); }
+        .btn { display: inline-block; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1rem; transition: all 0.3s ease; border: none; cursor: pointer; text-align: center; }
+        .btn-primary { background: var(--gradient-blue); color: var(--white); box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4); }
+        .btn-success { background: var(--gradient-green); color: var(--white); }
         .btn-danger { background-color: var(--danger-red); color: var(--white); }
         .btn-small { padding: 8px 16px; font-size: 0.9rem; }
+        .btn-large { padding: 18px 36px; font-size: 1.2rem; font-weight: 800; }
         .card { background: var(--white); border-radius: 12px; padding: 2rem; box-shadow: 0 4px 15px rgba(15, 23, 42, 0.08); margin-bottom: 2rem; }
+        .hidden { display: none; }
+        .notification { position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; border-radius: 8px; color: var(--white); font-weight: 600; z-index: 1001; transform: translateX(400px); transition: transform 0.3s ease; }
+        .notification.success { background: var(--success-green); }
+        .notification.error { background: var(--danger-red); }
+        .notification.show { transform: translateX(0); }
+        
+        /* Landing Page Styles */
+        .landing-page { background: linear-gradient(135deg, var(--deep-blue) 0%, #1E293B 50%, var(--electric-blue) 100%); min-height: 100vh; color: white; }
+        .landing-nav { padding: 1rem 0; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
+        .nav-content { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 2rem; font-weight: 800; color: white; }
+        .nav-login { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 8px 16px; border-radius: 8px; color: white; text-decoration: none; font-weight: 600; transition: all 0.3s ease; }
+        .nav-login:hover { background: rgba(255,255,255,0.2); }
+        .hero { padding: 6rem 0; text-align: center; }
+        .hero h1 { font-size: 4rem; margin-bottom: 1.5rem; background: linear-gradient(135deg, #fff, #e2e8f0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .hero p { font-size: 1.5rem; margin-bottom: 3rem; opacity: 0.9; max-width: 800px; margin-left: auto; margin-right: auto; }
+        .commission-highlight { background: var(--gradient-green); padding: 2rem; border-radius: 20px; margin: 4rem 0; }
+        .commission-highlight h2 { font-size: 3rem; margin-bottom: 1rem; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin: 4rem 0; }
+        .feature-card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 2rem; border-radius: 16px; text-align: center; transition: all 0.3s ease; }
+        .feature-card:hover { transform: translateY(-10px); background: rgba(255,255,255,0.15); }
+        .feature-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .calculator-section { background: rgba(255,255,255,0.05); padding: 4rem 0; margin: 4rem 0; border-radius: 20px; }
+        
+        /* Login/Signup Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
+        .modal.active { display: flex; }
+        .modal-content { background: var(--white); border-radius: 16px; padding: 3rem; max-width: 500px; width: 100%; color: var(--deep-blue); }
+        .form-group { margin-bottom: 1.5rem; text-align: left; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--deep-blue); }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 2px solid var(--border-gray); border-radius: 8px; font-size: 1rem; transition: all 0.3s ease; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--electric-blue); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        
+        /* Dashboard Styles */
+        .dashboard { background: var(--light-gray); min-height: 100vh; }
         .header { background: var(--white); padding: 1rem 0; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1); position: sticky; top: 0; z-index: 100; }
         .header-content { display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 1.5rem; font-weight: 800; color: var(--deep-blue); }
         .nav-links { display: flex; gap: 2rem; align-items: center; }
-        .nav-links a { text-decoration: none; color: var(--slate-gray); font-weight: 500; cursor: pointer; }
-        .login-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--deep-blue) 0%, #1E293B 100%); padding: 1rem; }
-        .login-card { max-width: 400px; width: 100%; }
-        .login-card .card { background: var(--white); border-radius: 16px; padding: 3rem; text-align: center; }
+        .nav-links a { text-decoration: none; color: var(--slate-gray); font-weight: 500; cursor: pointer; transition: color 0.3s ease; }
+        .nav-links a:hover { color: var(--electric-blue); }
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 3rem; }
-        .stat-card { background: linear-gradient(135deg, var(--electric-blue), #3B82F6); color: var(--white); text-align: center; }
+        .stat-card { background: var(--gradient-blue); color: var(--white); text-align: center; border-radius: 16px; }
         .stat-number { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; }
         .stat-label { font-size: 1rem; opacity: 0.9; }
         .table-container { overflow-x: auto; }
@@ -44,171 +79,199 @@
         .tab.active { color: var(--electric-blue); border-bottom: 2px solid var(--electric-blue); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .form-group { margin-bottom: 1.5rem; text-align: left; }
-        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--deep-blue); }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 2px solid var(--border-gray); border-radius: 8px; font-size: 1rem; }
-        .hidden { display: none; }
-        .empty-state { text-align: center; padding: 3rem 1rem; color: var(--slate-gray); }
-        .empty-state-icon { font-size: 3rem; margin-bottom: 1rem; }
-        .notification { position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; border-radius: 8px; color: var(--white); font-weight: 600; z-index: 1001; transform: translateX(400px); transition: transform 0.3s ease; }
-        .notification.success { background: var(--success-green); }
-        .notification.error { background: var(--danger-red); }
-        .notification.show { transform: translateX(0); }
         .status-badge { padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
         .status-pending { background: #FEF3C7; color: #D97706; }
         .status-contacted { background: #DBEAFE; color: #2563EB; }
         .status-active { background: #D1FAE5; color: #059669; }
         .status-closed { background: #FEE2E2; color: #DC2626; }
         .status-customer { background: #D1FAE5; color: #059669; }
-        
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
-        .modal.active {
-            display: flex;
-        }
-        .modal-content {
-            background: var(--white);
-            border-radius: 12px;
-            padding: 2rem;
-            max-width: 500px;
-            width: 100%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--slate-gray);
-        }
-        
-        /* Large Modal for Affiliate Profile */
-        .large-modal .modal-content {
-            max-width: 1000px;
-            width: 95%;
-            max-height: 90vh;
-        }
+        .status-paid { background: #D1FAE5; color: #059669; }
+        .status-upcoming { background: #FEF3C7; color: #D97706; }
+        .empty-state { text-align: center; padding: 3rem 1rem; color: var(--slate-gray); }
+        .empty-state-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .affiliate-code-card { background: var(--gradient-blue); color: white; text-align: center; border-radius: 16px; margin-bottom: 2rem; }
+        .affiliate-code { font-size: 2rem; font-weight: 800; background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 8px; margin: 1rem 0; font-family: monospace; }
+        .copy-button { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; }
+        .copy-button:hover { background: rgba(255,255,255,0.3); }
     </style>
 </head>
 <body>
-    <div id="login-section" class="login-container">
-        <div class="login-card">
-            <div class="card">
-                <div class="logo" style="margin-bottom: 2rem;">KinectB2B Affiliates</div>
-                <div id="login-form">
-                    <h2 id="form-title">Login</h2>
-                    <form id="authForm">
-                        <div class="form-group">
-                            <label for="login-email">Email</label>
-                            <input type="email" id="login-email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="login-password">Password</label>
-                            <input type="password" id="login-password" required>
-                        </div>
-                        
-                        <!-- Additional fields for signup (hidden by default) -->
-                        <div id="signup-fields" style="display: none;">
-                            <div class="form-group">
-                                <label for="signup-name">Full Name</label>
-                                <input type="text" id="signup-name">
-                            </div>
-                            <div class="form-group">
-                                <label for="signup-confirm-password">Confirm Password</label>
-                                <input type="password" id="signup-confirm-password">
-                            </div>
-                        </div>
-                        
-                        <button type="submit" id="auth-button" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Login</button>
-                    </form>
-                    
-                    <div style="text-align: center; margin-bottom: 1rem;">
-                        <button id="toggle-mode" onclick="toggleAuthMode()" style="background: none; border: none; color: var(--electric-blue); text-decoration: underline; cursor: pointer; font-size: 0.9rem;">
-                            Need an account? Sign up here
-                        </button>
-                    </div>
-                    
-                    <p style="text-align: center; color: var(--slate-gray); font-size: 0.9rem; border-top: 1px solid var(--border-gray); padding-top: 1rem;">
-                        <button onclick="showAdminLogin()" style="background: none; border: none; color: var(--slate-gray); text-decoration: underline; cursor: pointer;">Admin Access</button>
-                    </p>
+    <!-- Landing Page -->
+    <div id="landing-page" class="landing-page">
+        <nav class="landing-nav">
+            <div class="container">
+                <div class="nav-content">
+                    <div class="logo">KinectB2B Affiliates</div>
+                    <a href="#" onclick="showLoginModal()" class="nav-login">Login / Sign Up</a>
                 </div>
             </div>
-        </div>
-    </div>
+        </nav>
 
-    <header class="header hidden" id="main-header">
         <div class="container">
-            <div class="header-content">
-                <div class="logo">KinectB2B Affiliates</div>
-                <nav class="nav-links">
-                    <span id="user-name">Loading...</span>
-                    <a onclick="logout()">Logout</a>
-                </nav>
-            </div>
-        </div>
-    </header>
+            <section class="hero">
+                <h1>Earn $300+ Monthly</h1>
+                <p>Join the KinectB2B Affiliate Program and earn 10% commission every month for 12 months on every client you refer!</p>
+                <button class="btn btn-primary btn-large" onclick="showSignupModal()" style="margin-right: 1rem;">Start Earning Now</button>
+                <button class="btn" onclick="scrollToCalculator()" style="background: rgba(255,255,255,0.2); color: white;">Calculate Your Earnings</button>
+            </section>
 
-    <div id="admin-portal" class="hidden">
-        <div class="container" style="padding-top: 2rem;">
-            <div class="dashboard-grid">
-                <div class="card stat-card">
-                    <div class="stat-number" id="admin-total-affiliates">0</div>
-                    <div class="stat-label">Total Affiliates</div>
-                </div>
-                <div class="card stat-card">
-                    <div class="stat-number" id="admin-total-referrals">0</div>
-                    <div class="stat-label">Total Referrals</div>
-                </div>
-                <div class="card stat-card">
-                    <div class="stat-number" id="admin-monthly-revenue">$0</div>
-                    <div class="stat-label">Monthly Revenue</div>
-                </div>
-                <div class="card stat-card">
-                    <div class="stat-number" id="admin-total-commissions">$0</div>
-                    <div class="stat-label">Total Commissions</div>
-                </div>
+            <div class="commission-highlight">
+                <h2>10% Monthly Commission</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 0;">Get paid every month for 12 months as long as your referrals stay active!</p>
             </div>
 
-            <div class="card">
-                <div class="tabs">
-                    <button class="tab active" onclick="showAdminTab(event, 'affiliates')">Affiliates</button>
-                    <button class="tab" onclick="showAdminTab(event, 'referrals-admin')">Referrals</button>
-                    <button class="tab" onclick="showAdminTab(event, 'payments-admin')">Payments</button>
-                    <button class="tab" onclick="showAdminTab(event, 'questions-admin')">Questions</button>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h3>High Commissions</h3>
+                    <p>Earn 10% of your referral's monthly payment for a full year. That's up to $3,600 per high-value referral!</p>
                 </div>
-                <div id="admin-content">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">⚙️</div>
-                        <h3>Admin Dashboard</h3>
-                        <p>Select a tab to manage your affiliate program.</p>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>No Sales Experience Required</h3>
+                    <p>Simply refer businesses that need more leads. We handle all the sales and onboarding!</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Proven Results</h3>
+                    <p>KinectB2B has generated millions in revenue for clients with our guaranteed lead generation system.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Quick Payouts</h3>
+                    <p>Get paid within 30 days of your referral becoming a client. Fast, reliable, monthly payments.</p>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin: 4rem 0; padding: 3rem; background: rgba(255,255,255,0.1); border-radius: 20px; backdrop-filter: blur(10px);">
+                <h3 style="font-size: 2rem; margin-bottom: 1rem;">Want to Learn More About KinectB2B?</h3>
+                <p style="font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.9;">
+                    Discover how we help businesses generate more leads, book more appointments, and scale their sales with our proven B2B lead generation system.
+                </p>
+                <a href="https://www.kinectb2b.com" target="_blank" class="btn btn-primary" style="margin-right: 1rem;">
+                    🌐 Visit KinectB2B.com
+                </a>
+                <span style="color: white; opacity: 0.8; font-size: 0.9rem;">Learn about our services, process, and success stories</span>
+            </div>
+
+            <div id="calculator-section" class="calculator-section">
+                <h2 style="text-align: center; margin-bottom: 3rem; font-size: 2.5rem;">Commission Calculator</h2>
+                <div style="max-width: 600px; margin: 0 auto;">
+                    <div class="card" style="background: rgba(255,255,255,0.95); color: var(--deep-blue);">
+                        <div class="form-group">
+                            <label for="plan-selector">Select a Pro Plan to see your commission:</label>
+                            <select id="plan-selector" onchange="calculateCommission()">
+                                <option value="">Choose a plan...</option>
+                                <option value="100,250">Pro Plan 100 - $250/month</option>
+                                <option value="200,500">Pro Plan 200 - $500/month</option>
+                                <option value="300,750">Pro Plan 300 - $750/month</option>
+                                <option value="400,1000">Pro Plan 400 - $1,000/month</option>
+                                <option value="500,1250">Pro Plan 500 - $1,250/month</option>
+                                <option value="600,1500">Pro Plan 600 - $1,500/month</option>
+                                <option value="700,1750">Pro Plan 700 - $1,750/month</option>
+                                <option value="800,2000">Pro Plan 800 - $2,000/month</option>
+                                <option value="900,2250">Pro Plan 900 - $2,250/month</option>
+                                <option value="1000,2500">Pro Plan 1000 - $2,500/month</option>
+                                <option value="1100,2750">Pro Plan 1100 - $2,750/month</option>
+                                <option value="1200,3000">Pro Plan 1200 - $3,000/month</option>
+                            </select>
+                        </div>
+                        <div id="commission-results" style="display: none; text-align: center; margin-top: 2rem;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                                <div style="background: var(--gradient-green); color: white; padding: 2rem; border-radius: 12px;">
+                                    <h3>Monthly Commission</h3>
+                                    <div id="monthly-commission" style="font-size: 2.5rem; font-weight: 800; margin-top: 0.5rem;">$0</div>
+                                </div>
+                                <div style="background: var(--gradient-blue); color: white; padding: 2rem; border-radius: 12px;">
+                                    <h3>12-Month Total</h3>
+                                    <div id="yearly-commission" style="font-size: 2.5rem; font-weight: 800; margin-top: 0.5rem;">$0</div>
+                                </div>
+                            </div>
+                            <p style="margin-top: 2rem; font-size: 1.1rem; color: var(--slate-gray);">
+                                <strong>Plus:</strong> If they upgrade to a higher plan, your commission increases too!
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <section style="text-align: center; padding: 4rem 0;">
+                <h2 style="font-size: 2.5rem; margin-bottom: 2rem;">Ready to Start Earning?</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 3rem; opacity: 0.9;">Join hundreds of affiliates already earning with KinectB2B</p>
+                <button class="btn btn-success btn-large" onclick="showSignupModal()">Sign Up Now - It's Free!</button>
+                <p style="margin-top: 1rem; opacity: 0.8;">✅ No signup fees ✅ No monthly costs ✅ Start earning immediately</p>
+            </section>
         </div>
     </div>
 
-    <!-- Affiliate Portal -->
-    <div id="affiliate-portal" class="hidden">
-        <div class="container" style="padding-top: 2rem;">
+    <!-- Login/Signup Modal -->
+    <div id="auth-modal" class="modal">
+        <div class="modal-content">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h2 id="auth-title">Join KinectB2B Affiliates</h2>
+                <p id="auth-subtitle">Start earning 10% commission today!</p>
+            </div>
+            
+            <form id="auth-form">
+                <div class="form-group">
+                    <label for="auth-email">Email Address</label>
+                    <input type="email" id="auth-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="auth-password">Password</label>
+                    <input type="password" id="auth-password" required>
+                </div>
+                
+                <!-- Signup only fields -->
+                <div id="signup-fields">
+                    <div class="form-group">
+                        <label for="auth-name">Full Name</label>
+                        <input type="text" id="auth-name">
+                    </div>
+                    <div class="form-group">
+                        <label for="auth-confirm">Confirm Password</label>
+                        <input type="password" id="auth-confirm">
+                    </div>
+                </div>
+                
+                <button type="submit" id="auth-submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Sign Up</button>
+            </form>
+            
+            <div style="text-align: center;">
+                <button id="auth-toggle" onclick="toggleAuthMode()" style="background: none; border: none; color: var(--electric-blue); text-decoration: underline; cursor: pointer;">
+                    Already have an account? Login here
+                </button>
+            </div>
+            
+            <button onclick="closeAuthModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--slate-gray);">&times;</button>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="dashboard hidden">
+        <header class="header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo">KinectB2B Affiliates</div>
+                    <nav class="nav-links">
+                        <span id="user-name">Loading...</span>
+                        <a onclick="logout()">Logout</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <!-- Affiliate Dashboard -->
+        <div id="affiliate-dashboard" class="container" style="padding-top: 2rem;">
+            <!-- Affiliate Code Card -->
+            <div class="card affiliate-code-card">
+                <h3>Your Personal Affiliate Code</h3>
+                <p>Share this code with businesses to get credit for referrals</p>
+                <div class="affiliate-code" id="affiliate-code">Loading...</div>
+                <button class="copy-button" onclick="copyAffiliateCode()">📋 Copy Code</button>
+            </div>
+
+            <!-- Stats Dashboard -->
             <div class="dashboard-grid">
                 <div class="card stat-card">
                     <div class="stat-number" id="total-referrals">0</div>
@@ -220,32 +283,391 @@
                 </div>
                 <div class="card stat-card">
                     <div class="stat-number" id="monthly-earnings">$0</div>
-                    <div class="stat-label">This Month</div>
+                    <div class="stat-label">This Month's Earnings</div>
                 </div>
                 <div class="card stat-card">
                     <div class="stat-number" id="total-earnings">$0</div>
                     <div class="stat-label">Total Earned</div>
                 </div>
             </div>
-            
+
+            <!-- Main Content Tabs -->
             <div class="card">
-                <h3>Affiliate Dashboard</h3>
-                <p>Welcome to your affiliate portal!</p>
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab(event, 'submit-referral')">Submit Referral</button>
+                    <button class="tab" onclick="showTab(event, 'my-referrals')">My Referrals</button>
+                    <button class="tab" onclick="showTab(event, 'payments')">Payments</button>
+                    <button class="tab" onclick="showTab(event, 'profile')">Profile</button>
+                    <button class="tab" onclick="showTab(event, 'program-info')">Program Info</button>
+                    <button class="tab" onclick="showTab(event, 'about-kinect')">About KinectB2B</button>
+                </div>
+
+                <!-- Submit Referral Tab -->
+                <div id="submit-referral-content" class="tab-content active">
+                    <h3>Submit New Referral</h3>
+                    <p style="margin-bottom: 2rem; color: var(--slate-gray);">Refer a business and start earning 10% monthly commission!</p>
+                    
+                    <form id="referral-form">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                            <div>
+                                <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Company Information</h4>
+                                <div class="form-group">
+                                    <label for="ref-company">Company Name *</label>
+                                    <input type="text" id="ref-company" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="ref-website">Website</label>
+                                    <input type="url" id="ref-website" placeholder="https://...">
+                                </div>
+                                <div class="form-group">
+                                    <label for="ref-industry">Industry Type</label>
+                                    <select id="ref-industry">
+                                        <option value="">Select industry...</option>
+                                        <option value="Healthcare">Healthcare</option>
+                                        <option value="Technology">Technology</option>
+                                        <option value="Finance">Finance</option>
+                                        <option value="Real Estate">Real Estate</option>
+                                        <option value="Legal">Legal</option>
+                                        <option value="Consulting">Consulting</option>
+                                        <option value="Manufacturing">Manufacturing</option>
+                                        <option value="Construction">Construction</option>
+                                        <option value="Education">Education</option>
+                                        <option value="Retail">Retail</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Contact Information</h4>
+                                <div class="form-group">
+                                    <label for="ref-contact-name">Contact Name *</label>
+                                    <input type="text" id="ref-contact-name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="ref-email">Email Address *</label>
+                                    <input type="email" id="ref-email" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="ref-phone">Phone Number</label>
+                                    <input type="tel" id="ref-phone">
+                                </div>
+                                <div class="form-group">
+                                    <label for="ref-location">Location (City, State)</label>
+                                    <input type="text" id="ref-location" placeholder="e.g., Miami, FL">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="ref-notes">Additional Notes</label>
+                            <textarea id="ref-notes" rows="4" placeholder="Tell us about their business, current challenges, why they'd be a good fit, or any other relevant information..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-large">Submit Referral</button>
+                    </form>
+                </div>
+
+                <!-- My Referrals Tab -->
+                <div id="my-referrals-content" class="tab-content">
+                    <h3>My Referrals</h3>
+                    <div id="referrals-list">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <h3>No Referrals Yet</h3>
+                            <p>Submit your first referral to start earning commissions!</p>
+                            <button class="btn btn-primary" onclick="showTab(null, 'submit-referral')">Submit Referral</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payments Tab -->
+                <div id="payments-content" class="tab-content">
+                    <h3>Payment History & Upcoming Payments</h3>
+                    <div id="payments-list">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💰</div>
+                            <h3>No Payments Yet</h3>
+                            <p>Your payments will appear here once your referrals become clients!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Tab -->
+                <div id="profile-content" class="tab-content">
+                    <h3>My Profile</h3>
+                    
+                    <form id="profile-form" style="max-width: 800px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <div>
+                                <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Personal Information</h4>
+                                <div class="form-group">
+                                    <label for="profile-name">Full Name</label>
+                                    <input type="text" id="profile-name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-company">Company Name (Optional)</label>
+                                    <input type="text" id="profile-company" placeholder="Your company or personal brand">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-phone">Phone Number</label>
+                                    <input type="tel" id="profile-phone">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-address">Address</label>
+                                    <textarea id="profile-address" rows="3" placeholder="Street address, City, State, ZIP"></textarea>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Social Media & Promotion</h4>
+                                <div class="form-group">
+                                    <label for="profile-facebook">Facebook Profile/Page</label>
+                                    <input type="url" id="profile-facebook" placeholder="https://facebook.com/...">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-instagram">Instagram Profile</label>
+                                    <input type="url" id="profile-instagram" placeholder="https://instagram.com/...">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-linkedin">LinkedIn Profile</label>
+                                    <input type="url" id="profile-linkedin" placeholder="https://linkedin.com/...">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-tiktok">TikTok Profile</label>
+                                    <input type="url" id="profile-tiktok" placeholder="https://tiktok.com/@...">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-twitter">Twitter/X Profile</label>
+                                    <input type="url" id="profile-twitter" placeholder="https://twitter.com/...">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-youtube">YouTube Channel</label>
+                                    <input type="url" id="profile-youtube" placeholder="https://youtube.com/...">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-website">Personal Website/Blog</label>
+                                    <input type="url" id="profile-website" placeholder="https://yoursite.com">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid var(--border-gray);">
+                            <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Account Information</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                                <div>
+                                    <p><strong>Affiliate Since:</strong> <span id="affiliate-since">Loading...</span></p>
+                                    <p><strong>Total Referrals:</strong> <span id="profile-total-referrals">0</span></p>
+                                </div>
+                                <div>
+                                    <p><strong>Status:</strong> <span class="status-badge status-active">Active</span></p>
+                                    <p><strong>Affiliate Code:</strong> <span id="profile-affiliate-code">Loading...</span></p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 1rem;">
+                                <button type="submit" class="btn btn-primary">Update Profile</button>
+                                <button type="button" class="btn" onclick="showChangePassword()" style="background: var(--light-gray); color: var(--deep-blue);">Change Password</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Program Info Tab -->
+                <div id="program-info-content" class="tab-content">
+                    <div style="max-width: 800px;">
+                        <h3>Affiliate Program Information</h3>
+                        
+                        <div style="background: var(--gradient-blue); color: white; padding: 2rem; border-radius: 12px; margin-bottom: 3rem; text-align: center;">
+                            <h4 style="font-size: 2rem; margin-bottom: 1rem;">How You Get Paid</h4>
+                            <p style="font-size: 1.2rem; opacity: 0.9;">Earn 10% commission every month for 12 consecutive months on every active client you refer!</p>
+                        </div>
+
+                        <div style="margin-bottom: 3rem;">
+                            <h4 style="color: var(--electric-blue); margin-bottom: 1rem;">📋 How It Works</h4>
+                            <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px;">
+                                <div style="display: grid; gap: 1.5rem;">
+                                    <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                                        <div style="background: var(--electric-blue); color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">1</div>
+                                        <div>
+                                            <strong>Submit Referral:</strong> You refer a business that needs lead generation services through your affiliate portal.
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                                        <div style="background: var(--electric-blue); color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">2</div>
+                                        <div>
+                                            <strong>We Handle Sales:</strong> Our professional sales team contacts and sells the client on our services.
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                                        <div style="background: var(--success-green); color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">3</div>
+                                        <div>
+                                            <strong>Client Conversion:</strong> When they sign up for a Pro Plan, you start earning immediately.
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                                        <div style="background: var(--success-green); color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">4</div>
+                                        <div>
+                                            <strong>Get Paid Monthly:</strong> Receive 10% of their monthly payment for 12 months straight!
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 3rem;">
+                            <h4 style="color: var(--success-green); margin-bottom: 1rem;">💰 Commission Examples</h4>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                                <div style="background: white; border: 2px solid var(--border-gray); padding: 1.5rem; border-radius: 12px; text-align: center;">
+                                    <h5 style="color: var(--electric-blue);">Pro Plan 300</h5>
+                                    <p style="color: var(--slate-gray); margin: 0.5rem 0;">Client pays $750/month</p>
+                                    <p style="font-size: 1.2rem; font-weight: 800; color: var(--success-green); margin: 0;">You earn $75/month</p>
+                                    <p style="font-size: 0.9rem; color: var(--slate-gray);">($900 over 12 months)</p>
+                                </div>
+                                <div style="background: white; border: 2px solid var(--border-gray); padding: 1.5rem; border-radius: 12px; text-align: center;">
+                                    <h5 style="color: var(--electric-blue);">Pro Plan 600</h5>
+                                    <p style="color: var(--slate-gray); margin: 0.5rem 0;">Client pays $1,500/month</p>
+                                    <p style="font-size: 1.2rem; font-weight: 800; color: var(--success-green); margin: 0;">You earn $150/month</p>
+                                    <p style="font-size: 0.9rem; color: var(--slate-gray);">($1,800 over 12 months)</p>
+                                </div>
+                                <div style="background: white; border: 2px solid var(--border-gray); padding: 1.5rem; border-radius: 12px; text-align: center;">
+                                    <h5 style="color: var(--electric-blue);">Pro Plan 1200</h5>
+                                    <p style="color: var(--slate-gray); margin: 0.5rem 0;">Client pays $3,000/month</p>
+                                    <p style="font-size: 1.2rem; font-weight: 800; color: var(--success-green); margin: 0;">You earn $300/month</p>
+                                    <p style="font-size: 0.9rem; color: var(--slate-gray);">($3,600 over 12 months)</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 3rem;">
+                            <h4 style="color: var(--electric-blue); margin-bottom: 1rem;">⏰ Payment Schedule</h4>
+                            <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px;">
+                                <ul style="list-style: none; padding: 0; margin: 0;">
+                                    <li style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                        <span style="color: var(--success-green);">✅</span>
+                                        <strong>Payment Timeline:</strong> You get paid within 30 days of client conversion
+                                    </li>
+                                    <li style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                        <span style="color: var(--success-green);">✅</span>
+                                        <strong>Monthly Recurring:</strong> Payments continue monthly for 12 months
+                                    </li>
+                                    <li style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                        <span style="color: var(--success-green);">✅</span>
+                                        <strong>Upgrade Bonuses:</strong> If client upgrades, your commission increases too!
+                                    </li>
+                                    <li style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                        <span style="color: var(--warning-yellow);">⚠️</span>
+                                        <strong>Downgrades:</strong> If client downgrades, commission adjusts accordingly
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div style="background: var(--gradient-green); color: white; padding: 2rem; border-radius: 12px;">
+                            <h4 style="margin-bottom: 1rem;">🎯 Best Referral Prospects</h4>
+                            <p style="margin-bottom: 1rem;">Look for businesses that:</p>
+                            <ul style="margin: 0; padding-left: 1.5rem;">
+                                <li>Need more leads or appointments</li>
+                                <li>Currently spend money on marketing/advertising</li>
+                                <li>Offer high-value services ($1,000+ per client)</li>
+                                <li>Have 5+ employees and are ready to scale</li>
+                                <li>Are B2B companies (our specialty!)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- About KinectB2B Tab -->
+                <div id="about-kinect-content" class="tab-content">
+                    <div style="max-width: 800px;">
+                        <h3>About KinectB2B</h3>
+                        
+                        <div style="background: var(--gradient-blue); color: white; padding: 2rem; border-radius: 12px; margin-bottom: 3rem; text-align: center;">
+                            <h4 style="font-size: 2rem; margin-bottom: 1rem;">Professional B2B Sales & Service Agency</h4>
+                            <p style="font-size: 1.2rem; opacity: 0.9;">The #1 platform for vendors to connect with businesses</p>
+                        </div>
+
+                        <div style="margin-bottom: 3rem;">
+                            <h4 style="color: var(--electric-blue); margin-bottom: 1rem;">🎯 What We Do</h4>
+                            <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px;">
+                                <p style="margin-bottom: 1.5rem;"><strong>KinectB2B specializes in:</strong></p>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                                    <div style="background: white; padding: 1.5rem; border-radius: 8px; text-align: center;">
+                                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">📈</div>
+                                        <strong>Lead Generation</strong>
+                                    </div>
+                                    <div style="background: white; padding: 1.5rem; border-radius: 8px; text-align: center;">
+                                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">📢</div>
+                                        <strong>Marketing</strong>
+                                    </div>
+                                    <div style="background: white; padding: 1.5rem; border-radius: 8px; text-align: center;">
+                                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🤝</div>
+                                        <strong>Business Services</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 3rem;">
+                            <h4 style="color: var(--electric-blue); margin-bottom: 1rem;">🚀 Our Process</h4>
+                            <div style="display: grid; gap: 2rem;">
+                                <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px; border-left: 4px solid var(--electric-blue);">
+                                    <h5 style="color: var(--electric-blue); margin-bottom: 1rem;">1. RESEARCH</h5>
+                                    <p>Our team conducts thorough analysis of your company to identify ideal clients. We strategically construct a high-performing sales team tailored to your specific needs, implementing proven sales tactics designed to attract quality leads and establish a high closing ratio for appointments.</p>
+                                </div>
+                                <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px; border-left: 4px solid var(--electric-blue);">
+                                    <h5 style="color: var(--electric-blue); margin-bottom: 1rem;">2. DISCOVERY</h5>
+                                    <p>Our team searches for all potential clients located within the areas your business services. This assessment identifies and prioritizes opportunities to ensure we target every viable lead, maximizing your business's growth potential.</p>
+                                </div>
+                                <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px; border-left: 4px solid var(--electric-blue);">
+                                    <h5 style="color: var(--electric-blue); margin-bottom: 1rem;">3. ENGAGEMENT</h5>
+                                    <p>We begin with comprehensive assessment of your target audience, ensuring our marketing efforts align precisely with the needs of local businesses. Through traditional and digital marketing techniques, we create targeted campaigns that effectively communicate your company's value proposition.</p>
+                                </div>
+                                <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px; border-left: 4px solid var(--success-green);">
+                                    <h5 style="color: var(--success-green); margin-bottom: 1rem;">4. APPOINTMENTS</h5>
+                                    <p>Once we provide your clients with all necessary information, we officially record them in our system and schedule connection times. From that point forward, they become your clients, allowing you to build connections and form meaningful partnerships.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 3rem;">
+                            <h4 style="color: var(--electric-blue); margin-bottom: 1rem;">💼 Why Choose KinectB2B?</h4>
+                            <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px;">
+                                <div style="display: grid; gap: 1rem;">
+                                    <div style="display: flex; align-items: center; gap: 1rem;">
+                                        <span style="color: var(--success-green); font-size: 1.5rem;">✅</span>
+                                        <div>
+                                            <strong>Significantly Cheaper:</strong> KinectB2B costs significantly less than hiring even a single internal sales representative (avg. cost $100k+)
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 1rem;">
+                                        <span style="color: var(--success-green); font-size: 1.5rem;">✅</span>
+                                        <div>
+                                            <strong>No Management Required:</strong> We handle everything - no need to manage a sales team
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 1rem;">
+                                        <span style="color: var(--success-green); font-size: 1.5rem;">✅</span>
+                                        <div>
+                                            <strong>Guaranteed Results:</strong> We guarantee results and have access to over 100 MILLION businesses
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background: var(--gradient-green); color: white; padding: 2rem; border-radius: 12px; text-align: center;">
+                            <h4 style="margin-bottom: 1rem;">Ready to Refer Clients?</h4>
+                            <p style="margin-bottom: 1.5rem; opacity: 0.9;">Any business that needs more leads, appointments, or wants to scale their sales is a perfect referral for KinectB2B!</p>
+                            <button class="btn" onclick="showTab(null, 'submit-referral')" style="background: white; color: var(--electric-blue); font-weight: bold;">Submit a Referral Now</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Affiliate Profile Modal for Admin -->
-    <div id="affiliate-profile-modal" class="modal large-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="affiliate-profile-title">Affiliate Profile</h3>
-                <button class="close-modal" onclick="closeAffiliateProfile()">&times;</button>
-            </div>
-            <div id="affiliate-profile-content">
-                <!-- Profile content will be loaded here -->
-            </div>
-        </div>
+    <!-- Admin Dashboard (Hidden for now) -->
+    <div id="admin-dashboard" class="container hidden" style="padding-top: 2rem;">
+        <h2>Admin Dashboard</h2>
+        <p>Admin functionality will be added here...</p>
     </div>
 
     <div id="notification" class="notification"></div>
@@ -256,19 +678,16 @@
         
         let supabase;
         let currentUser = null;
-        let currentUserRole = null;
-        let isSignupMode = false;
+        let isSignupMode = true;
 
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 KinectB2B Affiliate Portal Loading...');
             
-            // Initialize Supabase
             try {
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 console.log('Supabase initialized successfully');
             } catch (error) {
                 console.error('Failed to initialize Supabase:', error);
-                showNotification('Failed to connect to database', 'error');
                 return;
             }
             
@@ -289,63 +708,108 @@
                     if (event === 'SIGNED_IN' && session) {
                         handleUserSession(session.user);
                     } else if (event === 'SIGNED_OUT') {
-                        handleSignOut();
+                        showLandingPage();
                     }
                 });
             } catch (error) {
                 console.error('Error initializing app:', error);
-                showNotification('Error connecting to server', 'error');
             }
         }
 
         function setupEventListeners() {
-            const authForm = document.getElementById('authForm');
+            const authForm = document.getElementById('auth-form');
             if (authForm) {
                 authForm.addEventListener('submit', handleAuth);
-                console.log('Auth form event listener added');
-            } else {
-                console.error('Auth form not found!');
             }
+            
+            const referralForm = document.getElementById('referral-form');
+            if (referralForm) {
+                referralForm.addEventListener('submit', handleReferralSubmit);
+            }
+            
+            const profileForm = document.getElementById('profile-form');
+            if (profileForm) {
+                profileForm.addEventListener('submit', handleProfileUpdate);
+            }
+        }
+
+        // Landing Page Functions
+        function showLoginModal() {
+            isSignupMode = false;
+            updateAuthModal();
+            document.getElementById('auth-modal').classList.add('active');
+        }
+
+        function showSignupModal() {
+            isSignupMode = true;
+            updateAuthModal();
+            document.getElementById('auth-modal').classList.add('active');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('auth-modal').classList.remove('active');
+            document.getElementById('auth-form').reset();
         }
 
         function toggleAuthMode() {
             isSignupMode = !isSignupMode;
-            const formTitle = document.getElementById('form-title');
-            const authButton = document.getElementById('auth-button');
-            const toggleButton = document.getElementById('toggle-mode');
+            updateAuthModal();
+        }
+
+        function updateAuthModal() {
+            const title = document.getElementById('auth-title');
+            const subtitle = document.getElementById('auth-subtitle');
+            const submitBtn = document.getElementById('auth-submit');
+            const toggleBtn = document.getElementById('auth-toggle');
             const signupFields = document.getElementById('signup-fields');
             
             if (isSignupMode) {
-                formTitle.textContent = 'Create Account';
-                authButton.textContent = 'Sign Up';
-                toggleButton.textContent = 'Already have an account? Login here';
+                title.textContent = 'Join KinectB2B Affiliates';
+                subtitle.textContent = 'Start earning 10% commission today!';
+                submitBtn.textContent = 'Sign Up';
+                toggleBtn.textContent = 'Already have an account? Login here';
                 signupFields.style.display = 'block';
             } else {
-                formTitle.textContent = 'Login';
-                authButton.textContent = 'Login';
-                toggleButton.textContent = 'Need an account? Sign up here';
+                title.textContent = 'Welcome Back!';
+                subtitle.textContent = 'Login to your affiliate dashboard';
+                submitBtn.textContent = 'Login';
+                toggleBtn.textContent = 'Need an account? Sign up here';
                 signupFields.style.display = 'none';
             }
         }
 
+        function scrollToCalculator() {
+            document.getElementById('calculator-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function calculateCommission() {
+            const selector = document.getElementById('plan-selector');
+            const results = document.getElementById('commission-results');
+            const monthlyDiv = document.getElementById('monthly-commission');
+            const yearlyDiv = document.getElementById('yearly-commission');
+            
+            if (selector.value) {
+                const [planNum, monthlyPrice] = selector.value.split(',');
+                const monthly = parseFloat(monthlyPrice) * 0.1;
+                const yearly = monthly * 12;
+                
+                monthlyDiv.textContent = `$${monthly.toFixed(0)}`;
+                yearlyDiv.textContent = `$${yearly.toFixed(0)}`;
+                results.style.display = 'block';
+            } else {
+                results.style.display = 'none';
+            }
+        }
+
+        // Auth Functions
         async function handleAuth(e) {
             e.preventDefault();
-            console.log(isSignupMode ? 'Signup form submitted' : 'Login form submitted');
             
-            const emailInput = document.getElementById('login-email');
-            const passwordInput = document.getElementById('login-password');
-            
-            if (!emailInput || !passwordInput) {
-                console.error('Auth inputs not found');
-                showNotification('Form error', 'error');
-                return;
-            }
-            
-            const email = emailInput.value.trim();
-            const password = passwordInput.value;
+            const email = document.getElementById('auth-email').value.trim();
+            const password = document.getElementById('auth-password').value;
             
             if (!email || !password) {
-                showNotification('Please enter both email and password', 'error');
+                showNotification('Please fill in all fields', 'error');
                 return;
             }
             
@@ -357,8 +821,6 @@
         }
 
         async function handleLogin(email, password) {
-            console.log('Attempting login for:', email);
-            
             try {
                 showNotification('Logging in...', 'success');
                 
@@ -367,30 +829,19 @@
                     password: password 
                 });
                 
-                if (error) {
-                    console.error('Login error:', error);
-                    throw error;
-                }
-                
-                console.log('Login successful:', data);
+                if (error) throw error;
                 showNotification('Login successful!', 'success');
                 
             } catch (error) {
-                console.error('Login failed:', error);
                 showNotification(`Login failed: ${error.message}`, 'error');
             }
         }
 
         async function handleSignup(email, password) {
-            console.log('Attempting signup for:', email);
+            const name = document.getElementById('auth-name').value.trim();
+            const confirmPassword = document.getElementById('auth-confirm').value;
             
-            const nameInput = document.getElementById('signup-name');
-            const confirmPasswordInput = document.getElementById('signup-confirm-password');
-            
-            const fullName = nameInput.value.trim();
-            const confirmPassword = confirmPasswordInput.value;
-            
-            if (!fullName) {
+            if (!name) {
                 showNotification('Please enter your full name', 'error');
                 return;
             }
@@ -413,160 +864,466 @@
                     password: password,
                     options: {
                         data: {
-                            full_name: fullName
+                            full_name: name
                         }
                     }
                 });
                 
-                if (error) {
-                    console.error('Signup error:', error);
-                    throw error;
-                }
-                
-                console.log('Signup successful:', data);
+                if (error) throw error;
                 
                 // Create user profile
                 if (data.user) {
+                    const affiliateCode = generateAffiliateCode(name);
+                    
                     try {
                         const { error: profileError } = await supabase
                             .from('user_profiles')
                             .insert({
                                 user_id: data.user.id,
                                 email: email,
-                                full_name: fullName,
+                                full_name: name,
                                 role: 'affiliate',
                                 status: 'active',
+                                affiliate_code: affiliateCode,
                                 created_at: new Date().toISOString()
                             });
                         
-                        if (profileError) {
-                            console.warn('Profile creation error:', profileError);
-                        }
+                        if (profileError) console.warn('Profile creation error:', profileError);
                     } catch (profileError) {
                         console.warn('Failed to create profile:', profileError);
                     }
                 }
                 
-                showNotification('Account created successfully! Please check your email for verification.', 'success');
-                
-                // Switch back to login mode
-                toggleAuthMode();
+                showNotification('Account created! Please check your email for verification.', 'success');
+                closeAuthModal();
                 
             } catch (error) {
-                console.error('Signup failed:', error);
                 showNotification(`Signup failed: ${error.message}`, 'error');
             }
         }
 
-        async function handleUserSession(user) {
-            console.log('Handling user session:', user.email);
-            currentUser = user;
-            
-            if (user.email === 'robert@kinectb2b.com' || user.user_metadata?.role === 'admin') {
-                currentUserRole = 'admin';
-                console.log('User is admin');
-                showPortal('admin');
-                await loadAdminData();
-            } else {
-                currentUserRole = 'affiliate';
-                console.log('User is affiliate');
-                showPortal('affiliate');
-                // await loadAffiliateData();
-            }
+        function generateAffiliateCode(name) {
+            const namePart = name.replace(/[^a-zA-Z]/g, '').substring(0, 4).toUpperCase();
+            const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+            return `${namePart}${randomPart}`;
         }
 
-        function handleSignOut() {
-            console.log('User signed out');
-            currentUser = null;
-            currentUserRole = null;
-            showLogin();
+        async function handleUserSession(user) {
+            currentUser = user;
+            console.log('User session started:', user.email);
+            
+            if (user.email === 'robert@kinectb2b.com') {
+                showAdminDashboard();
+            } else {
+                showAffiliateDashboard();
+            }
         }
 
         async function logout() {
+            await supabase.auth.signOut();
+            showNotification('Logged out successfully', 'success');
+        }
+
+        // Dashboard Functions
+        function showLandingPage() {
+            document.getElementById('landing-page').classList.remove('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+            closeAuthModal();
+        }
+
+        function showAffiliateDashboard() {
+            document.getElementById('landing-page').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('admin-dashboard').classList.add('hidden');
+            
+            closeAuthModal();
+            loadAffiliateData();
+        }
+
+        function showAdminDashboard() {
+            document.getElementById('landing-page').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('affiliate-dashboard').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.remove('hidden');
+        }
+
+        async function loadAffiliateData() {
+            if (!currentUser) return;
+            
             try {
-                console.log('Logging out...');
-                await supabase.auth.signOut();
-                showNotification('Logged out successfully', 'success');
+                // Load user profile
+                const { data: profile } = await supabase
+                    .from('user_profiles')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .single();
+                
+                if (profile) {
+                    document.getElementById('user-name').textContent = `${profile.full_name || 'User'}`;
+                    document.getElementById('affiliate-code').textContent = profile.affiliate_code || 'Loading...';
+                    document.getElementById('profile-affiliate-code').textContent = profile.affiliate_code || 'Loading...';
+                    document.getElementById('affiliate-since').textContent = new Date(profile.created_at).toLocaleDateString();
+                    
+                    // Load profile form
+                    if (profile.full_name) document.getElementById('profile-name').value = profile.full_name;
+                    if (profile.company) document.getElementById('profile-company').value = profile.company;
+                    if (profile.phone) document.getElementById('profile-phone').value = profile.phone;
+                    if (profile.address) document.getElementById('profile-address').value = profile.address;
+                    if (profile.social_facebook) document.getElementById('profile-facebook').value = profile.social_facebook;
+                    if (profile.social_instagram) document.getElementById('profile-instagram').value = profile.social_instagram;
+                    if (profile.social_linkedin) document.getElementById('profile-linkedin').value = profile.social_linkedin;
+                    if (profile.social_tiktok) document.getElementById('profile-tiktok').value = profile.social_tiktok;
+                    if (profile.social_twitter) document.getElementById('profile-twitter').value = profile.social_twitter;
+                    if (profile.social_youtube) document.getElementById('profile-youtube').value = profile.social_youtube;
+                    if (profile.social_website) document.getElementById('profile-website').value = profile.social_website;
+                }
+                
+                // Load referrals
+                const { data: referrals } = await supabase
+                    .from('referrals')
+                    .select('*')
+                    .eq('affiliate_id', currentUser.id)
+                    .order('created_at', { ascending: false });
+                
+                // Load payments
+                const { data: payments } = await supabase
+                    .from('payments')
+                    .select('*')
+                    .eq('affiliate_id', currentUser.id)
+                    .order('created_at', { ascending: false });
+                
+                updateDashboardStats(referrals || [], payments || []);
+                renderReferrals(referrals || []);
+                renderPayments(payments || []);
+                
             } catch (error) {
-                console.error('Logout error:', error);
-                showNotification('Error logging out', 'error');
+                console.error('Error loading affiliate data:', error);
             }
         }
 
-        function showPortal(type) {
-            console.log('Showing portal:', type);
+        function updateDashboardStats(referrals = [], payments = []) {
+            const totalReferrals = referrals.length;
+            const activeClients = referrals.filter(r => r.status === 'customer').length;
+            const totalEarnings = payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const monthlyEarnings = payments
+                .filter(p => p.created_at?.startsWith(currentMonth))
+                .reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+
+            document.getElementById('total-referrals').textContent = totalReferrals;
+            document.getElementById('active-clients').textContent = activeClients;
+            document.getElementById('monthly-earnings').textContent = `${monthlyEarnings.toFixed(2)}`;
+            document.getElementById('total-earnings').textContent = `${totalEarnings.toFixed(2)}`;
+            document.getElementById('profile-total-referrals').textContent = totalReferrals;
+        }
+
+        function renderReferrals(referrals = []) {
+            const container = document.getElementById('referrals-list');
             
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('main-header').classList.remove('hidden');
+            if (referrals.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <h3>No Referrals Yet</h3>
+                        <p>Submit your first referral to start earning commissions!</p>
+                        <button class="btn btn-primary" onclick="showTab(null, 'submit-referral')">Submit Referral</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Company</th>
+                                <th>Contact</th>
+                                <th>Industry</th>
+                                <th>Status</th>
+                                <th>Plan Value</th>
+                                <th>Commission</th>
+                                <th>Submitted</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${referrals.map(referral => {
+                                const commission = referral.pro_plan_value ? (parseFloat(referral.pro_plan_value) * 0.1).toFixed(2) : '0.00';
+                                const statusClass = referral.status || 'pending';
+                                return `
+                                    <tr>
+                                        <td>
+                                            <strong>${referral.company_name}</strong>
+                                            ${referral.website ? `<br><small><a href="${referral.website}" target="_blank">${referral.website}</a></small>` : ''}
+                                        </td>
+                                        <td>
+                                            ${referral.contact_name}<br>
+                                            <small>${referral.contact_email}</small>
+                                            ${referral.contact_phone ? `<br><small>${referral.contact_phone}</small>` : ''}
+                                        </td>
+                                        <td>${referral.industry || 'N/A'}</td>
+                                        <td><span class="status-badge status-${statusClass}">${statusClass.charAt(0).toUpperCase() + statusClass.slice(1)}</span></td>
+                                        <td>${referral.pro_plan_value ? `${parseFloat(referral.pro_plan_value).toFixed(2)}/month` : 'TBD'}</td>
+                                        <td>
+                                            ${referral.pro_plan_value ? 
+                                                `<strong style="color: var(--success-green);">${commission}/month</strong><br><small>(${(commission * 12).toFixed(2)} total)</small>` : 
+                                                '<span style="color: var(--slate-gray);">TBD</span>'
+                                            }
+                                        </td>
+                                        <td>${new Date(referral.created_at).toLocaleDateString()}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function renderPayments(payments = []) {
+            const container = document.getElementById('payments-list');
             
-            const userName = currentUser?.user_metadata?.full_name || currentUser?.name || currentUser?.email || 'User';
-            const userNameElement = document.getElementById('user-name');
-            if (userNameElement) {
-                userNameElement.textContent = `Welcome, ${userName}`;
+            if (payments.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💰</div>
+                        <h3>No Payments Yet</h3>
+                        <p>Your payments will appear here once your referrals become clients!</p>
+                    </div>
+                `;
+                return;
             }
+
+            // Separate paid and upcoming payments
+            const paidPayments = payments.filter(p => p.status === 'paid');
+            const upcomingPayments = payments.filter(p => p.status === 'pending' || p.status === 'upcoming');
+
+            container.innerHTML = `
+                ${upcomingPayments.length > 0 ? `
+                    <div style="margin-bottom: 3rem;">
+                        <h4 style="color: var(--warning-yellow); margin-bottom: 1rem;">⏰ Upcoming Payments</h4>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Company</th>
+                                        <th>Amount</th>
+                                        <th>Due Date</th>
+                                        <th>Status</th>
+                                        <th>Remaining Months</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${upcomingPayments.map(payment => `
+                                        <tr>
+                                            <td><strong>${payment.referral_company || 'Commission Payment'}</strong></td>
+                                            <td style="color: var(--warning-yellow); font-weight: 600;">${parseFloat(payment.amount).toFixed(2)}</td>
+                                            <td>${payment.due_date ? new Date(payment.due_date).toLocaleDateString() : 'Within 30 days'}</td>
+                                            <td><span class="status-badge status-upcoming">Upcoming</span></td>
+                                            <td>${payment.remaining_months || 12} months</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                ` : ''}
+
+                ${paidPayments.length > 0 ? `
+                    <div>
+                        <h4 style="color: var(--success-green); margin-bottom: 1rem;">✅ Payment History</h4>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Company</th>
+                                        <th>Amount</th>
+                                        <th>Payment Date</th>
+                                        <th>Status</th>
+                                        <th>Payment Method</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${paidPayments.map(payment => `
+                                        <tr>
+                                            <td><strong>${payment.referral_company || 'Commission Payment'}</strong></td>
+                                            <td style="color: var(--success-green); font-weight: 600;">+${parseFloat(payment.amount).toFixed(2)}</td>
+                                            <td>${new Date(payment.created_at).toLocaleDateString()}</td>
+                                            <td><span class="status-badge status-paid">Paid</span></td>
+                                            <td>${payment.payment_method || 'Bank Transfer'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="margin-top: 2rem; padding: 1rem; background: var(--light-gray); border-radius: 8px; text-align: right;">
+                            <strong style="color: var(--success-green); font-size: 1.2rem;">
+                                Total Earned: ${paidPayments.reduce((sum, p) => sum + parseFloat(p.amount), 0).toFixed(2)}
+                            </strong>
+                        </div>
+                    </div>
+                ` : ''}
+
+                ${paidPayments.length === 0 && upcomingPayments.length === 0 ? `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💰</div>
+                        <h3>No Payments Yet</h3>
+                        <p>Your payments will appear here once your referrals become clients!</p>
+                        <button class="btn btn-primary" onclick="showTab(null, 'submit-referral')">Submit Your First Referral</button>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        // Referral Form Functions
+        async function handleReferralSubmit(e) {
+            e.preventDefault();
             
-            if (type === 'admin') {
-                document.getElementById('admin-portal').classList.remove('hidden');
-                document.getElementById('affiliate-portal').classList.add('hidden');
-            } else if (type === 'affiliate') {
-                document.getElementById('affiliate-portal').classList.remove('hidden');
-                document.getElementById('admin-portal').classList.add('hidden');
-            }
-        }
+            const referralData = {
+                affiliate_id: currentUser.id,
+                company_name: document.getElementById('ref-company').value.trim(),
+                website: document.getElementById('ref-website').value.trim() || null,
+                industry: document.getElementById('ref-industry').value || null,
+                contact_name: document.getElementById('ref-contact-name').value.trim(),
+                contact_email: document.getElementById('ref-email').value.trim(),
+                contact_phone: document.getElementById('ref-phone').value.trim() || null,
+                location: document.getElementById('ref-location').value.trim() || null,
+                notes: document.getElementById('ref-notes').value.trim() || null,
+                status: 'pending',
+                created_at: new Date().toISOString()
+            };
 
-        function showLogin() {
-            console.log('Showing login');
-            document.getElementById('login-section').classList.remove('hidden');
-            document.getElementById('main-header').classList.add('hidden');
-            document.getElementById('admin-portal').classList.add('hidden');
-            document.getElementById('affiliate-portal').classList.add('hidden');
-        }
-
-        function showAdminLogin() {
-            const emailInput = document.getElementById('login-email');
-            const passwordInput = document.getElementById('login-password');
-            if (emailInput && passwordInput) {
-                emailInput.value = 'robert@kinectb2b.com';
-                passwordInput.focus();
-            }
-        }
-
-        async function loadAdminData() {
-            console.log('Loading admin data...');
-            // Basic stats loading - we'll add this back later
             try {
-                showNotification('Loading admin data...', 'success');
-                // Add admin data loading here
+                showNotification('Submitting referral...', 'success');
+                
+                const { data, error } = await supabase
+                    .from('referrals')
+                    .insert([referralData])
+                    .select();
+
+                if (error) throw error;
+                
+                showNotification('Referral submitted successfully! Our team will contact them within 24 hours.', 'success');
+                
+                // Reset form
+                document.getElementById('referral-form').reset();
+                
+                // Switch to My Referrals tab
+                showTab(null, 'my-referrals');
+                
+                // Reload data
+                await loadAffiliateData();
+
             } catch (error) {
-                console.error('Error loading admin data:', error);
-                showNotification('Error loading admin data', 'error');
+                console.error('Error submitting referral:', error);
+                showNotification(`Error: ${error.message}`, 'error');
             }
         }
 
-        function showAdminTab(event, tabName) {
-            console.log('Showing admin tab:', tabName);
+        // Profile Functions
+        async function handleProfileUpdate(e) {
+            e.preventDefault();
             
+            const profileData = {
+                full_name: document.getElementById('profile-name').value.trim(),
+                company: document.getElementById('profile-company').value.trim() || null,
+                phone: document.getElementById('profile-phone').value.trim() || null,
+                address: document.getElementById('profile-address').value.trim() || null,
+                social_facebook: document.getElementById('profile-facebook').value.trim() || null,
+                social_instagram: document.getElementById('profile-instagram').value.trim() || null,
+                social_linkedin: document.getElementById('profile-linkedin').value.trim() || null,
+                social_tiktok: document.getElementById('profile-tiktok').value.trim() || null,
+                social_twitter: document.getElementById('profile-twitter').value.trim() || null,
+                social_youtube: document.getElementById('profile-youtube').value.trim() || null,
+                social_website: document.getElementById('profile-website').value.trim() || null,
+                updated_at: new Date().toISOString()
+            };
+
+            try {
+                showNotification('Updating profile...', 'success');
+                
+                const { error } = await supabase
+                    .from('user_profiles')
+                    .update(profileData)
+                    .eq('user_id', currentUser.id);
+
+                if (error) throw error;
+                
+                showNotification('Profile updated successfully!', 'success');
+                
+                // Update user name in header
+                if (profileData.full_name) {
+                    document.getElementById('user-name').textContent = profileData.full_name;
+                }
+
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        function showChangePassword() {
+            const newPassword = prompt('Enter your new password (minimum 6 characters):');
+            if (newPassword && newPassword.length >= 6) {
+                changePassword(newPassword);
+            } else if (newPassword) {
+                showNotification('Password must be at least 6 characters', 'error');
+            }
+        }
+
+        async function changePassword(newPassword) {
+            try {
+                showNotification('Changing password...', 'success');
+                
+                const { error } = await supabase.auth.updateUser({
+                    password: newPassword
+                });
+
+                if (error) throw error;
+                
+                showNotification('Password changed successfully!', 'success');
+
+            } catch (error) {
+                console.error('Error changing password:', error);
+                showNotification(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Utility Functions
+        function showTab(event, tabName) {
             // Remove active from all tabs
-            document.querySelectorAll('#admin-portal .tab').forEach(tab => {
+            document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
+            
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-content').classList.add('active');
             
             // Add active to clicked tab
             if (event && event.target) {
                 event.target.classList.add('active');
+            } else {
+                // Find and activate the correct tab
+                document.querySelectorAll('.tab').forEach(tab => {
+                    if (tab.textContent.toLowerCase().includes(tabName.replace('-', ' '))) {
+                        tab.classList.add('active');
+                    }
+                });
             }
-            
-            // Load tab content
-            const content = document.getElementById('admin-content');
-            if (content) {
-                content.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">⚙️</div>
-                        <h3>${tabName.charAt(0).toUpperCase() + tabName.slice(1)} Management</h3>
-                        <p>This section is being loaded...</p>
-                    </div>
-                `;
-            }
+        }
+
+        function copyAffiliateCode() {
+            const code = document.getElementById('affiliate-code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                showNotification('Affiliate code copied to clipboard!', 'success');
+            }).catch(() => {
+                showNotification('Failed to copy code', 'error');
+            });
         }
 
         function showNotification(message, type = 'success') {
@@ -581,17 +1338,10 @@
             }
         }
 
-        function closeAffiliateProfile() {
-            const modal = document.getElementById('affiliate-profile-modal');
-            if (modal) {
-                modal.classList.remove('active');
-            }
-        }
-
         // Modal click outside to close
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('modal')) {
-                e.target.classList.remove('active');
+                closeAuthModal();
             }
         });
     </script>
