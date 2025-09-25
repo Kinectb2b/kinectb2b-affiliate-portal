@@ -717,7 +717,12 @@
                 results.style.display = 'none';
             }
         }
-
+ function scrollToCalculator() {
+            const calcSection = document.getElementById('calculator-section');
+            if (calcSection) {
+                calcSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
         // Auth functions
         async function handleAuth(e) {
             e.preventDefault();
