@@ -933,6 +933,7 @@
                                 role: 'affiliate',
                                 status: 'active',
                                 affiliate_code: affiliateCode,
+                                admin_viewed: false,
                                 created_at: new Date().toISOString()
                             });
                         
@@ -1517,6 +1518,7 @@
                     .from('user_profiles')
                     .select('*')
                     .eq('role', 'affiliate')
+                    .not('affiliate_code', 'is', null)
                     .order('created_at', { ascending: false });
                 
                 const { data: referrals } = await supabase
@@ -2167,9 +2169,39 @@
                 const updates = { status: newStatus, admin_viewed: true };
                 
                 if (newStatus === 'customer') {
-                    const planValue = prompt('Enter Pro Plan monthly value (e.g., 250, 500, 1000):');
-                    if (!planValue) return;
-                    updates.pro_plan_value = parseFloat(planValue);
+                    const planOptions = [
+                        { value: 250, label: 'Pro Plan 100' },
+                        { value: 500, label: 'Pro Plan 200' },
+                        { value: 750, label: 'Pro Plan 300' },
+                        { value: 1000, label: 'Pro Plan 400' },
+                        { value: 1250, label: 'Pro Plan 500' },
+                        { value: 1500, label: 'Pro Plan 600' },
+                        { value: 1750, label: 'Pro Plan 700' },
+                        { value: 2000, label: 'Pro Plan 800' },
+                        { value: 2250, label: 'Pro Plan 900' },
+                        { value: 2500, label: 'Pro Plan 1000' },
+                        { value: 2750, label: 'Pro Plan 1100' },
+                        { value: 3000, label: 'Pro Plan 1200' }
+                    ];
+                    
+                    const selectOptions = planOptions.map(p => `<option value="${p.value}">${p.label} - ${p.value}/mo</option>`).join('');
+                    const modal = document.createElement('div');
+                    modal.className = 'modal active';
+                    modal.innerHTML = `
+                        <div class="modal-content">
+                            <h3>Select Pro Plan</h3>
+                            <select id="plan-value-select" style="width: 100%; padding: 12px; margin: 1rem 0; border: 2px solid var(--border-gray); border-radius: 8px;">
+                                <option value="">Choose plan...</option>
+                                ${selectOptions}
+                            </select>
+                            <div style="display: flex; gap: 1rem;">
+                                <button class="btn btn-primary" onclick="savePlanAndStatus('${referralId}', '${newStatus}')">Save</button>
+                                <button class="btn" onclick="this.closest('.modal').remove()" style="background: var(--light-gray); color: var(--slate-gray);">Cancel</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                    return;
                 }
                 
                 const { error } = await supabase
@@ -2180,6 +2212,39 @@
                 if (error) throw error;
                 
                 showNotification(`Status updated to ${newStatus}`, 'success');
+                await loadAdminData();
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function savePlanAndStatus(referralId, status) {
+            const select = document.getElementById('plan-value-select');
+            const planValue = parseFloat(select.value);
+            
+            if (!planValue) {
+                showNotification('Please select a plan', 'error');
+                return;
+            }
+            
+            const planText = select.options[select.selectedIndex].text;
+            const planName = planText.split(' - ')[0];
+            
+            try {
+                const { error } = await supabase
+                    .from('referrals')
+                    .update({ 
+                        status: status,
+                        pro_plan_value: planValue,
+                        pro_plan_name: planName,
+                        admin_viewed: true
+                    })
+                    .eq('id', referralId);
+                
+                if (error) throw error;
+                
+                document.querySelector('.modal').remove();
+                showNotification('Client activated with ' + planName, 'success');
                 await loadAdminData();
             } catch (error) {
                 showNotification('Error: ' + error.message, 'error');
