@@ -654,12 +654,12 @@
                     <div class="stat-label">Total Referrals</div>
                 </div>
                 <div class="card stat-card">
-                    <div class="stat-number" id="admin-new-affiliates">0</div>
-                    <div class="stat-label">🔔 New Affiliates</div>
+                    <div class="stat-number" id="admin-new-referrals">0</div>
+                    <div class="stat-label">🔔 New Referrals</div>
                 </div>
                 <div class="card stat-card">
-                    <div class="stat-number" id="admin-pending-questions">0</div>
-                    <div class="stat-label">💬 Pending Questions</div>
+                    <div class="stat-number" id="admin-new-affiliates">0</div>
+                    <div class="stat-label">🆕 New Affiliates</div>
                 </div>
             </div>
 
@@ -1538,7 +1538,6 @@
                     .from('user_profiles')
                     .select('*')
                     .eq('role', 'affiliate')
-                    .not('affiliate_code', 'is', null)
                     .order('created_at', { ascending: false });
                 
                 const { data: referrals } = await supabase
