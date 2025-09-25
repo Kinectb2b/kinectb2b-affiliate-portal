@@ -936,6 +936,16 @@
         }
 
         // Auth functions
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            if (notification) {
+                notification.textContent = message;
+                notification.className = `notification ${type} show`;
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 4000);
+            }
+        }
         async function handleAuth(e) {
             e.preventDefault();
             
@@ -1817,16 +1827,7 @@
             });
         }
 
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            if (notification) {
-                notification.textContent = message;
-                notification.className = `notification ${type} show`;
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                }, 4000);
-            }
-        }
+        
 
         function showProfileEdit() {
             document.getElementById('profile-view').style.display = 'none';
