@@ -60,8 +60,8 @@
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 2px solid var(--border-gray); border-radius: 8px; font-size: 1rem; transition: all 0.3s ease; }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--electric-blue); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
         
-        /* Dashboard Styles - FIXED SPACING ISSUE */
-        .dashboard { background: var(--light-gray); min-height: 100vh; padding-top: 0; }
+        /* Dashboard Styles - FIXED SPACING ISSUE COMPLETELY */
+        .dashboard { background: var(--light-gray); min-height: 100vh; }
         .header { background: var(--white); padding: 1rem 0; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1); position: sticky; top: 0; z-index: 100; }
         .header-content { display: flex; justify-content: space-between; align-items: center; }
         .nav-links { display: flex; gap: 2rem; align-items: center; }
@@ -268,7 +268,7 @@
         </header>
 
         <!-- Affiliate Dashboard -->
-        <div id="affiliate-dashboard" class="container" style="padding: 2rem 20px;">
+        <div id="affiliate-dashboard" class="container hidden" style="padding: 2rem 20px 0;">
             <!-- Affiliate Code Card -->
             <div class="card affiliate-code-card">
                 <h3>Your Personal Affiliate Code</h3>
@@ -675,7 +675,7 @@
     </div>
 
     <!-- Admin Dashboard -->
-    <div id="admin-dashboard" class="container hidden" style="padding: 2rem 20px;">
+    <div id="admin-dashboard" class="container hidden" style="padding: 2rem 20px 0;">
         <!-- Admin Stats Dashboard -->
         <div class="dashboard-grid">
             <div class="card stat-card">
@@ -1038,10 +1038,9 @@
             console.log('User session started:', user.email);
             
             if (user.email === 'robert@kinectb2b.com') {
-                showAdminDashboard();
-                await loadAdminData();
+                await showAdminDashboard();
             } else {
-                showAffiliateDashboard();
+                await showAffiliateDashboard();
             }
         }
 
@@ -1054,19 +1053,22 @@
         function showLandingPage() {
             document.getElementById('landing-page').classList.remove('hidden');
             document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('affiliate-dashboard').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.add('hidden');
             closeAuthModal();
         }
 
         function showAffiliateDashboard() {
             document.getElementById('landing-page').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('affiliate-dashboard').classList.remove('hidden');
             document.getElementById('admin-dashboard').classList.add('hidden');
             
             closeAuthModal();
             loadAffiliateData();
         }
 
-        function showAdminDashboard() {
+        async function showAdminDashboard() {
             document.getElementById('landing-page').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
             document.getElementById('affiliate-dashboard').classList.add('hidden');
@@ -1074,6 +1076,7 @@
             
             closeAuthModal();
             document.getElementById('user-name').textContent = 'Admin - Robert';
+            await loadAdminData();
         }
 
         async function loadAffiliateData() {
