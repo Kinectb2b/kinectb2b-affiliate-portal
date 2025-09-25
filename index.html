@@ -107,31 +107,6 @@
             width: 95%;
             max-height: 90vh;
         }
-        
-        /* Profile Tab Styles */
-        .profile-tab {
-            padding: 1rem 1.5rem;
-            border: none;
-            background: none;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            color: var(--slate-gray);
-        }
-        
-        .profile-tab.active {
-            color: var(--electric-blue);
-            border-bottom-color: var(--electric-blue);
-        }
-        
-        .profile-tab-content {
-            display: none;
-        }
-        
-        .profile-tab-content:first-of-type {
-            display: block;
-        }
     </style>
 </head>
 <body>
@@ -214,7 +189,6 @@
     <!-- Affiliate Portal -->
     <div id="affiliate-portal" class="hidden">
         <div class="container" style="padding-top: 2rem;">
-            <!-- Affiliate Stats -->
             <div class="dashboard-grid">
                 <div class="card stat-card">
                     <div class="stat-number" id="total-referrals">0</div>
@@ -233,450 +207,11 @@
                     <div class="stat-label">Total Earned</div>
                 </div>
             </div>
-
-            <!-- Affiliate Tabs -->
+            
             <div class="card">
-                <div class="tabs">
-                    <button class="tab active" onclick="showAffiliateTab(event, 'my-referrals')">My Referrals</button>
-                    <button class="tab" onclick="showAffiliateTab(event, 'submit-referral')">Submit Referral</button>
-                    <button class="tab" onclick="showAffiliateTab(event, 'my-payments')">My Payments</button>
-                    <button class="tab" onclick="showAffiliateTab(event, 'support-qa')">Support & Q&A</button>
-                    <button class="tab" onclick="showAffiliateTab(event, 'profile-settings')">Profile & Payment</button>
-                    <button class="tab" onclick="showAffiliateTab(event, 'affiliate-info')">How It Works</button>
-                </div>
-
-                <!-- Affiliate Content -->
-                <div id="affiliate-content">
-                    <!-- My Referrals Tab -->
-                    <div id="my-referrals-content" class="tab-content active">
-                        <h3>My Referrals</h3>
-                        <div id="affiliate-referrals-list">
-                            <div class="empty-state">
-                                <div class="empty-state-icon">📋</div>
-                                <h3>No Referrals Yet</h3>
-                                <p>Submit your first referral to start earning commissions!</p>
-                                <button class="btn btn-primary" onclick="showAffiliateTab(null, 'submit-referral')" style="margin-top: 1rem;">Submit Referral</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Submit Referral Tab -->
-                    <div id="submit-referral-content" class="tab-content">
-                        <h3>Submit New Referral</h3>
-                        <form id="affiliate-referral-form">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                                <div>
-                                    <h4 style="margin-bottom: 1rem;">Company Information</h4>
-                                    <div class="form-group">
-                                        <label for="ref-company-name">Company Name *</label>
-                                        <input type="text" id="ref-company-name" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="ref-company-website">Website</label>
-                                        <input type="url" id="ref-company-website">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="ref-company-size">Company Size</label>
-                                        <select id="ref-company-size">
-                                            <option value="">Select size...</option>
-                                            <option value="1-10">1-10 employees</option>
-                                            <option value="11-50">11-50 employees</option>
-                                            <option value="51-200">51-200 employees</option>
-                                            <option value="200+">200+ employees</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div>
-                                    <h4 style="margin-bottom: 1rem;">Contact Information</h4>
-                                    <div class="form-group">
-                                        <label for="ref-contact-name">Contact Name *</label>
-                                        <input type="text" id="ref-contact-name" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="ref-contact-email">Email *</label>
-                                        <input type="email" id="ref-contact-email" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="ref-contact-phone">Phone</label>
-                                        <input type="tel" id="ref-contact-phone">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="ref-notes">Additional Notes</label>
-                                <textarea id="ref-notes" placeholder="Tell us about their business, current challenges, or why they'd be a good fit..."></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Submit Referral</button>
-                        </form>
-                    </div>
-
-                    <!-- My Payments Tab -->
-                    <div id="my-payments-content" class="tab-content">
-                        <h3>My Payment History</h3>
-                        <div id="affiliate-payments-list">
-                            <div class="empty-state">
-                                <div class="empty-state-icon">💰</div>
-                                <h3>No Payments Yet</h3>
-                                <p>Payments will appear here once your referrals become active clients.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Support & Q&A Tab -->
-                    <div id="support-qa-content" class="tab-content">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                            <h3>Support & Questions</h3>
-                            <button class="btn btn-primary btn-small" onclick="openQuestionModal()">Ask New Question</button>
-                        </div>
-                        
-                        <div id="affiliate-questions-list">
-                            <div class="empty-state">
-                                <div class="empty-state-icon">❓</div>
-                                <h3>No Questions Yet</h3>
-                                <p>Have a question about the affiliate program, payments, or need help? Our team is here to help!</p>
-                                <button class="btn btn-primary" onclick="openQuestionModal()" style="margin-top: 1rem;">Ask Your First Question</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Profile & Payment Settings Tab -->
-                    <div id="profile-settings-content" class="tab-content">
-                        <h3>Profile & Payment Settings</h3>
-                        
-                        <!-- Personal Information -->
-                        <div style="margin-bottom: 3rem;">
-                            <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Personal Information</h4>
-                            <form id="personal-info-form">
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-                                    <div class="form-group">
-                                        <label for="profile-full-name">Full Name *</label>
-                                        <input type="text" id="profile-full-name" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="profile-phone">Phone Number *</label>
-                                        <input type="tel" id="profile-phone" required>
-                                    </div>
-                                </div>
-                                
-                                <h5 style="margin-bottom: 1rem;">Mailing Address</h5>
-                                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                                    <div class="form-group">
-                                        <label for="profile-address">Street Address *</label>
-                                        <input type="text" id="profile-address" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="profile-address2">Apt/Unit</label>
-                                        <input type="text" id="profile-address2">
-                                    </div>
-                                </div>
-                                
-                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
-                                    <div class="form-group">
-                                        <label for="profile-city">City *</label>
-                                        <input type="text" id="profile-city" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="profile-state">State *</label>
-                                        <input type="text" id="profile-state" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="profile-zip">ZIP Code *</label>
-                                        <input type="text" id="profile-zip" required>
-                                    </div>
-                                </div>
-                                
-                                <button type="submit" class="btn btn-primary">Update Personal Info</button>
-                            </form>
-                        </div>
-
-                        <!-- Payment Method Selection -->
-                        <div style="margin-bottom: 3rem;">
-                            <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Payment Method</h4>
-                            <form id="payment-method-form">
-                                <div class="form-group">
-                                    <label>Choose your preferred payment method:</label>
-                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 0.5rem;">
-                                        <label style="display: flex; align-items: center; padding: 1rem; border: 2px solid var(--border-gray); border-radius: 8px; cursor: pointer; transition: all 0.3s ease;" onclick="selectPaymentMethod('paypal')">
-                                            <input type="radio" name="payment-method" value="paypal" id="payment-paypal" style="margin-right: 0.5rem;">
-                                            <span>💰 PayPal</span>
-                                        </label>
-                                        <label style="display: flex; align-items: center; padding: 1rem; border: 2px solid var(--border-gray); border-radius: 8px; cursor: pointer; transition: all 0.3s ease;" onclick="selectPaymentMethod('zelle')">
-                                            <input type="radio" name="payment-method" value="zelle" id="payment-zelle" style="margin-right: 0.5rem;">
-                                            <span>📱 Zelle</span>
-                                        </label>
-                                        <label style="display: flex; align-items: center; padding: 1rem; border: 2px solid var(--border-gray); border-radius: 8px; cursor: pointer; transition: all 0.3s ease;" onclick="selectPaymentMethod('cashapp')">
-                                            <input type="radio" name="payment-method" value="cashapp" id="payment-cashapp" style="margin-right: 0.5rem;">
-                                            <span>💸 Cash App</span>
-                                        </label>
-                                        <label style="display: flex; align-items: center; padding: 1rem; border: 2px solid var(--border-gray); border-radius: 8px; cursor: pointer; transition: all 0.3s ease;" onclick="selectPaymentMethod('ach')">
-                                            <input type="radio" name="payment-method" value="ach" id="payment-ach" style="margin-right: 0.5rem;">
-                                            <span>🏦 ACH Transfer</span>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <!-- PayPal Details -->
-                                <div id="paypal-details" class="payment-details" style="display: none; margin-top: 1rem;">
-                                    <div class="form-group">
-                                        <label for="paypal-email">PayPal Email Address *</label>
-                                        <input type="email" id="paypal-email" placeholder="your-email@example.com">
-                                    </div>
-                                </div>
-
-                                <!-- Zelle Details -->
-                                <div id="zelle-details" class="payment-details" style="display: none; margin-top: 1rem;">
-                                    <div class="form-group">
-                                        <label>Zelle Contact Info *</label>
-                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                            <input type="email" id="zelle-email" placeholder="Email linked to Zelle">
-                                            <input type="tel" id="zelle-phone" placeholder="Phone linked to Zelle">
-                                        </div>
-                                        <small style="color: var(--slate-gray);">Enter either email OR phone number that's linked to your Zelle account</small>
-                                    </div>
-                                </div>
-
-                                <!-- Cash App Details -->
-                                <div id="cashapp-details" class="payment-details" style="display: none; margin-top: 1rem;">
-                                    <div class="form-group">
-                                        <label for="cashapp-tag">Cash App Tag *</label>
-                                        <input type="text" id="cashapp-tag" placeholder="$YourCashTag">
-                                    </div>
-                                </div>
-
-                                <!-- ACH Details -->
-                                <div id="ach-details" class="payment-details" style="display: none; margin-top: 1rem;">
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                        <div class="form-group">
-                                            <label for="ach-account">Account Number *</label>
-                                            <input type="text" id="ach-account" placeholder="Account Number">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="ach-routing">Routing Number *</label>
-                                            <input type="text" id="ach-routing" placeholder="Routing Number">
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="ach-bank-name">Bank Name</label>
-                                        <input type="text" id="ach-bank-name" placeholder="Bank Name">
-                                    </div>
-                                </div>
-
-                                <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Save Payment Method</button>
-                            </form>
-                        </div>
-
-                        <!-- Social Media Links -->
-                        <div style="margin-bottom: 3rem;">
-                            <h4 style="margin-bottom: 1rem; color: var(--electric-blue);">Social Media & Promotion Links</h4>
-                            <p style="color: var(--slate-gray); margin-bottom: 1.5rem;">Add links to your social accounts where you'll be promoting KinectB2B as an affiliate.</p>
-                            <form id="social-links-form">
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                                    <div>
-                                        <div class="form-group">
-                                            <label for="social-facebook">🔗 Facebook Profile/Page</label>
-                                            <input type="url" id="social-facebook" placeholder="https://facebook.com/yourpage">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="social-instagram">📸 Instagram Profile</label>
-                                            <input type="url" id="social-instagram" placeholder="https://instagram.com/yourusername">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="social-linkedin">💼 LinkedIn Profile</label>
-                                            <input type="url" id="social-linkedin" placeholder="https://linkedin.com/in/yourname">
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="form-group">
-                                            <label for="social-twitter">🐦 Twitter/X Profile</label>
-                                            <input type="url" id="social-twitter" placeholder="https://twitter.com/yourusername">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="social-youtube">📺 YouTube Channel</label>
-                                            <input type="url" id="social-youtube" placeholder="https://youtube.com/yourchannel">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="social-website">🌐 Personal Website/Blog</label>
-                                            <input type="url" id="social-website" placeholder="https://yourwebsite.com">
-                                        </div>
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Save Social Links</button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- How It Works / Affiliate Info Tab -->
-                    <div id="affiliate-info-content" class="tab-content">
-                        <div style="max-width: 800px;">
-                            <h3 style="color: var(--electric-blue); margin-bottom: 2rem;">KinectB2B Affiliate Program - How It Works</h3>
-                            
-                            <!-- What is an Affiliate -->
-                            <div style="margin-bottom: 3rem;">
-                                <h4 style="color: var(--electric-blue); margin-bottom: 1rem;">🤝 What is an Affiliate?</h4>
-                                <p style="margin-bottom: 1rem;">As a KinectB2B affiliate, you're our trusted partner who helps us connect with businesses that need our lead generation and appointment setting services. You act as a bridge between KinectB2B and potential clients who could benefit from our expertise.</p>
-                                <p style="margin-bottom: 1rem;">Think of it as being a matchmaker - you identify businesses that struggle with lead generation or need more appointments, and you introduce them to our proven solutions.</p>
-                            </div>
-
-                            <!-- How You Make Money -->
-                            <div style="margin-bottom: 3rem;">
-                                <h4 style="color: var(--success-green); margin-bottom: 1rem;">💰 How You Earn Commissions</h4>
-                                <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
-                                    <h5 style="color: var(--electric-blue); margin-bottom: 1rem;">Simple 4-Step Process:</h5>
-                                    <div style="display: grid; gap: 1.5rem;">
-                                        <div style="display: flex; align-items: center; gap: 1rem;">
-                                            <div style="background: var(--electric-blue); color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold;">1</div>
-                                            <div>
-                                                <strong>Submit Referral:</strong> You find a business that needs lead generation and submit their info through this portal
-                                            </div>
-                                        </div>
-                                        <div style="display: flex; align-items: center; gap: 1rem;">
-                                            <div style="background: var(--electric-blue); color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold;">2</div>
-                                            <div>
-                                                <strong>We Contact Them:</strong> Our sales team reaches out and presents our services to your referral
-                                            </div>
-                                        </div>
-                                        <div style="display: flex; align-items: center; gap: 1rem;">
-                                            <div style="background: var(--success-green); color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold;">3</div>
-                                            <div>
-                                                <strong>They Become a Client:</strong> If they sign up for one of our Pro Plans, you earn a commission
-                                            </div>
-                                        </div>
-                                        <div style="display: flex; align-items: center; gap: 1rem;">
-                                            <div style="background: var(--success-green); color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold;">4</div>
-                                            <div>
-                                                <strong>Get Paid:</strong> You receive 10% of their first month's payment via your chosen payment method
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Commission Structure -->
-                            <div style="margin-bottom: 3rem;">
-                                <h4 style="color: var(--success-green); margin-bottom: 1rem;">💵 Commission Structure</h4>
-                                <div style="background: linear-gradient(135deg, var(--success-green), #059669); color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
-                                    <div style="text-align: center;">
-                                        <div style="font-size: 3rem; font-weight: bold; margin-bottom: 0.5rem;">10%</div>
-                                        <div style="font-size: 1.2rem;">Commission on First Month Payment</div>
-                                    </div>
-                                </div>
-                                <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px;">
-                                    <h5 style="margin-bottom: 1rem;">Example Earnings:</h5>
-                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                                        <div style="text-align: center; padding: 1rem; background: white; border-radius: 8px;">
-                                            <div style="font-weight: bold; color: var(--electric-blue);">Pro Plan 300</div>
-                                            <div style="color: var(--slate-gray);">$750/month</div>
-                                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--success-green);">$75</div>
-                                        </div>
-                                        <div style="text-align: center; padding: 1rem; background: white; border-radius: 8px;">
-                                            <div style="font-weight: bold; color: var(--electric-blue);">Pro Plan 600</div>
-                                            <div style="color: var(--slate-gray);">$1,500/month</div>
-                                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--success-green);">$150</div>
-                                        </div>
-                                        <div style="text-align: center; padding: 1rem; background: white; border-radius: 8px;">
-                                            <div style="font-weight: bold; color: var(--electric-blue);">Pro Plan 1000</div>
-                                            <div style="color: var(--slate-gray);">$2,500/month</div>
-                                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--success-green);">$250</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Best Prospects -->
-                            <div style="margin-bottom: 3rem;">
-                                <h4 style="color: var(--electric-blue); margin-bottom: 1rem;">🎯 Who Makes a Great Referral?</h4>
-                                <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px;">
-                                    <h5 style="margin-bottom: 1rem;">Look for businesses that:</h5>
-                                    <ul style="list-style: none; padding: 0;">
-                                        <li style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                                            <span style="color: var(--success-green);">✅</span>
-                                            <strong>Need more leads or appointments</strong> - Service businesses, consultants, contractors
-                                        </li>
-                                        <li style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                                            <span style="color: var(--success-green);">✅</span>
-                                            <strong>Spend money on marketing</strong> - Already advertising online or offline
-                                        </li>
-                                        <li style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                                            <span style="color: var(--success-green);">✅</span>
-                                            <strong>High-value services</strong> - Charge $1,000+ per client (lawyers, coaches, agencies)
-                                        </li>
-                                        <li style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                                            <span style="color: var(--success-green);">✅</span>
-                                            <strong>Growing businesses</strong> - 5+ employees, ready to scale
-                                        </li>
-                                        <li style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                                            <span style="color: var(--success-green);">✅</span>
-                                            <strong>B2B companies</strong> - Sell to other businesses (our specialty!)
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <!-- Payment Timeline -->
-                            <div style="margin-bottom: 3rem;">
-                                <h4 style="color: var(--electric-blue); margin-bottom: 1rem;">⏰ Payment Timeline</h4>
-                                <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px;">
-                                    <p style="margin-bottom: 1rem;"><strong>When do you get paid?</strong></p>
-                                    <ul style="list-style: none; padding: 0;">
-                                        <li style="margin-bottom: 1rem;">📅 <strong>Client signs up:</strong> We notify you and update your portal</li>
-                                        <li style="margin-bottom: 1rem;">💳 <strong>Client makes first payment:</strong> Usually within 1-7 days of signing</li>
-                                        <li style="margin-bottom: 1rem;">💰 <strong>Your commission is processed:</strong> Within 2-3 business days via your chosen payment method</li>
-                                    </ul>
-                                    <div style="background: var(--electric-blue); color: white; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
-                                        <strong>Typical timeline:</strong> 1-2 weeks from referral to payment in your account!
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Getting Started -->
-                            <div style="background: linear-gradient(135deg, var(--electric-blue), #3B82F6); color: white; padding: 2rem; border-radius: 12px;">
-                                <h4 style="margin-bottom: 1rem;">🚀 Ready to Start Earning?</h4>
-                                <p style="margin-bottom: 1.5rem;">The best part? There's no limit to how many referrals you can submit. The more quality referrals you send us, the more you earn!</p>
-                                <div style="text-align: center;">
-                                    <button class="btn" onclick="showAffiliateTab(null, 'submit-referral')" style="background: white; color: var(--electric-blue); font-weight: bold;">Submit Your First Referral</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <h3>Affiliate Dashboard</h3>
+                <p>Welcome to your affiliate portal!</p>
             </div>
-        </div>
-    </div>
-
-    <!-- Question Modal for Affiliates -->
-    <div id="affiliate-question-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Ask a Question</h3>
-                <button class="close-modal" onclick="closeQuestionModal()">&times;</button>
-            </div>
-            <form id="affiliate-question-form">
-                <div class="form-group">
-                    <label for="question-category">Category</label>
-                    <select id="question-category" required>
-                        <option value="">Select a category...</option>
-                        <option value="payments">💰 Payments & Commissions</option>
-                        <option value="referrals">📋 Referral Process</option>
-                        <option value="technical">🔧 Technical Support</option>
-                        <option value="general">💬 General Question</option>
-                        <option value="marketing">📢 Marketing & Promotion</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="question-subject">Subject</label>
-                    <input type="text" id="question-subject" required placeholder="Brief description of your question">
-                </div>
-                <div class="form-group">
-                    <label for="question-message">Your Question</label>
-                    <textarea id="question-message" required placeholder="Please provide as much detail as possible so we can help you effectively..." rows="6"></textarea>
-                </div>
-                <div style="background: var(--light-gray); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                    <small style="color: var(--slate-gray);">
-                        💡 <strong>Tip:</strong> Our admin team typically responds within 24 hours. You'll see the response right here in your Support section.
-                    </small>
-                </div>
-                <button type="submit" class="btn btn-primary">Submit Question</button>
-            </form>
         </div>
     </div>
 
@@ -698,13 +233,24 @@
     <script>
         const SUPABASE_URL = 'https://ngdvepfzmpnfzbecpkhw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5nZHZlcGZ6bXBuZnpiZWNwa2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2Nzg2MzksImV4cCI6MjA3NDI1NDYzOX0.bfkXungCd9GkarpR7E7fayXLStewUcDvROTpd_SevFg';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
+        let supabase;
         let currentUser = null;
         let currentUserRole = null;
 
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 KinectB2B Affiliate Portal Loading...');
+            
+            // Initialize Supabase
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('Supabase initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize Supabase:', error);
+                showNotification('Failed to connect to database', 'error');
+                return;
+            }
+            
             initializeApp();
             setupEventListeners();
         });
@@ -712,10 +258,18 @@
         async function initializeApp() {
             try {
                 const { data: { session } } = await supabase.auth.getSession();
-                if (session) await handleUserSession(session.user);
+                if (session) {
+                    console.log('Found existing session:', session.user.email);
+                    await handleUserSession(session.user);
+                }
+                
                 supabase.auth.onAuthStateChange((event, session) => {
-                    if (event === 'SIGNED_IN' && session) handleUserSession(session.user);
-                    else if (event === 'SIGNED_OUT') handleSignOut();
+                    console.log('Auth state changed:', event, session?.user?.email);
+                    if (event === 'SIGNED_IN' && session) {
+                        handleUserSession(session.user);
+                    } else if (event === 'SIGNED_OUT') {
+                        handleSignOut();
+                    }
                 });
             } catch (error) {
                 console.error('Error initializing app:', error);
@@ -724,55 +278,107 @@
         }
 
         function setupEventListeners() {
-            document.getElementById('loginForm').addEventListener('submit', handleLogin);
-            document.getElementById('affiliate-referral-form').addEventListener('submit', handleAffiliateReferralSubmit);
-            document.getElementById('personal-info-form').addEventListener('submit', handlePersonalInfoUpdate);
-            document.getElementById('payment-method-form').addEventListener('submit', handlePaymentMethodUpdate);
-            document.getElementById('social-links-form').addEventListener('submit', handleSocialLinksUpdate);
-            document.getElementById('affiliate-question-form').addEventListener('submit', handleAffiliateQuestion);
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleLogin);
+                console.log('Login form event listener added');
+            } else {
+                console.error('Login form not found!');
+            }
         }
 
         async function handleLogin(e) {
             e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
+            console.log('Login form submitted');
+            
+            const emailInput = document.getElementById('login-email');
+            const passwordInput = document.getElementById('login-password');
+            
+            if (!emailInput || !passwordInput) {
+                console.error('Login inputs not found');
+                showNotification('Login form error', 'error');
+                return;
+            }
+            
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            
+            if (!email || !password) {
+                showNotification('Please enter both email and password', 'error');
+                return;
+            }
+            
+            console.log('Attempting login for:', email);
+            
             try {
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) throw error;
+                showNotification('Logging in...', 'success');
+                
+                const { data, error } = await supabase.auth.signInWithPassword({ 
+                    email: email, 
+                    password: password 
+                });
+                
+                if (error) {
+                    console.error('Login error:', error);
+                    throw error;
+                }
+                
+                console.log('Login successful:', data);
                 showNotification('Login successful!', 'success');
+                
             } catch (error) {
-                showNotification(error.message, 'error');
+                console.error('Login failed:', error);
+                showNotification(`Login failed: ${error.message}`, 'error');
             }
         }
 
         async function handleUserSession(user) {
+            console.log('Handling user session:', user.email);
             currentUser = user;
+            
             if (user.email === 'robert@kinectb2b.com' || user.user_metadata?.role === 'admin') {
                 currentUserRole = 'admin';
+                console.log('User is admin');
                 showPortal('admin');
                 await loadAdminData();
             } else {
                 currentUserRole = 'affiliate';
+                console.log('User is affiliate');
                 showPortal('affiliate');
-                await loadAffiliateData();
+                // await loadAffiliateData();
             }
         }
 
         function handleSignOut() {
+            console.log('User signed out');
             currentUser = null;
             currentUserRole = null;
             showLogin();
         }
 
         async function logout() {
-            await supabase.auth.signOut();
+            try {
+                console.log('Logging out...');
+                await supabase.auth.signOut();
+                showNotification('Logged out successfully', 'success');
+            } catch (error) {
+                console.error('Logout error:', error);
+                showNotification('Error logging out', 'error');
+            }
         }
 
         function showPortal(type) {
+            console.log('Showing portal:', type);
+            
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('main-header').classList.remove('hidden');
-            const userName = currentUser?.user_metadata?.full_name || currentUser?.name || 'User';
-            document.getElementById('user-name').textContent = `Welcome, ${userName}`;
+            
+            const userName = currentUser?.user_metadata?.full_name || currentUser?.name || currentUser?.email || 'User';
+            const userNameElement = document.getElementById('user-name');
+            if (userNameElement) {
+                userNameElement.textContent = `Welcome, ${userName}`;
+            }
+            
             if (type === 'admin') {
                 document.getElementById('admin-portal').classList.remove('hidden');
                 document.getElementById('affiliate-portal').classList.add('hidden');
@@ -783,6 +389,7 @@
         }
 
         function showLogin() {
+            console.log('Showing login');
             document.getElementById('login-section').classList.remove('hidden');
             document.getElementById('main-header').classList.add('hidden');
             document.getElementById('admin-portal').classList.add('hidden');
@@ -790,226 +397,77 @@
         }
 
         function showAdminLogin() {
-            document.getElementById('login-email').value = 'robert@kinectb2b.com';
-            document.getElementById('login-password').focus();
+            const emailInput = document.getElementById('login-email');
+            const passwordInput = document.getElementById('login-password');
+            if (emailInput && passwordInput) {
+                emailInput.value = 'robert@kinectb2b.com';
+                passwordInput.focus();
+            }
         }
 
         async function loadAdminData() {
+            console.log('Loading admin data...');
+            // Basic stats loading - we'll add this back later
             try {
-                const { data: affiliates } = await supabase.from('user_profiles').select('*').eq('role', 'affiliate');
-                const { data: referrals } = await supabase.from('referrals').select('*');
-                const { data: payments } = await supabase.from('payments').select('*');
-                console.log('Admin data loaded:', { affiliates, referrals, payments });
-                updateAdminStats(affiliates || [], referrals || [], payments || []);
+                showNotification('Loading admin data...', 'success');
+                // Add admin data loading here
             } catch (error) {
                 console.error('Error loading admin data:', error);
+                showNotification('Error loading admin data', 'error');
             }
-        }
-
-        function updateAdminStats(affiliates = [], referrals = [], payments = []) {
-            const totalAffiliates = affiliates.length;
-            const totalReferrals = referrals.length;
-            const totalCommissions = payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-            const currentMonth = new Date().toISOString().slice(0, 7);
-            const monthlyCommissions = payments.filter(p => p.created_at?.startsWith(currentMonth)).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-            const monthlyRevenue = monthlyCommissions * 10;
-            document.getElementById('admin-total-affiliates').textContent = totalAffiliates;
-            document.getElementById('admin-total-referrals').textContent = totalReferrals;
-            document.getElementById('admin-monthly-revenue').textContent = `$${monthlyRevenue.toFixed(2)}`;
-            document.getElementById('admin-total-commissions').textContent = `$${totalCommissions.toFixed(2)}`;
         }
 
         function showAdminTab(event, tabName) {
-            document.querySelectorAll('#admin-portal .tab').forEach(tab => tab.classList.remove('active'));
+            console.log('Showing admin tab:', tabName);
+            
+            // Remove active from all tabs
+            document.querySelectorAll('#admin-portal .tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Add active to clicked tab
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+            
+            // Load tab content
             const content = document.getElementById('admin-content');
-            if (tabName === 'affiliates') loadAffiliatesTab(content);
-            else if (tabName === 'referrals-admin') loadReferralsTab(content);
-            else if (tabName === 'payments-admin') loadPaymentsTab(content);
-            else if (tabName === 'questions-admin') loadQuestionsTab(content);
-            if (event && event.target) event.target.classList.add('active');
-        }
-
-        async function loadAffiliatesTab(content) {
-            try {
-                const { data: affiliates } = await supabase.from('user_profiles').select('*').eq('role', 'affiliate').order('created_at', { ascending: false });
-                content.innerHTML = `
-                    <h3>Affiliate Management (${affiliates?.length || 0})</h3>
-                    ${!affiliates || affiliates.length === 0 ? `
-                        <div class="empty-state"><div class="empty-state-icon">👥</div><h3>No Affiliates Yet</h3><p>New affiliates will appear here when they sign up.</p></div>
-                    ` : `
-                        <div class="table-container">
-                            <table>
-                                <thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
-                                <tbody>
-                                    ${affiliates.map(affiliate => `
-                                        <tr id="affiliate-row-${affiliate.user_id}">
-                                            <td><strong>${affiliate.full_name || 'N/A'}</strong></td>
-                                            <td>${affiliate.email}</td>
-                                            <td>${affiliate.company || 'N/A'}</td>
-                                            <td><span class="status-badge status-${(affiliate.status || 'active') === 'active' ? 'active' : 'closed'}">${(affiliate.status || 'active').charAt(0).toUpperCase() + (affiliate.status || 'active').slice(1)}</span></td>
-                                            <td>${new Date(affiliate.created_at).toLocaleDateString()}</td>
-                                            <td>
-                                                <button class="btn btn-small btn-primary" 
-                                                        onclick="event.stopPropagation(); viewAffiliateProfile('${affiliate.user_id}');" 
-                                                        style="margin-right: 0.5rem;">
-                                                    👤 View Profile
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `}
-                `;
-            } catch (error) {
-                content.innerHTML = '<div class="empty-state"><h3>Error loading affiliates</h3></div>';
-            }
-        }
-
-        async function loadReferralsTab(content) {
-            try {
-                const { data: referrals } = await supabase.from('referrals').select('*').order('created_at', { ascending: false });
-                const { data: profiles } = await supabase.from('user_profiles').select('user_id, full_name, email');
-                const profileMap = {};
-                if (profiles) profiles.forEach(profile => profileMap[profile.user_id] = profile);
-                content.innerHTML = `
-                    <h3>Referral Management (${referrals?.length || 0})</h3>
-                    ${!referrals || referrals.length === 0 ? `
-                        <div class="empty-state"><div class="empty-state-icon">📋</div><h3>No Referrals Yet</h3><p>Referrals will appear here when affiliates submit them.</p></div>
-                    ` : `
-                        <div class="table-container">
-                            <table>
-                                <thead><tr><th>Company</th><th>Contact</th><th>Referred By</th><th>Status</th><th>Pro Plan</th><th>Commission</th><th>Submitted</th><th>Actions</th></tr></thead>
-                                <tbody>
-                                    ${referrals.map(referral => {
-                                        const profile = profileMap[referral.affiliate_id] || {};
-                                        const commissionAmount = referral.pro_plan_value ? (parseFloat(referral.pro_plan_value) * 0.1).toFixed(2) : '0.00';
-                                        return `
-                                            <tr>
-                                                <td><strong>${referral.company_name}</strong></td>
-                                                <td>${referral.contact_name}<br><small>${referral.contact_email}</small></td>
-                                                <td><strong>${profile.full_name || 'Unknown'}</strong><br><small>${profile.email || ''}</small></td>
-                                                <td><select onchange="updateReferralStatus('${referral.id}', this.value)" style="padding: 0.25rem; border-radius: 4px; border: 1px solid var(--border-gray);"><option value="pending" ${referral.status === 'pending' ? 'selected' : ''}>Pending</option><option value="contacted" ${referral.status === 'contacted' ? 'selected' : ''}>Contacted</option><option value="customer" ${referral.status === 'customer' ? 'selected' : ''}>Customer</option><option value="closed" ${referral.status === 'closed' ? 'selected' : ''}>Closed</option></select></td>
-                                                <td>${referral.pro_plan_value ? `<strong>$${parseFloat(referral.pro_plan_value).toFixed(2)}</strong><br><button class="btn btn-small" onclick="selectProPlan('${referral.id}')" style="background: #f1f5f9; color: #64748B; margin-top: 0.25rem;">Edit Plan</button>` : (referral.status === 'customer' ? `<button class="btn btn-small btn-primary" onclick="selectProPlan('${referral.id}')">Select Plan</button>` : 'N/A')}</td>
-                                                <td>${referral.pro_plan_value ? `<strong>$${commissionAmount}</strong>` : 'N/A'}</td>
-                                                <td>${new Date(referral.created_at).toLocaleDateString()}</td>
-                                                <td>${referral.status === 'customer' && referral.pro_plan_value && !referral.commission_paid ? `<button class="btn btn-small btn-success" onclick="markCommissionPaid('${referral.id}', '${referral.affiliate_id}', ${commissionAmount}, '${referral.company_name}')">Mark as Paid</button>` : (referral.commission_paid ? '<span style="color: var(--success-green);">✓ Paid</span>' : '')}</td>
-                                            </tr>
-                                        `;
-                                    }).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `}
-                `;
-            } catch (error) {
-                content.innerHTML = '<div class="empty-state"><h3>Error loading referrals</h3></div>';
-            }
-        }
-
-        async function loadPaymentsTab(content) {
-            try {
-                console.log('Loading payments tab...');
-                
-                // Get payments first
-                const { data: payments, error: paymentsError } = await supabase
-                    .from('payments')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
-                console.log('Payments query result:', payments, paymentsError);
-                
-                if (paymentsError) {
-                    console.error('Payments error:', paymentsError);
-                    throw paymentsError;
-                }
-
-                // Get user profiles separately
-                const { data: profiles, error: profilesError } = await supabase
-                    .from('user_profiles')
-                    .select('user_id, full_name, email');
-                
-                console.log('Profiles query result:', profiles, profilesError);
-
-                // Create profile lookup map
-                const profileMap = {};
-                if (profiles) {
-                    profiles.forEach(profile => {
-                        profileMap[profile.user_id] = profile;
-                    });
-                }
-
-                content.innerHTML = `
-                    <h3>Payment Management (${payments?.length || 0})</h3>
-                    ${!payments || payments.length === 0 ? `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">💰</div>
-                            <h3>No Payments Yet</h3>
-                            <p>Commission payments will appear here.</p>
-                        </div>
-                    ` : `
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Affiliate</th>
-                                        <th>Company</th>
-                                        <th>Amount</th>
-                                        <th>Status</th>
-                                        <th>Date</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${payments.map(payment => {
-                                        const profile = profileMap[payment.affiliate_id] || {};
-                                        return `
-                                            <tr>
-                                                <td>
-                                                    <strong>${profile.full_name || 'Unknown Affiliate'}</strong><br>
-                                                    <small>${profile.email || 'No email'}</small>
-                                                </td>
-                                                <td>${payment.referral_company || 'N/A'}</td>
-                                                <td><strong>$${parseFloat(payment.amount).toFixed(2)}</strong></td>
-                                                <td><span class="status-badge status-active">Completed</span></td>
-                                                <td>${new Date(payment.created_at).toLocaleDateString()}</td>
-                                                <td><span style="color: var(--success-green);">✓ Paid via External Platform</span></td>
-                                            </tr>
-                                        `;
-                                    }).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `}
-                `;
-            } catch (error) {
-                console.error('Error loading payments:', error);
+            if (content) {
                 content.innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-state-icon">⚠️</div>
-                        <h3>Error Loading Payments</h3>
-                        <p>There was an error loading payment data: ${error.message}</p>
+                        <div class="empty-state-icon">⚙️</div>
+                        <h3>${tabName.charAt(0).toUpperCase() + tabName.slice(1)} Management</h3>
+                        <p>This section is being loaded...</p>
                     </div>
                 `;
             }
         }
 
-        function loadQuestionsTab(content) {
-            loadQuestionsAdminData(content);
+        function showNotification(message, type = 'success') {
+            console.log(`Notification: ${message} (${type})`);
+            const notification = document.getElementById('notification');
+            if (notification) {
+                notification.textContent = message;
+                notification.className = `notification ${type} show`;
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 4000);
+            }
         }
 
-        async function loadQuestionsAdminData(content) {
-            try {
-                const { data: questions } = await supabase
-                    .from('questions')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+        function closeAffiliateProfile() {
+            const modal = document.getElementById('affiliate-profile-modal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
 
-                // Get user profiles to show affiliate names
-                const { data: profiles } = await supabase
-                    .from('user_profiles')
-                    .select('user_id, full_name, email');
-
-                const profileMap = {};
-                if (profiles
+        // Modal click outside to close
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
