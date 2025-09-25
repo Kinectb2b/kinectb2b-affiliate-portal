@@ -715,6 +715,13 @@
         updateAuthModal();
         document.getElementById('auth-modal').classList.add('active');
     }
+        // Make functions globally accessible
+window.showSignupModal = showSignupModal;
+window.showLoginModal = showLoginModal;
+window.scrollToCalculator = scrollToCalculator;
+window.toggleAuthMode = toggleAuthMode;
+window.closeAuthModal = closeAuthModal;
+window.calculateCommission = calculateCommission;
 
     function scrollToCalculator() {
     document.getElementById('calculator-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
