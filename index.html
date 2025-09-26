@@ -972,12 +972,12 @@ function cancelProfileEdit() {
     const affiliateCode = generateAffiliateCode(name);
     
    try {
-    // First check if profile already exists
-    const { data: existingProfile } = await supabase
+    // First check if profile already exists - use maybeSingle() instead of single()
+    const { data: existingProfile, error: checkError } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('user_id', data.user.id)
-        .single();
+        .maybeSingle(); // Changed from .single() to .maybeSingle()
     
     // Only create if it doesn't exist
     if (!existingProfile) {
@@ -1001,7 +1001,6 @@ function cancelProfileEdit() {
 } catch (profileError) {
     console.warn('Profile check/creation error:', profileError);
 }
-                    }
                     
                     
             
