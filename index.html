@@ -2446,12 +2446,11 @@ function cancelProfileEdit() {
         }
 
         // Modal click outside to close
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('modal')) {
-                e.target.classList.remove('active');
-            }
-        }
-    });
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('modal')) {
+        e.target.classList.remove('active');
+    }
+});
     </script>
 </body>
 </html>
