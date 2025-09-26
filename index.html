@@ -1666,7 +1666,7 @@ function cancelProfileEdit() {
                     payments: payments || [],
                     questions: questions || []
                 };
-                
+                updateAdminStats(affiliates || [], referrals || [], payments || []);
                 loadAdminReferrals();
                 loadAdminActiveClients();
                 loadAdminAffiliates();
