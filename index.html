@@ -1010,6 +1010,10 @@ function cancelProfileEdit() {
                 
                 showNotification('Account created! Please check your email for verification.', 'success');
                 closeAuthModal();
+                } catch (error) {
+            showNotification(`Signup failed: ${error.message}`, 'error');
+        }
+    }
                 
           
 
