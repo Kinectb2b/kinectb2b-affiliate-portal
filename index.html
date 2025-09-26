@@ -1002,11 +1002,7 @@ function cancelProfileEdit() {
     console.warn('Profile check/creation error:', profileError);
 }
                         
-                        if (profileError) console.warn('Profile creation error:', profileError);
-                    } catch (profileError) {
-                        console.warn('Failed to create profile:', profileError);
-                    }
-                }
+                       
                 
                 showNotification('Account created! Please check your email for verification.', 'success');
                 closeAuthModal();
