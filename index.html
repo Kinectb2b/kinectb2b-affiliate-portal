@@ -1007,10 +1007,7 @@ function cancelProfileEdit() {
                 showNotification('Account created! Please check your email for verification.', 'success');
                 closeAuthModal();
                 
-            } catch (error) {
-                showNotification(`Signup failed: ${error.message}`, 'error');
-            }
-        }
+          
 
         function generateAffiliateCode(name) {
             const namePart = name.replace(/[^a-zA-Z]/g, '').substring(0, 4).toUpperCase();
