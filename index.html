@@ -977,7 +977,7 @@ function cancelProfileEdit() {
         .from('user_profiles')
         .select('*')
         .eq('user_id', data.user.id)
-        .maybeSingle(); // Changed from .single() to .maybeSingle()
+        .Single(); // Changed from .single() to .maybeSingle()
     
     // Only create if it doesn't exist
     if (!existingProfile) {
