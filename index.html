@@ -781,6 +781,20 @@
             document.getElementById('referral-form')?.addEventListener('submit', handleReferralSubmit);
             document.getElementById('profile-form')?.addEventListener('submit', handleProfileUpdate);
         }
+        function showProfileEdit() {
+    document.getElementById('profile-view').style.display = 'none';
+    document.getElementById('profile-form').style.display = 'block';
+}
+
+function showPaymentEdit() {
+    showProfileEdit();
+    document.getElementById('payment-edit-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+function cancelProfileEdit() {
+    document.getElementById('profile-view').style.display = 'block';
+    document.getElementById('profile-form').style.display = 'none';
+}
 
         // Landing page functions
         function showLoginModal() {
