@@ -1609,7 +1609,38 @@ function cancelProfileEdit() {
                     .select('*')
                     .order('created_at', { ascending: false });
                 
-                updateAdminStats(affiliates || [], referrals || [], payments || []);
+                function updateAdminStats(affiliates = [], referrals = [], payments = []) {
+    const totalAffiliates = affiliates.length;
+    const totalReferrals = referrals.length;
+    const newReferrals = referrals.filter(r => r.status === 'pending' && !r.admin_viewed).length;
+    const newAffiliates = affiliates.filter(a => {
+        const created = new Date(a.created_at);
+        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        return created > weekAgo && !a.admin_viewed;
+    }).length;
+    
+    // Safely update elements only if they exist
+    const totalAffiliatesEl = document.getElementById('admin-total-affiliates');
+    const totalReferralsEl = document.getElementById('admin-total-referrals');
+    const newReferralsEl = document.getElementById('admin-new-referrals');
+    const newAffiliatesEl = document.getElementById('admin-new-affiliates');
+    
+    if (totalAffiliatesEl) totalAffiliatesEl.textContent = totalAffiliates;
+    if (totalReferralsEl) totalReferralsEl.textContent = totalReferrals;
+    if (newReferralsEl) newReferralsEl.textContent = newReferrals;
+    if (newAffiliatesEl) newAffiliatesEl.textContent = newAffiliates;
+    
+    // Update tab counts
+    const referralsCountEl = document.getElementById('referrals-count');
+    const affiliatesCountEl = document.getElementById('affiliates-count');
+    const activeClientsCountEl = document.getElementById('active-clients-count');
+    const questionsCountEl = document.getElementById('questions-count');
+    
+    if (referralsCountEl) referralsCountEl.textContent = totalReferrals;
+    if (affiliatesCountEl) affiliatesCountEl.textContent = totalAffiliates;
+    if (activeClientsCountEl) activeClientsCountEl.textContent = referrals.filter(r => r.status === 'customer').length;
+    if (questionsCountEl) questionsCountEl.textContent = window.adminData?.questions?.filter(q => q.status === 'pending').length || 0;
+}
                 
                 window.adminData = {
                     affiliates: affiliates || [],
