@@ -1966,63 +1966,73 @@ function cancelProfileEdit() {
             }
             
             container.innerHTML = `
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Contact</th>
-                                <th>Affiliate Code</th>
-                                <th>Performance</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${affiliates.map(affiliate => {
-                                const affiliateReferrals = referrals.filter(r => r.affiliate_id === affiliate.user_id);
-                                const affiliatePayments = payments.filter(p => p.affiliate_id === affiliate.user_id);
-                                const totalReferrals = affiliateReferrals.length;
-                                const activeClients = affiliateReferrals.filter(r => r.status === 'customer').length;
-                                const totalEarned = affiliatePayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
-                                const status = affiliate.status || 'active';
-                                
-                                return `
-                                    <tr>
-                                        <td>
-                                            <strong>${affiliate.full_name || 'N/A'}</strong>
-                                            ${affiliate.company ? `<br><small>${affiliate.company}</small>` : ''}
-                                        </td>
-                                        <td>
-                                            ${affiliate.email}<br>
-                                            ${affiliate.phone ? `<small>${affiliate.phone}</small>` : ''}
-                                        </td>
-                                        <td>
-                                            <strong style="font-family: monospace;">${affiliate.affiliate_code || 'N/A'}</strong>
-                                        </td>
-                                        <td>
-                                            <strong>${totalReferrals}</strong> referrals<br>
-                                            <small><strong>${activeClients}</strong> active | <strong>${totalEarned.toFixed(2)}</strong> earned</small>
-                                        </td>
-                                        <td>
-                                            <select onchange="updateAffiliateStatus('${affiliate.user_id}', this.value)" style="padding: 4px; border-radius: 4px;">
-                                                <option value="active" ${status === 'active' ? 'selected' : ''}>Active</option>
-                                                <option value="suspended" ${status === 'suspended' ? 'selected' : ''}>Suspended</option>
-                                                <option value="inactive" ${status === 'inactive' ? 'selected' : ''}>Inactive</option>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-small btn-primary" onclick="viewAffiliateDetails('${affiliate.user_id}')">View</button>
-                                            <button class="btn btn-small btn-danger" onclick="deleteAffiliate('${affiliate.user_id}', '${affiliate.full_name || 'Unknown'}')" style="margin-left: 0.5rem;">Delete</button>
-                                        </td>
-                                    </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        }
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>🔔</th>
+                    <th>Name</th>
+                    <th>Contact</th>
+                    <th>Affiliate Code</th>
+                    <th>Performance</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${affiliates.map(affiliate => {
+                    const affiliateReferrals = referrals.filter(r => r.affiliate_id === affiliate.user_id);
+                    const affiliatePayments = payments.filter(p => p.affiliate_id === affiliate.user_id);
+                    const totalReferrals = affiliateReferrals.length;
+                    const activeClients = affiliateReferrals.filter(r => r.status === 'customer').length;
+                    const totalEarned = affiliatePayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+                    const status = affiliate.status || 'active';
+                    
+                    const created = new Date(affiliate.created_at);
+                    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+                    const isNew = created > weekAgo && !affiliate.admin_viewed;
+                    
+                    return `
+                        <tr style="${isNew ? 'background: #FEF3C7;' : ''}">
+                            <td style="text-align: center;">
+                                ${isNew ? 
+                                    `<button class="read-button" onclick="markAffiliateAsRead('${affiliate.user_id}')" title="Mark as read">●</button>` : 
+                                    '<span style="color: var(--success-green);">✓</span>'
+                                }
+                            </td>
+                            <td>
+                                <strong>${affiliate.full_name || 'N/A'}</strong>
+                                ${affiliate.company ? `<br><small>${affiliate.company}</small>` : ''}
+                            </td>
+                            <td>
+                                ${affiliate.email}<br>
+                                ${affiliate.phone ? `<small>${affiliate.phone}</small>` : ''}
+                            </td>
+                            <td>
+                                <strong style="font-family: monospace;">${affiliate.affiliate_code || 'N/A'}</strong>
+                            </td>
+                            <td>
+                                <strong>${totalReferrals}</strong> referrals<br>
+                                <small><strong>${activeClients}</strong> active | <strong>${totalEarned.toFixed(2)}</strong> earned</small>
+                            </td>
+                            <td>
+                                <select onchange="updateAffiliateStatus('${affiliate.user_id}', this.value)" style="padding: 4px; border-radius: 4px;">
+                                    <option value="active" ${status === 'active' ? 'selected' : ''}>Active</option>
+                                    <option value="suspended" ${status === 'suspended' ? 'selected' : ''}>Suspended</option>
+                                    <option value="inactive" ${status === 'inactive' ? 'selected' : ''}>Inactive</option>
+                                </select>
+                            </td>
+                            <td>
+                                <button class="btn btn-small btn-primary" onclick="viewAffiliateDetails('${affiliate.user_id}')">View</button>
+                                <button class="btn btn-small btn-danger" onclick="deleteAffiliate('${affiliate.user_id}', '${affiliate.full_name || 'Unknown'}')" style="margin-left: 0.5rem;">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('')}
+            </tbody>
+        </table>
+    </div>
+`;
 
         async function updateAffiliateStatus(userId, newStatus) {
             try {
@@ -2039,6 +2049,21 @@ function cancelProfileEdit() {
                 showNotification('Error: ' + error.message, 'error');
             }
         }
+            async function markAffiliateAsRead(userId) {
+    try {
+        const { error } = await supabase
+            .from('user_profiles')
+            .update({ admin_viewed: true })
+            .eq('user_id', userId);
+        
+        if (error) throw error;
+        
+        showNotification('Marked as read', 'success');
+        await loadAdminData();
+    } catch (error) {
+        showNotification('Error: ' + error.message, 'error');
+    }
+}
 
         function viewAffiliateDetails(userId) {
             const affiliate = window.adminData.affiliates.find(a => a.user_id === userId);
