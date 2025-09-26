@@ -1063,7 +1063,33 @@ function cancelProfileEdit() {
                     document.getElementById('user-name').textContent = `Hello, ${profile.full_name || 'User'}`;
                     document.getElementById('affiliate-code').textContent = profile.affiliate_code || generateAffiliateCode(profile.full_name || currentUser.email);
                     document.getElementById('profile-affiliate-code').textContent = profile.affiliate_code || generateAffiliateCode(profile.full_name || currentUser.email);
+
+                    // Update profile view
+                    document.getElementById('view-name').textContent = profile.full_name || '-';
+                    document.getElementById('view-company').textContent = profile.company || '-';
+                    document.getElementById('view-phone').textContent = profile.phone || '-';
                     
+                    let addr = '-';
+                    if (profile.address) {
+                        try {
+                            const a = JSON.parse(profile.address);
+                            addr = `${a.street||''} ${a.apt||''}, ${a.city||''}, ${a.state||''} ${a.zip||''}`.trim();
+                        } catch(e) {}
+                    }
+                    document.getElementById('view-address').textContent = addr;
+                    
+                    let pm = '-', pd = '';
+                    if (profile.payment_method === 'zelle') {
+                        pm = 'Zelle'; pd = `Email: ${profile.zelle_email||'N/A'}`;
+                    } else if (profile.payment_method === 'cashapp') {
+                        pm = 'CashApp'; pd = `Tag: ${profile.cashapp_tag||'N/A'}`;
+                    } else if (profile.payment_method === 'paypal') {
+                        pm = 'PayPal'; pd = `Email: ${profile.paypal_email||'N/A'}`;
+                    } else if (profile.payment_method === 'ach') {
+                        pm = 'ACH'; pd = `Bank: ${profile.bank_name||'N/A'}`;
+                    }
+                    document.getElementById('view-payment').textContent = pm;
+                    document.getElementById('view-payment-details').textContent = pd;
                     const daysAffiliate = Math.floor((new Date() - new Date(profile.created_at)) / (1000 * 60 * 60 * 24));
                     document.getElementById('affiliate-since').textContent = `${daysAffiliate} days`;
                     
