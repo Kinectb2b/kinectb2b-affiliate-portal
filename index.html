@@ -34,9 +34,7 @@
         .notification.show { transform: translateX(0); }
         
         /* Landing Page */
-        .landing-page { background: linear-gradient(135deg, var(--deep-blue) 0%, #1E293B 50%, var(--electric-blue) 100%); min-height: 100vh; color: white; width: 100%; }
-        .landing-page.hidden { display: none !important; position: absolute !important; top: -9999px !important; left: -9999px !important; width: 0 !important; height: 0 !important; overflow: hidden !important; }
-        .landing-page.hidden * { display: none !important; }
+        .landing-page { background: linear-gradient(135deg, var(--deep-blue) 0%, #1E293B 50%, var(--electric-blue) 100%); min-height: 100vh; color: white; }
         .landing-nav { padding: 1rem 0; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
         .nav-content { display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 2rem; font-weight: 800; color: white; }
@@ -63,8 +61,7 @@
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--electric-blue); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
         
         /* Dashboard */
-        .dashboard { background: var(--light-gray); min-height: 100vh; width: 100%; }
-        .dashboard.hidden { display: none !important; position: absolute !important; top: -9999px !important; left: -9999px !important; }
+        .dashboard { background: var(--light-gray); min-height: 100vh; }
         .header { background: var(--white); padding: 1rem 0; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1); position: sticky; top: 0; z-index: 100; }
         .header-content { display: flex; justify-content: space-between; align-items: center; }
         .nav-links { display: flex; gap: 2rem; align-items: center; }
@@ -1276,31 +1273,13 @@
         function showAffiliateDashboard() {
             console.log('Showing affiliate dashboard');
             
-            // Get all page elements
-            const landingPage = document.getElementById('landing-page');
-            const referralLanding = document.getElementById('referral-landing');
-            const adminDash = document.getElementById('admin-dashboard');
-            const dashboard = document.getElementById('dashboard');
-            const affiliateDash = document.getElementById('affiliate-dashboard');
+            // Simple and clean approach
+            document.getElementById('landing-page').classList.add('hidden');
+            document.getElementById('referral-landing').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.add('hidden');
             
-            // Nuclear option - remove from DOM temporarily then re-add as hidden
-            if (landingPage.parentNode) {
-                landingPage.remove();
-                document.body.appendChild(landingPage);
-            }
-            if (referralLanding.parentNode) {
-                referralLanding.remove();
-                document.body.appendChild(referralLanding);
-            }
-            
-            // Hide pages
-            landingPage.classList.add('hidden');
-            referralLanding.classList.add('hidden');
-            adminDash.classList.add('hidden');
-            
-            // Show dashboard
-            dashboard.classList.remove('hidden');
-            affiliateDash.classList.remove('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('affiliate-dashboard').classList.remove('hidden');
             
             closeAuthModal();
             loadAffiliateData();
@@ -1309,31 +1288,13 @@
         async function showAdminDashboard() {
             console.log('Showing admin dashboard');
             
-            // Get all page elements
-            const landingPage = document.getElementById('landing-page');
-            const referralLanding = document.getElementById('referral-landing');
-            const affiliateDash = document.getElementById('affiliate-dashboard');
-            const dashboard = document.getElementById('dashboard');
-            const adminDash = document.getElementById('admin-dashboard');
+            // Simple and clean approach
+            document.getElementById('landing-page').classList.add('hidden');
+            document.getElementById('referral-landing').classList.add('hidden');
+            document.getElementById('affiliate-dashboard').classList.add('hidden');
             
-            // Nuclear option - remove from DOM temporarily then re-add as hidden
-            if (landingPage.parentNode) {
-                landingPage.remove();
-                document.body.appendChild(landingPage);
-            }
-            if (referralLanding.parentNode) {
-                referralLanding.remove();
-                document.body.appendChild(referralLanding);
-            }
-            
-            // Hide pages
-            landingPage.classList.add('hidden');
-            referralLanding.classList.add('hidden');
-            affiliateDash.classList.add('hidden');
-            
-            // Show dashboard
-            dashboard.classList.remove('hidden');
-            adminDash.classList.remove('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('admin-dashboard').classList.remove('hidden');
             
             closeAuthModal();
             document.getElementById('user-name').textContent = 'Admin - Robert';
