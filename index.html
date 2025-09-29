@@ -1603,6 +1603,36 @@
                 showNotification('Failed to copy code', 'error');
             });
         }
+        async function copyAffiliateLink() {
+    const link = document.getElementById('affiliate-link').textContent;
+    try {
+        await navigator.clipboard.writeText(link);
+        showNotification('Referral link copied! Share it with potential clients.', 'success');
+    } catch (err) {
+        showNotification('Failed to copy link', 'error');
+    }
+}
+
+async function shareAffiliateLink() {
+    const link = document.getElementById('affiliate-link').textContent;
+    
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: 'KinectB2B - Guaranteed B2B Lead Generation',
+                text: 'Check out KinectB2B for guaranteed B2B lead generation services. Book a free consultation!',
+                url: link
+            });
+            showNotification('Link shared successfully!', 'success');
+        } catch (err) {
+            if (err.name !== 'AbortError') {
+                showNotification('Error sharing link', 'error');
+            }
+        }
+    } else {
+        copyAffiliateLink();
+    }
+}
 
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
