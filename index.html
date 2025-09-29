@@ -1843,6 +1843,12 @@ async function shareAffiliateLink() {
         <option value="suspended" ${client.status === 'suspended' ? 'selected' : ''}>Suspended</option>
         <option value="canceled" ${client.status === 'canceled' ? 'selected' : ''}>Canceled</option>
     </select>
+    <td>
+    <select onchange="updateClientStatus('${client.id}', this.value, '${client.company_name.replace(/'/g, "\\'")}')" style="padding: 6px; border-radius: 4px; margin-right: 0.5rem;">
+        <option value="customer" ${client.status === 'customer' ? 'selected' : ''}>Active</option>
+        <option value="suspended" ${client.status === 'suspended' ? 'selected' : ''}>Suspended</option>
+        <option value="canceled" ${client.status === 'canceled' ? 'selected' : ''}>Canceled</option>
+    </select>
     <button class="btn btn-small btn-primary" onclick="manageClient('${client.id}')">Manage</button>
 </td>
 
