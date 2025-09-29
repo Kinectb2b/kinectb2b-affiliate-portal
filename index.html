@@ -1297,41 +1297,18 @@
             // Show body
             document.body.classList.add('loaded');
             
-            // NUCLEAR: Save content then remove it from DOM
+            // DELETE the landing pages from DOM completely
             const landingPage = document.getElementById('landing-page');
             const referralLanding = document.getElementById('referral-landing');
             
-            if (landingPage && !landingPageContent) {
-                landingPageContent = landingPage.innerHTML;
-                landingPage.innerHTML = ''; // Empty it
+            if (landingPage && landingPage.parentNode) {
+                landingPage.parentNode.removeChild(landingPage);
+                console.log('Landing page DELETED');
             }
             
-            if (referralLanding && !referralLandingContent) {
-                referralLandingContent = referralLanding.innerHTML;
-                referralLanding.innerHTML = ''; // Empty it
-            }
-            
-            // Also hide with styles
-            if (landingPage) {
-                landingPage.style.display = 'none';
-                landingPage.style.visibility = 'hidden';
-                landingPage.style.position = 'absolute';
-                landingPage.style.left = '-99999px';
-                landingPage.style.height = '0';
-                landingPage.style.overflow = 'hidden';
-                landingPage.classList.add('hidden');
-                console.log('Landing page hidden and emptied');
-            }
-            
-            if (referralLanding) {
-                referralLanding.style.display = 'none';
-                referralLanding.style.visibility = 'hidden';
-                referralLanding.style.position = 'absolute';
-                referralLanding.style.left = '-99999px';
-                referralLanding.style.height = '0';
-                referralLanding.style.overflow = 'hidden';
-                referralLanding.classList.add('hidden');
-                console.log('Referral landing hidden and emptied');
+            if (referralLanding && referralLanding.parentNode) {
+                referralLanding.parentNode.removeChild(referralLanding);
+                console.log('Referral landing DELETED');
             }
             
             document.getElementById('admin-dashboard').classList.add('hidden');
