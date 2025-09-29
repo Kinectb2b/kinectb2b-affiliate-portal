@@ -1275,18 +1275,35 @@
         function showAffiliateDashboard() {
             console.log('Showing affiliate dashboard');
             
-            // Force inline styles (strongest possible CSS)
+            // Get elements
             const landingPage = document.getElementById('landing-page');
             const referralLanding = document.getElementById('referral-landing');
             
-            landingPage.style.display = 'none';
-            landingPage.style.visibility = 'hidden';
-            landingPage.style.position = 'absolute';
-            landingPage.style.left = '-99999px';
-            landingPage.classList.add('hidden');
+            console.log('Landing page element:', landingPage);
+            console.log('Referral landing element:', referralLanding);
             
-            referralLanding.style.display = 'none';
-            referralLanding.classList.add('hidden');
+            // Force inline styles on BOTH
+            if (landingPage) {
+                landingPage.style.display = 'none';
+                landingPage.style.visibility = 'hidden';
+                landingPage.style.position = 'absolute';
+                landingPage.style.left = '-99999px';
+                landingPage.style.height = '0';
+                landingPage.style.overflow = 'hidden';
+                landingPage.classList.add('hidden');
+                console.log('Landing page hidden');
+            }
+            
+            if (referralLanding) {
+                referralLanding.style.display = 'none';
+                referralLanding.style.visibility = 'hidden';
+                referralLanding.style.position = 'absolute';
+                referralLanding.style.left = '-99999px';
+                referralLanding.style.height = '0';
+                referralLanding.style.overflow = 'hidden';
+                referralLanding.classList.add('hidden');
+                console.log('Referral landing hidden');
+            }
             
             document.getElementById('admin-dashboard').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
@@ -1299,18 +1316,35 @@
         async function showAdminDashboard() {
             console.log('Showing admin dashboard');
             
-            // Force inline styles (strongest possible CSS)
+            // Get elements
             const landingPage = document.getElementById('landing-page');
             const referralLanding = document.getElementById('referral-landing');
             
-            landingPage.style.display = 'none';
-            landingPage.style.visibility = 'hidden';
-            landingPage.style.position = 'absolute';
-            landingPage.style.left = '-99999px';
-            landingPage.classList.add('hidden');
+            console.log('Landing page element:', landingPage);
+            console.log('Referral landing element:', referralLanding);
             
-            referralLanding.style.display = 'none';
-            referralLanding.classList.add('hidden');
+            // Force inline styles on BOTH
+            if (landingPage) {
+                landingPage.style.display = 'none';
+                landingPage.style.visibility = 'hidden';
+                landingPage.style.position = 'absolute';
+                landingPage.style.left = '-99999px';
+                landingPage.style.height = '0';
+                landingPage.style.overflow = 'hidden';
+                landingPage.classList.add('hidden');
+                console.log('Landing page hidden');
+            }
+            
+            if (referralLanding) {
+                referralLanding.style.display = 'none';
+                referralLanding.style.visibility = 'hidden';
+                referralLanding.style.position = 'absolute';
+                referralLanding.style.left = '-99999px';
+                referralLanding.style.height = '0';
+                referralLanding.style.overflow = 'hidden';
+                referralLanding.classList.add('hidden');
+                console.log('Referral landing hidden');
+            }
             
             document.getElementById('affiliate-dashboard').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
