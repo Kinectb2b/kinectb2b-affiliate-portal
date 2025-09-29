@@ -1845,6 +1845,7 @@ async function shareAffiliateLink() {
     </select>
     <button class="btn btn-small btn-primary" onclick="manageClient('${client.id}')">Manage</button>
 </td>
+
                                     </tr>
                                 `;
                             }).join('')}
@@ -1853,9 +1854,38 @@ async function shareAffiliateLink() {
                 </div>
             `;
         }
-
+async function updateClientStatus(referralId, newStatus, companyName) {
+    if (!confirm(`Change ${companyName} status to ${newStatus}?`)) {
+        await loadAdminData(); // Reload to reset dropdown
+        return;
+    }
+    
+    try {
+        const { error } = await supabase
+            .from('referrals')
+            .update({ status: newStatus })
+            .eq('id', referralId);
+        
+        if (error) throw error;
+        
+        let message = '';
+        if (newStatus === 'suspended') {
+            message = `${companyName} has been suspended. Payments will stop.`;
+        } else if (newStatus === 'canceled') {
+            message = `${companyName} has been canceled and moved to inactive.`;
+        } else if (newStatus === 'customer') {
+            message = `${companyName} has been reactivated!`;
+        }
+        
+        showNotification(message, 'success');
+        await loadAdminData();
+    } catch (error) {
+        showNotification('Error: ' + error.message, 'error');
+        await loadAdminData(); // Reload to reset dropdown
+    }
+}
         function loadAdminActiveClients() {
-            const clients = window.adminData?.referrals.filter(r => r.status === 'customer') || [];
+            const clients = window.adminData?.referrals.filter(r =>      r.status === 'customer' || r.status === 'suspended' || r.status === 'canceled' ) || [];
             const affiliates = window.adminData?.affiliates || [];
             const affiliateMap = {};
             affiliates.forEach(a => affiliateMap[a.user_id] = a);
@@ -1876,7 +1906,7 @@ async function shareAffiliateLink() {
                                 <th>Affiliate</th>
                                 <th>Current Plan</th>
                                 <th>Payments Made</th>
-                                <th>Actions</th>
+                                <th>Status & Actions</th>
                             </tr>
                         </thead>
                         <tbody>
