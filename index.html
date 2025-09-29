@@ -1137,7 +1137,14 @@
                 });
                 
                 if (error) throw error;
+                
                 showNotification('Login successful!', 'success');
+                closeAuthModal();
+                
+                // Redirect to appropriate dashboard
+                if (data.user) {
+                    await handleUserSession(data.user);
+                }
                 
             } catch (error) {
                 showNotification(`Login failed: ${error.message}`, 'error');
@@ -1228,6 +1235,10 @@
         async function handleUserSession(user) {
             currentUser = user;
             
+            // Hide all pages first
+            document.getElementById('landing-page').classList.add('hidden');
+            document.getElementById('referral-landing').classList.add('hidden');
+            
             if (user.email === 'robert@kinectb2b.com') {
                 await showAdminDashboard();
             } else {
@@ -1251,21 +1262,27 @@
         }
 
         function showAffiliateDashboard() {
+            // Hide all other pages
             document.getElementById('landing-page').classList.add('hidden');
             document.getElementById('referral-landing').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.add('hidden');
+            
+            // Show affiliate dashboard
             document.getElementById('dashboard').classList.remove('hidden');
             document.getElementById('affiliate-dashboard').classList.remove('hidden');
-            document.getElementById('admin-dashboard').classList.add('hidden');
             
             closeAuthModal();
             loadAffiliateData();
         }
 
         async function showAdminDashboard() {
+            // Hide all other pages
             document.getElementById('landing-page').classList.add('hidden');
             document.getElementById('referral-landing').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
             document.getElementById('affiliate-dashboard').classList.add('hidden');
+            
+            // Show admin dashboard
+            document.getElementById('dashboard').classList.remove('hidden');
             document.getElementById('admin-dashboard').classList.remove('hidden');
             
             closeAuthModal();
