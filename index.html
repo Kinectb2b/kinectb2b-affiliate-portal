@@ -34,7 +34,8 @@
         .notification.show { transform: translateX(0); }
         
         /* Landing Page */
-        .landing-page { background: linear-gradient(135deg, var(--deep-blue) 0%, #1E293B 50%, var(--electric-blue) 100%); min-height: 100vh; color: white; }
+        .landing-page { background: linear-gradient(135deg, var(--deep-blue) 0%, #1E293B 50%, var(--electric-blue) 100%); min-height: 100vh; color: white; position: fixed; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; z-index: 1; }
+        .landing-page.hidden { display: none; }
         .landing-nav { padding: 1rem 0; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
         .nav-content { display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 2rem; font-weight: 800; color: white; }
