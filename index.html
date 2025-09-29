@@ -284,6 +284,7 @@
                     <button class="tab active" onclick="showTab(event, 'submit-referral')">Submit Referral</button>
                     <button class="tab" onclick="showTab(event, 'my-referrals')">My Referrals</button>
                     <button class="tab" onclick="showTab(event, 'payments')">Payments</button>
+                    <button class="tab" onclick="showTab(event, 'questions')">Questions & Support</button>
                     <button class="tab" onclick="showTab(event, 'profile')">Profile</button>
                     <button class="tab" onclick="showTab(event, 'program-info')">Program Info</button>
                 </div>
@@ -373,6 +374,27 @@
                             <div class="empty-state-icon">💰</div>
                             <h3>No Payments Yet</h3>
                             <p>Your payments will appear here once your referrals become clients!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="questions-content" class="tab-content">
+                    <h3>Questions & Support</h3>
+                    
+                    <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
+                        <form id="question-form" onsubmit="submitQuestion(event)">
+                            <div class="form-group">
+                                <label for="question-text">Ask a Question or Send a Message</label>
+                                <textarea id="question-text" rows="4" placeholder="Type your question or message here..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Send Message</button>
+                        </form>
+                    </div>
+
+                    <div id="questions-list">
+                        <h4 style="margin-bottom: 1rem;">Conversation History</h4>
+                        <div class="empty-state">
+                            <p>No messages yet</p>
                         </div>
                     </div>
                 </div>
@@ -564,25 +586,6 @@
                                             <strong>12-Month Total</strong>
                                             <div id="program-total" style="font-size: 2rem; font-weight: 800; margin-top: 0.5rem;">$0</div>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div style="margin-bottom: 3rem;">
-                            <h4 style="color: var(--electric-blue); margin-bottom: 1rem;">❓ Questions & Support</h4>
-                            <div style="background: var(--light-gray); padding: 2rem; border-radius: 12px;">
-                                <form id="question-form" onsubmit="submitQuestion(event)" style="margin-bottom: 2rem;">
-                                    <div class="form-group">
-                                        <label for="question-text">Ask a Question</label>
-                                        <textarea id="question-text" rows="4" placeholder="Type your question here..." required></textarea>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary">Send Question</button>
-                                </form>
-                                <div id="questions-list">
-                                    <h5 style="margin-bottom: 1rem;">Previous Questions</h5>
-                                    <div class="empty-state">
-                                        <p>No questions yet</p>
                                     </div>
                                 </div>
                             </div>
@@ -1344,22 +1347,46 @@
             const container = document.getElementById('questions-list');
             
             if (questions.length === 0) {
-                container.innerHTML = '<div class="empty-state"><p>No questions yet</p></div>';
+                container.innerHTML = `
+                    <h4 style="margin-bottom: 1rem;">Conversation History</h4>
+                    <div class="empty-state"><p>No messages yet</p></div>
+                `;
                 return;
             }
             
-            container.innerHTML = `<h5 style="margin-bottom: 1rem;">Previous Questions</h5>` + questions.map(q => `
-                <div style="background: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid ${q.status === 'answered' ? 'var(--success-green)' : 'var(--warning-yellow)'};">
-                    <p><strong>Q:</strong> ${q.question}</p>
-                    <small style="color: var(--slate-gray);">${new Date(q.created_at).toLocaleString()}</small>
-                    ${q.answer ? `<p style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-gray);"><strong>A:</strong> ${q.answer}</p>` : '<p style="margin-top: 0.5rem; color: var(--warning-yellow);"><em>Pending response...</em></p>'}
+            container.innerHTML = `
+                <h4 style="margin-bottom: 1rem;">Conversation History</h4>
+                <div style="max-height: 500px; overflow-y: auto;">
+                    ${questions.map(q => `
+                        <div style="background: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid ${q.status === 'answered' ? 'var(--success-green)' : 'var(--warning-yellow)'};">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                <strong style="color: var(--electric-blue);">You</strong>
+                                <small style="color: var(--slate-gray);">${new Date(q.created_at).toLocaleString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}</small>
+                            </div>
+                            <p style="margin-bottom: ${q.answer ? '1rem' : '0'};">${q.question}</p>
+                            ${q.answer ? `
+                                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-gray);">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                        <strong style="color: var(--success-green);">KinectB2B Team</strong>
+                                        ${q.answered_at ? `<small style="color: var(--slate-gray);">${new Date(q.answered_at).toLocaleString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}</small>` : ''}
+                                    </div>
+                                    <p>${q.answer}</p>
+                                </div>
+                            ` : '<p style="margin-top: 0.5rem; color: var(--warning-yellow); font-style: italic;">Waiting for response...</p>'}
+                        </div>
+                    `).join('')}
                 </div>
-            `).join('');
+            `;
         }
 
         async function submitQuestion(e) {
             e.preventDefault();
             const questionText = document.getElementById('question-text').value.trim();
+            
+            if (!questionText) {
+                showNotification('Please enter a message', 'error');
+                return;
+            }
             
             try {
                 const { error } = await supabase
@@ -1373,7 +1400,7 @@
                 
                 if (error) throw error;
                 
-                showNotification('Question submitted!', 'success');
+                showNotification('Message sent!', 'success');
                 document.getElementById('question-text').value = '';
                 await loadAffiliateData();
             } catch (error) {
