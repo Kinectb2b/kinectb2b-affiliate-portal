@@ -195,6 +195,212 @@
         </div>
     </div>
 
+    <!-- Referral Landing Page for Service Providers -->
+    <div id="referral-landing" class="landing-page hidden">
+        <nav class="landing-nav">
+            <div class="container">
+                <div class="nav-content">
+                    <div class="logo">KinectB2B</div>
+                    <a href="https://kinectb2b.com" target="_blank" class="nav-login">Visit Website</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <section class="hero">
+                <h1 style="font-size: 3.5rem;">Get More Qualified Leads</h1>
+                <p style="max-width: 700px;">We guarantee qualified appointments with decision-makers for your business. No more cold calling, no more wasted time.</p>
+                <button type="button" class="btn btn-success btn-large" onclick="showCallRequestModal()">Request a Call →</button>
+            </section>
+
+            <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 3rem; border-radius: 20px; margin: 4rem 0;">
+                <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 3rem;">How It Works</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📞</div>
+                        <h3 style="margin-bottom: 0.5rem;">1. Free Consultation</h3>
+                        <p style="opacity: 0.9;">We learn about your business and ideal customers</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🎯</div>
+                        <h3 style="margin-bottom: 0.5rem;">2. We Find Prospects</h3>
+                        <p style="opacity: 0.9;">Our team identifies and reaches out to qualified leads</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
+                        <h3 style="margin-bottom: 0.5rem;">3. You Get Appointments</h3>
+                        <p style="opacity: 0.9;">We deliver confirmed appointments with decision-makers</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">💰</div>
+                        <h3 style="margin-bottom: 0.5rem;">4. You Close Deals</h3>
+                        <p style="opacity: 0.9;">Focus on selling, we handle the lead generation</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Guaranteed Results</h3>
+                    <p>We guarantee qualified appointments or you don't pay. Simple as that.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3>Proven ROI</h3>
+                    <p>Our clients see an average ROI of 300-500% on their investment.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Fast Setup</h3>
+                    <p>Start getting appointments within 2 weeks of onboarding.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🤝</div>
+                    <h3>Full-Service</h3>
+                    <p>From prospecting to appointment confirmation, we handle everything.</p>
+                </div>
+            </div>
+
+            <section style="text-align: center; padding: 4rem 0;">
+                <h2 style="font-size: 2.5rem; margin-bottom: 2rem;">Ready to Scale Your Business?</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 3rem; opacity: 0.9;">Schedule a free consultation to see if we're a good fit</p>
+                <button type="button" class="btn btn-success btn-large" onclick="showCallRequestModal()">Request a Call Now</button>
+            </section>
+        </div>
+    </div>
+
+    <!-- Call Request Modal -->
+    <div id="call-request-modal" class="modal">
+        <div class="modal-content">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h2>Request a Free Consultation</h2>
+                <p>Tell us about your business and we'll reach out within 24 hours</p>
+            </div>
+            
+            <form id="call-request-form">
+                <div class="form-group">
+                    <label for="call-company">Company Name *</label>
+                    <input type="text" id="call-company" required>
+                </div>
+                <div class="form-group">
+                    <label for="call-name">Your Name *</label>
+                    <input type="text" id="call-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="call-email">Email Address *</label>
+                    <input type="email" id="call-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="call-phone">Phone Number *</label>
+                    <input type="tel" id="call-phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="call-website">Company Website</label>
+                    <input type="text" id="call-website" placeholder="www.example.com">
+                </div>
+                <div class="form-group">
+                    <label for="call-notes">Tell us about your business</label>
+                    <textarea id="call-notes" rows="3" placeholder="What services do you offer? Who is your ideal customer?"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-success" style="width: 100%; margin-bottom: 1rem;">Request Call</button>
+            </form>
+            
+            <button onclick="closeCallRequestModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--slate-gray);">&times;</button>
+        </div>
+    </div>
+        <nav class="landing-nav">
+            <div class="container">
+                <div class="nav-content">
+                    <div class="logo">KinectB2B Affiliates</div>
+                    <a href="#" onclick="event.preventDefault(); showLoginModal();" class="nav-login">Login</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <section class="hero">
+                <h1>Earn $300+ Monthly</h1>
+                <p>Join the KinectB2B Affiliate Program and earn 10% commission every month for 12 months on every client you refer!</p>
+                <button type="button" class="btn btn-primary btn-large" onclick="showSignupModal()" style="margin-right: 1rem;">Start Earning Now</button>
+                <button type="button" class="btn" onclick="scrollToCalculator()" style="background: rgba(255,255,255,0.2); color: white;">Calculate Your Earnings</button>
+            </section>
+
+            <div class="commission-highlight">
+                <h2>10% Monthly Commission</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 0;">Get paid every month for 12 months as long as your referrals stay active!</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h3>High Commissions</h3>
+                    <p>Earn 10% of your referral's monthly payment for a full year. That's up to $3,600 per high-value referral!</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>No Sales Experience Required</h3>
+                    <p>Simply refer businesses that need more leads. We handle all the sales and onboarding!</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Proven Results</h3>
+                    <p>KinectB2B has generated millions in revenue for clients with our guaranteed lead generation system.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Quick Payouts</h3>
+                    <p>Get paid within 30 days of your referral becoming a client. Fast, reliable, monthly payments.</p>
+                </div>
+            </div>
+
+            <div id="calculator-section" class="calculator-section">
+                <h2 style="text-align: center; margin-bottom: 3rem; font-size: 2.5rem;">Commission Calculator</h2>
+                <div style="max-width: 600px; margin: 0 auto;">
+                    <div class="card" style="background: rgba(255,255,255,0.95); color: var(--deep-blue);">
+                        <div class="form-group">
+                            <label for="plan-selector">Select a Pro Plan to see your commission:</label>
+                            <select id="plan-selector" onchange="calculateCommission()">
+                                <option value="">Choose a plan...</option>
+                                <option value="100,250">Pro Plan 100 - $250/month</option>
+                                <option value="200,500">Pro Plan 200 - $500/month</option>
+                                <option value="300,750">Pro Plan 300 - $750/month</option>
+                                <option value="400,1000">Pro Plan 400 - $1,000/month</option>
+                                <option value="500,1250">Pro Plan 500 - $1,250/month</option>
+                                <option value="600,1500">Pro Plan 600 - $1,500/month</option>
+                                <option value="700,1750">Pro Plan 700 - $1,750/month</option>
+                                <option value="800,2000">Pro Plan 800 - $2,000/month</option>
+                                <option value="900,2250">Pro Plan 900 - $2,250/month</option>
+                                <option value="1000,2500">Pro Plan 1000 - $2,500/month</option>
+                                <option value="1100,2750">Pro Plan 1100 - $2,750/month</option>
+                                <option value="1200,3000">Pro Plan 1200 - $3,000/month</option>
+                            </select>
+                        </div>
+                        <div id="commission-results" style="display: none; text-align: center; margin-top: 2rem;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                                <div style="background: var(--gradient-green); color: white; padding: 2rem; border-radius: 12px;">
+                                    <h3>Monthly Commission</h3>
+                                    <div id="monthly-commission" style="font-size: 2.5rem; font-weight: 800; margin-top: 0.5rem;">$0</div>
+                                </div>
+                                <div style="background: var(--gradient-blue); color: white; padding: 2rem; border-radius: 12px;">
+                                    <h3>12-Month Total</h3>
+                                    <div id="yearly-commission" style="font-size: 2.5rem; font-weight: 800; margin-top: 0.5rem;">$0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <section style="text-align: center; padding: 4rem 0;">
+                <h2 style="font-size: 2.5rem; margin-bottom: 2rem;">Ready to Start Earning?</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 3rem; opacity: 0.9;">Join hundreds of affiliates already earning with KinectB2B</p>
+                <button type="button" class="btn btn-success btn-large" onclick="showSignupModal()">Sign Up Now - It's Free!</button>
+            </section>
+        </div>
+    </div>
+
     <!-- Auth Modal -->
     <div id="auth-modal" class="modal">
         <div class="modal-content">
@@ -254,10 +460,14 @@
         <!-- Affiliate Dashboard -->
         <div id="affiliate-dashboard" class="container hidden">
             <div class="card affiliate-code-card">
-                <h3>Your Personal Affiliate Code</h3>
-                <p>Share this code with businesses to get credit for referrals</p>
+                <h3>Your Personal Referral Link</h3>
+                <p>Share this link with businesses to get credit for referrals</p>
                 <div class="affiliate-code" id="affiliate-code">Loading...</div>
-                <button class="copy-button" onclick="copyAffiliateCode()">📋 Copy Code</button>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <button class="copy-button" onclick="copyAffiliateLink()">📋 Copy Link</button>
+                    <button class="copy-button" onclick="shareAffiliateLink()" style="background: rgba(16, 185, 129, 0.3);">📱 Share</button>
+                </div>
+                <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.9;">When businesses click your link, you'll automatically get credit for any referrals!</p>
             </div>
 
             <div class="dashboard-grid">
@@ -756,7 +966,16 @@
                 return;
             }
             
-            initializeApp();
+            // Check for referral code in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const refCode = urlParams.get('ref');
+            
+            if (refCode) {
+                showReferralLanding(refCode);
+            } else {
+                initializeApp();
+            }
+            
             setupEventListeners();
         });
 
@@ -783,6 +1002,7 @@
             document.getElementById('auth-form')?.addEventListener('submit', handleAuth);
             document.getElementById('referral-form')?.addEventListener('submit', handleReferralSubmit);
             document.getElementById('profile-form')?.addEventListener('submit', handleProfileUpdate);
+            document.getElementById('call-request-form')?.addEventListener('submit', handleCallRequest);
         }
         
         function showProfileEdit() {
@@ -1075,7 +1295,8 @@
                 
                 if (profile) {
                     document.getElementById('user-name').textContent = `Hello, ${profile.full_name || 'User'}`;
-                    document.getElementById('affiliate-code').textContent = profile.affiliate_code || generateAffiliateCode(profile.full_name || currentUser.email);
+                    const affiliateLink = `${window.location.origin}?ref=${profile.affiliate_code || generateAffiliateCode(profile.full_name || currentUser.email)}`;
+                    document.getElementById('affiliate-code').textContent = affiliateLink;
                     document.getElementById('profile-affiliate-code').textContent = profile.affiliate_code || generateAffiliateCode(profile.full_name || currentUser.email);
 
                     document.getElementById('view-name').textContent = profile.full_name || '-';
@@ -1147,7 +1368,8 @@
                     }
                 } else {
                     const affiliateCode = generateAffiliateCode(currentUser.email);
-                    document.getElementById('affiliate-code').textContent = affiliateCode;
+                    const affiliateLink = `${window.location.origin}?ref=${affiliateCode}`;
+                    document.getElementById('affiliate-code').textContent = affiliateLink;
                     document.getElementById('profile-affiliate-code').textContent = affiliateCode;
                     document.getElementById('affiliate-since').textContent = '0 days';
                 }
@@ -1587,13 +1809,112 @@
             }
         }
 
-        function copyAffiliateCode() {
+        function copyAffiliateLink() {
             const code = document.getElementById('affiliate-code').textContent;
-            navigator.clipboard.writeText(code).then(() => {
-                showNotification('Affiliate code copied to clipboard!', 'success');
+            const link = `${window.location.origin}?ref=${code}`;
+            navigator.clipboard.writeText(link).then(() => {
+                showNotification('Referral link copied to clipboard!', 'success');
             }).catch(() => {
-                showNotification('Failed to copy code', 'error');
+                showNotification('Failed to copy link', 'error');
             });
+        }
+
+        async function shareAffiliateLink() {
+            const code = document.getElementById('affiliate-code').textContent;
+            const link = `${window.location.origin}?ref=${code}`;
+            
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'KinectB2B - Get More Qualified Leads',
+                        text: 'Check out KinectB2B for guaranteed appointment setting and lead generation!',
+                        url: link
+                    });
+                    showNotification('Shared successfully!', 'success');
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        copyAffiliateLink();
+                    }
+                }
+            } else {
+                copyAffiliateLink();
+            }
+        }
+
+        function showReferralLanding(refCode) {
+            window.currentReferralCode = refCode;
+            document.getElementById('landing-page').classList.add('hidden');
+            document.getElementById('referral-landing').classList.remove('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+        }
+
+        function showCallRequestModal() {
+            document.getElementById('call-request-modal').classList.add('active');
+        }
+
+        function closeCallRequestModal() {
+            document.getElementById('call-request-modal').classList.remove('active');
+            document.getElementById('call-request-form').reset();
+        }
+
+        async function handleCallRequest(e) {
+            e.preventDefault();
+            
+            const refCode = window.currentReferralCode || 'direct';
+            
+            let websiteValue = document.getElementById('call-website').value.trim();
+            if (websiteValue && !websiteValue.startsWith('http')) {
+                websiteValue = 'https://' + websiteValue.replace(/^\/\//, '');
+            }
+            
+            const callData = {
+                company_name: document.getElementById('call-company').value.trim(),
+                contact_name: document.getElementById('call-name').value.trim(),
+                contact_email: document.getElementById('call-email').value.trim(),
+                contact_phone: document.getElementById('call-phone').value.trim(),
+                website: websiteValue || null,
+                notes: document.getElementById('call-notes').value.trim() || 'Requested call via referral link',
+                status: 'pending',
+                created_at: new Date().toISOString()
+            };
+            
+            try {
+                // Find affiliate by code
+                const { data: affiliate } = await supabase
+                    .from('user_profiles')
+                    .select('user_id')
+                    .eq('affiliate_code', refCode)
+                    .eq('role', 'affiliate')
+                    .single();
+                
+                if (affiliate) {
+                    callData.affiliate_id = affiliate.user_id;
+                }
+                
+                const { error } = await supabase
+                    .from('referrals')
+                    .insert([callData]);
+                
+                if (error) throw error;
+                
+                closeCallRequestModal();
+                
+                const thankYouModal = document.createElement('div');
+                thankYouModal.className = 'modal active';
+                thankYouModal.innerHTML = `
+                    <div class="modal-content" style="text-align: center;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
+                        <h2 style="color: var(--success-green); margin-bottom: 1rem;">Request Received!</h2>
+                        <p style="margin-bottom: 2rem;">Thank you! We'll reach out within 24 hours to discuss how we can help grow your business.</p>
+                        <button class="btn btn-primary" onclick="this.closest('.modal').remove()">Close</button>
+                    </div>
+                `;
+                document.body.appendChild(thankYouModal);
+                
+            } catch (error) {
+                console.error('Error submitting call request:', error);
+                showNotification('Error submitting request. Please try again.', 'error');
+            }
         }
 
         function showNotification(message, type = 'success') {
