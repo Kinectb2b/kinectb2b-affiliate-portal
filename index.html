@@ -7,13 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Hide everything by default until JavaScript decides what to show */
-        body { visibility: hidden; }
-        body.loaded { visibility: visible; }
-        
-        #landing-page { display: none; }
-        #referral-landing { display: none; }
-        #dashboard { display: none; }
+        /* Page container system - only ONE can be active at a time */
+        .page-container { display: none; min-height: 100vh; width: 100%; position: relative; }
+        .page-container.active { display: block; }
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
@@ -43,6 +39,11 @@
         
         /* Landing Page */
         .landing-page { background: linear-gradient(135deg, var(--deep-blue) 0%, #1E293B 50%, var(--electric-blue) 100%); min-height: 100vh; color: white; }
+        /* Landing Page */
+        .landing-page { background: linear-gradient(135deg, var(--deep-blue) 0%, #1E293B 50%, var(--electric-blue) 100%); min-height: 100vh; color: white; }
+        .landing-page.hidden { display: none !important; }
+        #landing-page.hidden { display: none !important; }
+        [id="landing-page"].hidden { display: none !important; }
         .landing-nav { padding: 1rem 0; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
         .nav-content { display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 2rem; font-weight: 800; color: white; }
@@ -68,6 +69,8 @@
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 2px solid var(--border-gray); border-radius: 8px; font-size: 1rem; transition: all 0.3s ease; }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--electric-blue); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
         
+        /* Dashboard */
+        .dashboard { background: var(--light-gray); min-height: 100vh; }
         /* Dashboard */
         .dashboard { background: var(--light-gray); min-height: 100vh; }
         .dashboard.hidden { display: none !important; }
@@ -112,6 +115,8 @@
     </style>
 </head>
 <body>
+    <!-- Landing Page Container -->
+    <div id="page-landing" class="page-container">
     <!-- Landing Page -->
     <div id="landing-page" class="landing-page">
         <nav class="landing-nav">
@@ -204,7 +209,10 @@
             </section>
         </div>
     </div>
+    </div>
 
+    <!-- Referral Landing Container -->
+    <div id="page-referral" class="page-container">
     <!-- Referral Landing Page for Service Providers -->
     <div id="referral-landing" class="landing-page hidden">
         <nav class="landing-nav">
@@ -278,6 +286,7 @@
                 <button type="button" class="btn btn-success btn-large" onclick="showCallRequestModal()">Request a Call Now</button>
             </section>
         </div>
+    </div>
     </div>
 
     <!-- Call Request Modal -->
@@ -453,6 +462,8 @@
         </div>
     </div>
 
+    <!-- Dashboard Container -->
+    <div id="page-dashboard" class="page-container">
     <!-- Dashboard -->
     <div id="dashboard" class="dashboard hidden">
         <header class="header">
@@ -957,6 +968,7 @@
             </div>
         </div>
     </div>
+    </div>
 
     <div id="notification" class="notification"></div>
 
@@ -1272,19 +1284,9 @@
 
         // Dashboard functions
         function showLandingPage() {
-            document.body.classList.add('loaded');
-            
-            document.getElementById('landing-page').style.display = 'block';
-            document.getElementById('landing-page').classList.remove('hidden');
-            
-            document.getElementById('referral-landing').style.display = 'none';
-            document.getElementById('referral-landing').classList.add('hidden');
-            
-            document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('dashboard').classList.add('hidden');
-            
-            document.getElementById('affiliate-dashboard').classList.add('hidden');
-            document.getElementById('admin-dashboard').classList.add('hidden');
+            document.getElementById('page-landing').classList.add('active');
+            document.getElementById('page-referral').classList.remove('active');
+            document.getElementById('page-dashboard').classList.remove('active');
             closeAuthModal();
         }
 
@@ -1952,15 +1954,9 @@
 
         function showReferralLanding(refCode) {
             window.currentReferralCode = refCode;
-            
-            document.getElementById('landing-page').style.display = 'none';
-            document.getElementById('landing-page').classList.add('hidden');
-            
-            document.getElementById('referral-landing').style.display = 'block';
-            document.getElementById('referral-landing').classList.remove('hidden');
-            
-            document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('page-landing').classList.remove('active');
+            document.getElementById('page-referral').classList.add('active');
+            document.getElementById('page-dashboard').classList.remove('active');
         }
 
         function showCallRequestModal() {
