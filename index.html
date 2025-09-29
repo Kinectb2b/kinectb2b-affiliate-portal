@@ -1275,11 +1275,20 @@
         function showAffiliateDashboard() {
             console.log('Showing affiliate dashboard');
             
-            // Simple and clean approach
-            document.getElementById('landing-page').classList.add('hidden');
-            document.getElementById('referral-landing').classList.add('hidden');
-            document.getElementById('admin-dashboard').classList.add('hidden');
+            // Force inline styles (strongest possible CSS)
+            const landingPage = document.getElementById('landing-page');
+            const referralLanding = document.getElementById('referral-landing');
             
+            landingPage.style.display = 'none';
+            landingPage.style.visibility = 'hidden';
+            landingPage.style.position = 'absolute';
+            landingPage.style.left = '-99999px';
+            landingPage.classList.add('hidden');
+            
+            referralLanding.style.display = 'none';
+            referralLanding.classList.add('hidden');
+            
+            document.getElementById('admin-dashboard').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
             document.getElementById('affiliate-dashboard').classList.remove('hidden');
             
@@ -1290,11 +1299,20 @@
         async function showAdminDashboard() {
             console.log('Showing admin dashboard');
             
-            // Simple and clean approach
-            document.getElementById('landing-page').classList.add('hidden');
-            document.getElementById('referral-landing').classList.add('hidden');
-            document.getElementById('affiliate-dashboard').classList.add('hidden');
+            // Force inline styles (strongest possible CSS)
+            const landingPage = document.getElementById('landing-page');
+            const referralLanding = document.getElementById('referral-landing');
             
+            landingPage.style.display = 'none';
+            landingPage.style.visibility = 'hidden';
+            landingPage.style.position = 'absolute';
+            landingPage.style.left = '-99999px';
+            landingPage.classList.add('hidden');
+            
+            referralLanding.style.display = 'none';
+            referralLanding.classList.add('hidden');
+            
+            document.getElementById('affiliate-dashboard').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
             document.getElementById('admin-dashboard').classList.remove('hidden');
             
