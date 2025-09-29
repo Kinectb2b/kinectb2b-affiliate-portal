@@ -7,10 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Page container system - only ONE can be active at a time */
-        .page-container { display: none; min-height: 100vh; width: 100%; position: relative; }
-        .page-container.active { display: block; }
-        
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --deep-blue: #0F172A; --electric-blue: #2563EB; --white: #FFFFFF;
@@ -31,7 +27,7 @@
         .btn-small { padding: 8px 16px; font-size: 0.9rem; }
         .btn-large { padding: 18px 36px; font-size: 1.2rem; font-weight: 800; }
         .card { background: var(--white); border-radius: 12px; padding: 2rem; box-shadow: 0 4px 15px rgba(15, 23, 42, 0.08); margin-bottom: 2rem; }
-        .hidden { display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
+        .hidden { display: none !important; }
         .notification { position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; border-radius: 8px; color: var(--white); font-weight: 600; z-index: 1001; transform: translateX(400px); transition: transform 0.3s ease; }
         .notification.success { background: var(--success-green); }
         .notification.error { background: var(--danger-red); }
@@ -39,18 +35,13 @@
         
         /* Landing Page */
         .landing-page { background: linear-gradient(135deg, var(--deep-blue) 0%, #1E293B 50%, var(--electric-blue) 100%); min-height: 100vh; color: white; }
-        /* Landing Page */
-        .landing-page { background: linear-gradient(135deg, var(--deep-blue) 0%, #1E293B 50%, var(--electric-blue) 100%); min-height: 100vh; color: white; }
-        .landing-page.hidden { display: none !important; }
-        #landing-page.hidden { display: none !important; }
-        [id="landing-page"].hidden { display: none !important; }
         .landing-nav { padding: 1rem 0; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
         .nav-content { display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 2rem; font-weight: 800; color: white; }
         .nav-login { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 8px 16px; border-radius: 8px; color: white; text-decoration: none; font-weight: 600; transition: all 0.3s ease; }
         .nav-login:hover { background: rgba(255,255,255,0.2); }
         .hero { padding: 6rem 0; text-align: center; }
-        .hero h1 { font-size: 4rem; margin-bottom: 1.5rem; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .hero h1 { font-size: 4rem; margin-bottom: 1.5rem; background: linear-gradient(135deg, #fff, #e2e8f0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .hero p { font-size: 1.5rem; margin-bottom: 3rem; opacity: 0.9; max-width: 800px; margin-left: auto; margin-right: auto; }
         .commission-highlight { background: var(--gradient-green); padding: 2rem; border-radius: 20px; margin: 4rem 0; }
         .commission-highlight h2 { font-size: 3rem; margin-bottom: 1rem; }
@@ -71,10 +62,6 @@
         
         /* Dashboard */
         .dashboard { background: var(--light-gray); min-height: 100vh; }
-        /* Dashboard */
-        .dashboard { background: var(--light-gray); min-height: 100vh; }
-        .dashboard.hidden { display: none !important; }
-        #dashboard.hidden { display: none !important; }
         .header { background: var(--white); padding: 1rem 0; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1); position: sticky; top: 0; z-index: 100; }
         .header-content { display: flex; justify-content: space-between; align-items: center; }
         .nav-links { display: flex; gap: 2rem; align-items: center; }
@@ -115,220 +102,8 @@
     </style>
 </head>
 <body>
-    <!-- Landing Page Container -->
-    <div id="page-landing" class="page-container">
     <!-- Landing Page -->
     <div id="landing-page" class="landing-page">
-        <nav class="landing-nav">
-            <div class="container">
-                <div class="nav-content">
-                    <div class="logo">KinectB2B Affiliates</div>
-                    <a href="#" onclick="event.preventDefault(); showLoginModal();" class="nav-login">Login</a>
-                </div>
-            </div>
-        </nav>
-
-        <div class="container">
-            <section class="hero">
-                <h1>Earn $300+ Monthly</h1>
-                <p>Join the KinectB2B Affiliate Program and earn 10% commission every month for 12 months on every client you refer!</p>
-                <button type="button" class="btn btn-primary btn-large" onclick="showSignupModal()" style="margin-right: 1rem;">Start Earning Now</button>
-                <button type="button" class="btn" onclick="scrollToCalculator()" style="background: rgba(255,255,255,0.2); color: white;">Calculate Your Earnings</button>
-            </section>
-
-            <div class="commission-highlight">
-                <h2>10% Monthly Commission</h2>
-                <p style="font-size: 1.2rem; margin-bottom: 0;">Get paid every month for 12 months as long as your referrals stay active!</p>
-            </div>
-
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">💰</div>
-                    <h3>High Commissions</h3>
-                    <p>Earn 10% of your referral's monthly payment for a full year. That's up to $3,600 per high-value referral!</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🚀</div>
-                    <h3>No Sales Experience Required</h3>
-                    <p>Simply refer businesses that need more leads. We handle all the sales and onboarding!</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🎯</div>
-                    <h3>Proven Results</h3>
-                    <p>KinectB2B has generated millions in revenue for clients with our guaranteed lead generation system.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
-                    <h3>Quick Payouts</h3>
-                    <p>Get paid within 30 days of your referral becoming a client. Fast, reliable, monthly payments.</p>
-                </div>
-            </div>
-
-            <div id="calculator-section" class="calculator-section">
-                <h2 style="text-align: center; margin-bottom: 3rem; font-size: 2.5rem;">Commission Calculator</h2>
-                <div style="max-width: 600px; margin: 0 auto;">
-                    <div class="card" style="background: rgba(255,255,255,0.95); color: var(--deep-blue);">
-                        <div class="form-group">
-                            <label for="plan-selector">Select a Pro Plan to see your commission:</label>
-                            <select id="plan-selector" onchange="calculateCommission()">
-                                <option value="">Choose a plan...</option>
-                                <option value="100,250">Pro Plan 100 - $250/month</option>
-                                <option value="200,500">Pro Plan 200 - $500/month</option>
-                                <option value="300,750">Pro Plan 300 - $750/month</option>
-                                <option value="400,1000">Pro Plan 400 - $1,000/month</option>
-                                <option value="500,1250">Pro Plan 500 - $1,250/month</option>
-                                <option value="600,1500">Pro Plan 600 - $1,500/month</option>
-                                <option value="700,1750">Pro Plan 700 - $1,750/month</option>
-                                <option value="800,2000">Pro Plan 800 - $2,000/month</option>
-                                <option value="900,2250">Pro Plan 900 - $2,250/month</option>
-                                <option value="1000,2500">Pro Plan 1000 - $2,500/month</option>
-                                <option value="1100,2750">Pro Plan 1100 - $2,750/month</option>
-                                <option value="1200,3000">Pro Plan 1200 - $3,000/month</option>
-                            </select>
-                        </div>
-                        <div id="commission-results" style="display: none; text-align: center; margin-top: 2rem;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                                <div style="background: var(--gradient-green); color: white; padding: 2rem; border-radius: 12px;">
-                                    <h3>Monthly Commission</h3>
-                                    <div id="monthly-commission" style="font-size: 2.5rem; font-weight: 800; margin-top: 0.5rem;">$0</div>
-                                </div>
-                                <div style="background: var(--gradient-blue); color: white; padding: 2rem; border-radius: 12px;">
-                                    <h3>12-Month Total</h3>
-                                    <div id="yearly-commission" style="font-size: 2.5rem; font-weight: 800; margin-top: 0.5rem;">$0</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <section style="text-align: center; padding: 4rem 0;">
-                <h2 style="font-size: 2.5rem; margin-bottom: 2rem;">Ready to Start Earning?</h2>
-                <p style="font-size: 1.2rem; margin-bottom: 3rem; opacity: 0.9;">Join hundreds of affiliates already earning with KinectB2B</p>
-                <button type="button" class="btn btn-success btn-large" onclick="showSignupModal()">Sign Up Now - It's Free!</button>
-            </section>
-        </div>
-    </div>
-    </div>
-
-    <!-- Referral Landing Container -->
-    <div id="page-referral" class="page-container">
-    <!-- Referral Landing Page for Service Providers -->
-    <div id="referral-landing" class="landing-page hidden">
-        <nav class="landing-nav">
-            <div class="container">
-                <div class="nav-content">
-                    <div class="logo">KinectB2B</div>
-                    <a href="https://kinectb2b.com" target="_blank" class="nav-login">Visit Website</a>
-                </div>
-            </div>
-        </nav>
-
-        <div class="container">
-            <section class="hero">
-                <h1 style="font-size: 3.5rem;">Get More Qualified Leads</h1>
-                <p style="max-width: 700px;">We guarantee qualified appointments with decision-makers for your business. No more cold calling, no more wasted time.</p>
-                <button type="button" class="btn btn-success btn-large" onclick="showCallRequestModal()">Request a Call →</button>
-            </section>
-
-            <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 3rem; border-radius: 20px; margin: 4rem 0;">
-                <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 3rem;">How It Works</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
-                    <div style="text-align: center;">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">📞</div>
-                        <h3 style="margin-bottom: 0.5rem;">1. Free Consultation</h3>
-                        <p style="opacity: 0.9;">We learn about your business and ideal customers</p>
-                    </div>
-                    <div style="text-align: center;">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">🎯</div>
-                        <h3 style="margin-bottom: 0.5rem;">2. We Find Prospects</h3>
-                        <p style="opacity: 0.9;">Our team identifies and reaches out to qualified leads</p>
-                    </div>
-                    <div style="text-align: center;">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
-                        <h3 style="margin-bottom: 0.5rem;">3. You Get Appointments</h3>
-                        <p style="opacity: 0.9;">We deliver confirmed appointments with decision-makers</p>
-                    </div>
-                    <div style="text-align: center;">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">💰</div>
-                        <h3 style="margin-bottom: 0.5rem;">4. You Close Deals</h3>
-                        <p style="opacity: 0.9;">Focus on selling, we handle the lead generation</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🎯</div>
-                    <h3>Guaranteed Results</h3>
-                    <p>We guarantee qualified appointments or you don't pay. Simple as that.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">📈</div>
-                    <h3>Proven ROI</h3>
-                    <p>Our clients see an average ROI of 300-500% on their investment.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
-                    <h3>Fast Setup</h3>
-                    <p>Start getting appointments within 2 weeks of onboarding.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🤝</div>
-                    <h3>Full-Service</h3>
-                    <p>From prospecting to appointment confirmation, we handle everything.</p>
-                </div>
-            </div>
-
-            <section style="text-align: center; padding: 4rem 0;">
-                <h2 style="font-size: 2.5rem; margin-bottom: 2rem;">Ready to Scale Your Business?</h2>
-                <p style="font-size: 1.2rem; margin-bottom: 3rem; opacity: 0.9;">Schedule a free consultation to see if we're a good fit</p>
-                <button type="button" class="btn btn-success btn-large" onclick="showCallRequestModal()">Request a Call Now</button>
-            </section>
-        </div>
-    </div>
-    </div>
-
-    <!-- Call Request Modal -->
-    <div id="call-request-modal" class="modal">
-        <div class="modal-content">
-            <div style="text-align: center; margin-bottom: 2rem;">
-                <h2>Request a Free Consultation</h2>
-                <p>Tell us about your business and we'll reach out within 24 hours</p>
-            </div>
-            
-            <form id="call-request-form">
-                <div class="form-group">
-                    <label for="call-company">Company Name *</label>
-                    <input type="text" id="call-company" required>
-                </div>
-                <div class="form-group">
-                    <label for="call-name">Your Name *</label>
-                    <input type="text" id="call-name" required>
-                </div>
-                <div class="form-group">
-                    <label for="call-email">Email Address *</label>
-                    <input type="email" id="call-email" required>
-                </div>
-                <div class="form-group">
-                    <label for="call-phone">Phone Number *</label>
-                    <input type="tel" id="call-phone" required>
-                </div>
-                <div class="form-group">
-                    <label for="call-website">Company Website</label>
-                    <input type="text" id="call-website" placeholder="www.example.com">
-                </div>
-                <div class="form-group">
-                    <label for="call-notes">Tell us about your business</label>
-                    <textarea id="call-notes" rows="3" placeholder="What services do you offer? Who is your ideal customer?"></textarea>
-                </div>
-                
-                <button type="submit" class="btn btn-success" style="width: 100%; margin-bottom: 1rem;">Request Call</button>
-            </form>
-            
-            <button onclick="closeCallRequestModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--slate-gray);">&times;</button>
-        </div>
-    </div>
         <nav class="landing-nav">
             <div class="container">
                 <div class="nav-content">
@@ -462,8 +237,6 @@
         </div>
     </div>
 
-    <!-- Dashboard Container -->
-    <div id="page-dashboard" class="page-container">
     <!-- Dashboard -->
     <div id="dashboard" class="dashboard hidden">
         <header class="header">
@@ -481,14 +254,10 @@
         <!-- Affiliate Dashboard -->
         <div id="affiliate-dashboard" class="container hidden">
             <div class="card affiliate-code-card">
-                <h3>Your Personal Referral Link</h3>
-                <p>Share this link with businesses to get credit for referrals</p>
-                <div style="background: white; color: var(--deep-blue); padding: 1rem; border-radius: 8px; margin: 1rem 0; font-family: monospace; font-size: 0.9rem; word-break: break-all; font-weight: 600;" id="affiliate-code">Loading...</div>
-                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                    <button class="copy-button" onclick="copyAffiliateLink()">📋 Copy Link</button>
-                    <button class="copy-button" onclick="shareAffiliateLink()" style="background: rgba(16, 185, 129, 0.3);">📱 Share</button>
-                </div>
-                <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.9;">When businesses click your link, you'll automatically get credit for any referrals!</p>
+                <h3>Your Personal Affiliate Code</h3>
+                <p>Share this code with businesses to get credit for referrals</p>
+                <div class="affiliate-code" id="affiliate-code">Loading...</div>
+                <button class="copy-button" onclick="copyAffiliateCode()">📋 Copy Code</button>
             </div>
 
             <div class="dashboard-grid">
@@ -968,7 +737,6 @@
             </div>
         </div>
     </div>
-    </div>
 
     <div id="notification" class="notification"></div>
 
@@ -988,32 +756,15 @@
                 return;
             }
             
-            // Check for referral code in URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const refCode = urlParams.get('ref');
-            
-            if (refCode) {
-                showReferralLanding(refCode);
-            } else {
-                initializeApp();
-            }
-            
+            initializeApp();
             setupEventListeners();
         });
 
         async function initializeApp() {
-            // Force hide all pages initially
-            document.getElementById('landing-page').classList.add('hidden');
-            document.getElementById('referral-landing').classList.add('hidden');
-            document.getElementById('dashboard').classList.add('hidden');
-            
             try {
                 const { data: { session } } = await supabase.auth.getSession();
                 if (session) {
                     await handleUserSession(session.user);
-                } else {
-                    // Only show landing if no session
-                    showLandingPage();
                 }
                 
                 supabase.auth.onAuthStateChange((event, session) => {
@@ -1025,7 +776,6 @@
                 });
             } catch (error) {
                 console.error('Error initializing app:', error);
-                showLandingPage();
             }
         }
 
@@ -1033,7 +783,6 @@
             document.getElementById('auth-form')?.addEventListener('submit', handleAuth);
             document.getElementById('referral-form')?.addEventListener('submit', handleReferralSubmit);
             document.getElementById('profile-form')?.addEventListener('submit', handleProfileUpdate);
-            document.getElementById('call-request-form')?.addEventListener('submit', handleCallRequest);
         }
         
         function showProfileEdit() {
@@ -1168,14 +917,7 @@
                 });
                 
                 if (error) throw error;
-                
                 showNotification('Login successful!', 'success');
-                closeAuthModal();
-                
-                // Redirect to appropriate dashboard
-                if (data.user) {
-                    await handleUserSession(data.user);
-                }
                 
             } catch (error) {
                 showNotification(`Login failed: ${error.message}`, 'error');
@@ -1266,10 +1008,6 @@
         async function handleUserSession(user) {
             currentUser = user;
             
-            // Hide all pages first
-            document.getElementById('landing-page').classList.add('hidden');
-            document.getElementById('referral-landing').classList.add('hidden');
-            
             if (user.email === 'robert@kinectb2b.com') {
                 await showAdminDashboard();
             } else {
@@ -1284,96 +1022,27 @@
 
         // Dashboard functions
         function showLandingPage() {
-            document.getElementById('page-landing').classList.add('active');
-            document.getElementById('page-referral').classList.remove('active');
-            document.getElementById('page-dashboard').classList.remove('active');
+            document.getElementById('landing-page').classList.remove('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('affiliate-dashboard').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.add('hidden');
             closeAuthModal();
         }
 
-        let landingPageContent = null;
-        let referralLandingContent = null;
-
         function showAffiliateDashboard() {
-            console.log('Showing affiliate dashboard');
-            
-            // Show body
-            document.body.classList.add('loaded');
-            
-            // DELETE the landing pages from DOM completely
-            const landingPage = document.getElementById('landing-page');
-            const referralLanding = document.getElementById('referral-landing');
-            
-            if (landingPage && landingPage.parentNode) {
-                landingPage.parentNode.removeChild(landingPage);
-                console.log('Landing page DELETED');
-            }
-            
-            if (referralLanding && referralLanding.parentNode) {
-                referralLanding.parentNode.removeChild(referralLanding);
-                console.log('Referral landing DELETED');
-            }
-            
-            document.getElementById('admin-dashboard').classList.add('hidden');
-            
-            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('landing-page').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
-            
-            document.getElementById('affiliate-dashboard').style.display = 'block';
             document.getElementById('affiliate-dashboard').classList.remove('hidden');
+            document.getElementById('admin-dashboard').classList.add('hidden');
             
             closeAuthModal();
             loadAffiliateData();
         }
 
         async function showAdminDashboard() {
-            console.log('Showing admin dashboard');
-            
-            // Show body
-            document.body.classList.add('loaded');
-            
-            // NUCLEAR: Save content then remove it from DOM
-            const landingPage = document.getElementById('landing-page');
-            const referralLanding = document.getElementById('referral-landing');
-            
-            if (landingPage && !landingPageContent) {
-                landingPageContent = landingPage.innerHTML;
-                landingPage.innerHTML = ''; // Empty it
-            }
-            
-            if (referralLanding && !referralLandingContent) {
-                referralLandingContent = referralLanding.innerHTML;
-                referralLanding.innerHTML = ''; // Empty it
-            }
-            
-            // Also hide with styles
-            if (landingPage) {
-                landingPage.style.display = 'none';
-                landingPage.style.visibility = 'hidden';
-                landingPage.style.position = 'absolute';
-                landingPage.style.left = '-99999px';
-                landingPage.style.height = '0';
-                landingPage.style.overflow = 'hidden';
-                landingPage.classList.add('hidden');
-                console.log('Landing page hidden and emptied');
-            }
-            
-            if (referralLanding) {
-                referralLanding.style.display = 'none';
-                referralLanding.style.visibility = 'hidden';
-                referralLanding.style.position = 'absolute';
-                referralLanding.style.left = '-99999px';
-                referralLanding.style.height = '0';
-                referralLanding.style.overflow = 'hidden';
-                referralLanding.classList.add('hidden');
-                console.log('Referral landing hidden and emptied');
-            }
-            
-            document.getElementById('affiliate-dashboard').classList.add('hidden');
-            
-            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('landing-page').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
-            
-            document.getElementById('admin-dashboard').style.display = 'block';
+            document.getElementById('affiliate-dashboard').classList.add('hidden');
             document.getElementById('admin-dashboard').classList.remove('hidden');
             
             closeAuthModal();
@@ -1406,8 +1075,7 @@
                 
                 if (profile) {
                     document.getElementById('user-name').textContent = `Hello, ${profile.full_name || 'User'}`;
-                    const affiliateLink = `${window.location.origin}?ref=${profile.affiliate_code || generateAffiliateCode(profile.full_name || currentUser.email)}`;
-                    document.getElementById('affiliate-code').textContent = affiliateLink;
+                    document.getElementById('affiliate-code').textContent = profile.affiliate_code || generateAffiliateCode(profile.full_name || currentUser.email);
                     document.getElementById('profile-affiliate-code').textContent = profile.affiliate_code || generateAffiliateCode(profile.full_name || currentUser.email);
 
                     document.getElementById('view-name').textContent = profile.full_name || '-';
@@ -1479,8 +1147,7 @@
                     }
                 } else {
                     const affiliateCode = generateAffiliateCode(currentUser.email);
-                    const affiliateLink = `${window.location.origin}?ref=${affiliateCode}`;
-                    document.getElementById('affiliate-code').textContent = affiliateLink;
+                    document.getElementById('affiliate-code').textContent = affiliateCode;
                     document.getElementById('profile-affiliate-code').textContent = affiliateCode;
                     document.getElementById('affiliate-since').textContent = '0 days';
                 }
@@ -1920,112 +1587,13 @@
             }
         }
 
-        function copyAffiliateLink() {
+        function copyAffiliateCode() {
             const code = document.getElementById('affiliate-code').textContent;
-            const link = `${window.location.origin}?ref=${code}`;
-            navigator.clipboard.writeText(link).then(() => {
-                showNotification('Referral link copied to clipboard!', 'success');
+            navigator.clipboard.writeText(code).then(() => {
+                showNotification('Affiliate code copied to clipboard!', 'success');
             }).catch(() => {
-                showNotification('Failed to copy link', 'error');
+                showNotification('Failed to copy code', 'error');
             });
-        }
-
-        async function shareAffiliateLink() {
-            const code = document.getElementById('affiliate-code').textContent;
-            const link = `${window.location.origin}?ref=${code}`;
-            
-            if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: 'KinectB2B - Get More Qualified Leads',
-                        text: 'Check out KinectB2B for guaranteed appointment setting and lead generation!',
-                        url: link
-                    });
-                    showNotification('Shared successfully!', 'success');
-                } catch (error) {
-                    if (error.name !== 'AbortError') {
-                        copyAffiliateLink();
-                    }
-                }
-            } else {
-                copyAffiliateLink();
-            }
-        }
-
-        function showReferralLanding(refCode) {
-            window.currentReferralCode = refCode;
-            document.getElementById('page-landing').classList.remove('active');
-            document.getElementById('page-referral').classList.add('active');
-            document.getElementById('page-dashboard').classList.remove('active');
-        }
-
-        function showCallRequestModal() {
-            document.getElementById('call-request-modal').classList.add('active');
-        }
-
-        function closeCallRequestModal() {
-            document.getElementById('call-request-modal').classList.remove('active');
-            document.getElementById('call-request-form').reset();
-        }
-
-        async function handleCallRequest(e) {
-            e.preventDefault();
-            
-            const refCode = window.currentReferralCode || 'direct';
-            
-            let websiteValue = document.getElementById('call-website').value.trim();
-            if (websiteValue && !websiteValue.startsWith('http')) {
-                websiteValue = 'https://' + websiteValue.replace(/^\/\//, '');
-            }
-            
-            const callData = {
-                company_name: document.getElementById('call-company').value.trim(),
-                contact_name: document.getElementById('call-name').value.trim(),
-                contact_email: document.getElementById('call-email').value.trim(),
-                contact_phone: document.getElementById('call-phone').value.trim(),
-                website: websiteValue || null,
-                notes: document.getElementById('call-notes').value.trim() || 'Requested call via referral link',
-                status: 'pending',
-                created_at: new Date().toISOString()
-            };
-            
-            try {
-                // Find affiliate by code
-                const { data: affiliate } = await supabase
-                    .from('user_profiles')
-                    .select('user_id')
-                    .eq('affiliate_code', refCode)
-                    .eq('role', 'affiliate')
-                    .single();
-                
-                if (affiliate) {
-                    callData.affiliate_id = affiliate.user_id;
-                }
-                
-                const { error } = await supabase
-                    .from('referrals')
-                    .insert([callData]);
-                
-                if (error) throw error;
-                
-                closeCallRequestModal();
-                
-                const thankYouModal = document.createElement('div');
-                thankYouModal.className = 'modal active';
-                thankYouModal.innerHTML = `
-                    <div class="modal-content" style="text-align: center;">
-                        <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
-                        <h2 style="color: var(--success-green); margin-bottom: 1rem;">Request Received!</h2>
-                        <p style="margin-bottom: 2rem;">Thank you! We'll reach out within 24 hours to discuss how we can help grow your business.</p>
-                        <button class="btn btn-primary" onclick="this.closest('.modal').remove()">Close</button>
-                    </div>
-                `;
-                document.body.appendChild(thankYouModal);
-                
-            } catch (error) {
-                console.error('Error submitting call request:', error);
-                showNotification('Error submitting request. Please try again.', 'error');
-            }
         }
 
         function showNotification(message, type = 'success') {
