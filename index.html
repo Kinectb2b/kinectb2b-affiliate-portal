@@ -1083,9 +1083,31 @@
                 
                 if (profile) {
     document.getElementById('user-name').textContent = `Hello, ${profile.full_name || 'User'}`;
-    const affiliateCode = profile.affiliate_code || generateAffiliateCode(profile.full_name || currentUser.email);
+    
+    // Generate or get affiliate code
+    let affiliateCode = profile.affiliate_code;
+    
+    // If no code exists, generate one and save it to Supabase
+    if (!affiliateCode) {
+        affiliateCode = generateAffiliateCode(profile.full_name || currentUser.email);
+        
+        // Save the generated code to Supabase
+        supabase
+            .from('user_profiles')
+            .update({ affiliate_code: affiliateCode })
+            .eq('user_id', currentUser.id)
+            .then(({ error }) => {
+                if (error) console.error('Error saving affiliate code:', error);
+                else console.log('Affiliate code saved:', affiliateCode);
+            });
+    }
+    
     document.getElementById('affiliate-code').textContent = affiliateCode;
     document.getElementById('profile-affiliate-code').textContent = affiliateCode;
+    
+    // Generate referral link
+    const referralLink = `https://kinectb2b-affiliate.com/referral.html?ref=${affiliateCode}`;
+    document.getElementById('affiliate-link').textContent = referralLink;
     
     // Generate referral link - CHANGE THIS to your real Netlify URL
     const referralLink = `https://kinectb2b-affiliate.com/referral.html?ref=${affiliateCode}`;
