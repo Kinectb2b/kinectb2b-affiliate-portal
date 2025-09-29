@@ -8,6 +8,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         /* Hide everything by default until JavaScript decides what to show */
+        body { visibility: hidden; }
+        body.loaded { visibility: visible; }
+        
         #landing-page { display: none; }
         #referral-landing { display: none; }
         #dashboard { display: none; }
@@ -1269,6 +1272,8 @@
 
         // Dashboard functions
         function showLandingPage() {
+            document.body.classList.add('loaded');
+            
             document.getElementById('landing-page').style.display = 'block';
             document.getElementById('landing-page').classList.remove('hidden');
             
@@ -1283,17 +1288,30 @@
             closeAuthModal();
         }
 
+        let landingPageContent = null;
+        let referralLandingContent = null;
+
         function showAffiliateDashboard() {
             console.log('Showing affiliate dashboard');
             
-            // Get elements
+            // Show body
+            document.body.classList.add('loaded');
+            
+            // NUCLEAR: Save content then remove it from DOM
             const landingPage = document.getElementById('landing-page');
             const referralLanding = document.getElementById('referral-landing');
             
-            console.log('Landing page element:', landingPage);
-            console.log('Referral landing element:', referralLanding);
+            if (landingPage && !landingPageContent) {
+                landingPageContent = landingPage.innerHTML;
+                landingPage.innerHTML = ''; // Empty it
+            }
             
-            // Force inline styles on BOTH
+            if (referralLanding && !referralLandingContent) {
+                referralLandingContent = referralLanding.innerHTML;
+                referralLanding.innerHTML = ''; // Empty it
+            }
+            
+            // Also hide with styles
             if (landingPage) {
                 landingPage.style.display = 'none';
                 landingPage.style.visibility = 'hidden';
@@ -1302,7 +1320,7 @@
                 landingPage.style.height = '0';
                 landingPage.style.overflow = 'hidden';
                 landingPage.classList.add('hidden');
-                console.log('Landing page hidden');
+                console.log('Landing page hidden and emptied');
             }
             
             if (referralLanding) {
@@ -1313,7 +1331,7 @@
                 referralLanding.style.height = '0';
                 referralLanding.style.overflow = 'hidden';
                 referralLanding.classList.add('hidden');
-                console.log('Referral landing hidden');
+                console.log('Referral landing hidden and emptied');
             }
             
             document.getElementById('admin-dashboard').classList.add('hidden');
@@ -1331,14 +1349,24 @@
         async function showAdminDashboard() {
             console.log('Showing admin dashboard');
             
-            // Get elements
+            // Show body
+            document.body.classList.add('loaded');
+            
+            // NUCLEAR: Save content then remove it from DOM
             const landingPage = document.getElementById('landing-page');
             const referralLanding = document.getElementById('referral-landing');
             
-            console.log('Landing page element:', landingPage);
-            console.log('Referral landing element:', referralLanding);
+            if (landingPage && !landingPageContent) {
+                landingPageContent = landingPage.innerHTML;
+                landingPage.innerHTML = ''; // Empty it
+            }
             
-            // Force inline styles on BOTH
+            if (referralLanding && !referralLandingContent) {
+                referralLandingContent = referralLanding.innerHTML;
+                referralLanding.innerHTML = ''; // Empty it
+            }
+            
+            // Also hide with styles
             if (landingPage) {
                 landingPage.style.display = 'none';
                 landingPage.style.visibility = 'hidden';
@@ -1347,7 +1375,7 @@
                 landingPage.style.height = '0';
                 landingPage.style.overflow = 'hidden';
                 landingPage.classList.add('hidden');
-                console.log('Landing page hidden');
+                console.log('Landing page hidden and emptied');
             }
             
             if (referralLanding) {
@@ -1358,7 +1386,7 @@
                 referralLanding.style.height = '0';
                 referralLanding.style.overflow = 'hidden';
                 referralLanding.classList.add('hidden');
-                console.log('Referral landing hidden');
+                console.log('Referral landing hidden and emptied');
             }
             
             document.getElementById('affiliate-dashboard').classList.add('hidden');
