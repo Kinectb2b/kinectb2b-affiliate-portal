@@ -933,74 +933,62 @@
         }
 
         async function handleSignup(email, password) {
-    const name = document.getElementById('auth-name').value.trim();
-    const confirmPassword = document.getElementById('auth-confirm').value;
-    
-    if (!name) {
-        showNotification('Please enter your full name', 'error');
-        return;
-    }
-    
-    if (password !== confirmPassword) {
-        showNotification('Passwords do not match', 'error');
-        return;
-    }
-    
-    if (password.length < 6) {
-        showNotification('Password must be at least 6 characters', 'error');
-        return;
-    }
-    
-    try {
-        showNotification('Creating account...', 'success');
-        
-        const { data, error } = await supabase.auth.signUp({
-            email: email,
-            password: password,
-            options: {
-                data: {
-                    full_name: name
-                }
+            const name = document.getElementById('auth-name').value.trim();
+            const confirmPassword = document.getElementById('auth-confirm').value;
+            
+            if (!name) {
+                showNotification('Please enter your full name', 'error');
+                return;
             }
-        });
-        
-        if (error) throw error;
-        
-        if (data.user) {
-            const affiliateCode = generateAffiliateCode(name);
+            
+            if (password !== confirmPassword) {
+                showNotification('Passwords do not match', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showNotification('Password must be at least 6 characters', 'error');
+                return;
+            }
             
             try {
-                const { error: profileError } = await supabase
-                    .from('user_profiles')
-                    .upsert({
-                        user_id: data.user.id,
-                        email: email,
-                        full_name: name,
-                        role: 'affiliate',
-                        status: 'active',
-                        affiliate_code: affiliateCode,
-                        admin_viewed: false,
-                        created_at: new Date().toISOString()
-                    }, {
-                        onConflict: 'user_id',
-                        ignoreDuplicates: false
-                    });
+                showNotification('Creating account...', 'success');
                 
-                if (profileError) {
-                    console.warn('Profile upsert error:', profileError);
-                }
-            } catch (profileError) {
-                console.warn('Profile creation error:', profileError);
-            }
-        }
-        
-        showNotification('Account created! Please check your email for verification.', 'success');
-        closeAuthModal();
-        
-    } catch (error) {
-        showNotification(`Signup failed: ${error.message}`, 'error');
-    }
-}
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            full_name: name
+                        }
+                    }
+                });
+                
+                if (error) throw error;
+                
+                if (data.user) {
+                    const affiliateCode = generateAffiliateCode(name);
+                    
+                    try {
+                        const { data: existingProfile, error: checkError } = await supabase
+                            .from('user_profiles')
+                            .select('*')
+                            .eq('user_id', data.user.id)
+                            .maybeSingle();
+                        
+                        if (!existingProfile) {
+                            const { error: profileError } = await supabase
+                                .from('user_profiles')
+                                .insert({
+                                    user_id: data.user.id,
+                                    email: email,
+                                    full_name: name,
+                                    role: 'affiliate',
+                                    status: 'active',
+                                    affiliate_code: affiliateCode,
+                                    admin_viewed: false,
+                                    created_at: new Date().toISOString()
+                                });
                             
                             if (profileError) console.warn('Profile creation error:', profileError);
                         } else {
