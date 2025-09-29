@@ -7,6 +7,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* Hide everything by default until JavaScript decides what to show */
+        #landing-page { display: none; }
+        #referral-landing { display: none; }
+        #dashboard { display: none; }
+        
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --deep-blue: #0F172A; --electric-blue: #2563EB; --white: #FFFFFF;
@@ -1264,9 +1269,15 @@
 
         // Dashboard functions
         function showLandingPage() {
+            document.getElementById('landing-page').style.display = 'block';
             document.getElementById('landing-page').classList.remove('hidden');
+            
+            document.getElementById('referral-landing').style.display = 'none';
             document.getElementById('referral-landing').classList.add('hidden');
+            
+            document.getElementById('dashboard').style.display = 'none';
             document.getElementById('dashboard').classList.add('hidden');
+            
             document.getElementById('affiliate-dashboard').classList.add('hidden');
             document.getElementById('admin-dashboard').classList.add('hidden');
             closeAuthModal();
@@ -1306,7 +1317,11 @@
             }
             
             document.getElementById('admin-dashboard').classList.add('hidden');
+            
+            document.getElementById('dashboard').style.display = 'block';
             document.getElementById('dashboard').classList.remove('hidden');
+            
+            document.getElementById('affiliate-dashboard').style.display = 'block';
             document.getElementById('affiliate-dashboard').classList.remove('hidden');
             
             closeAuthModal();
@@ -1347,7 +1362,11 @@
             }
             
             document.getElementById('affiliate-dashboard').classList.add('hidden');
+            
+            document.getElementById('dashboard').style.display = 'block';
             document.getElementById('dashboard').classList.remove('hidden');
+            
+            document.getElementById('admin-dashboard').style.display = 'block';
             document.getElementById('admin-dashboard').classList.remove('hidden');
             
             closeAuthModal();
@@ -1928,8 +1947,14 @@
 
         function showReferralLanding(refCode) {
             window.currentReferralCode = refCode;
+            
+            document.getElementById('landing-page').style.display = 'none';
             document.getElementById('landing-page').classList.add('hidden');
+            
+            document.getElementById('referral-landing').style.display = 'block';
             document.getElementById('referral-landing').classList.remove('hidden');
+            
+            document.getElementById('dashboard').style.display = 'none';
             document.getElementById('dashboard').classList.add('hidden');
         }
 
