@@ -41,7 +41,7 @@
         .nav-login { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 8px 16px; border-radius: 8px; color: white; text-decoration: none; font-weight: 600; transition: all 0.3s ease; }
         .nav-login:hover { background: rgba(255,255,255,0.2); }
         .hero { padding: 6rem 0; text-align: center; }
-        .hero h1 { font-size: 4rem; margin-bottom: 1.5rem; background: linear-gradient(135deg, #fff, #e2e8f0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .hero h1 { font-size: 4rem; margin-bottom: 1.5rem; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
         .hero p { font-size: 1.5rem; margin-bottom: 3rem; opacity: 0.9; max-width: 800px; margin-left: auto; margin-right: auto; }
         .commission-highlight { background: var(--gradient-green); padding: 2rem; border-radius: 20px; margin: 4rem 0; }
         .commission-highlight h2 { font-size: 3rem; margin-bottom: 1rem; }
@@ -462,7 +462,7 @@
             <div class="card affiliate-code-card">
                 <h3>Your Personal Referral Link</h3>
                 <p>Share this link with businesses to get credit for referrals</p>
-                <div class="affiliate-code" id="affiliate-code">Loading...</div>
+                <div style="background: white; color: var(--deep-blue); padding: 1rem; border-radius: 8px; margin: 1rem 0; font-family: monospace; font-size: 0.9rem; word-break: break-all; font-weight: 600;" id="affiliate-code">Loading...</div>
                 <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
                     <button class="copy-button" onclick="copyAffiliateLink()">📋 Copy Link</button>
                     <button class="copy-button" onclick="shareAffiliateLink()" style="background: rgba(16, 185, 129, 0.3);">📱 Share</button>
@@ -1243,6 +1243,7 @@
         // Dashboard functions
         function showLandingPage() {
             document.getElementById('landing-page').classList.remove('hidden');
+            document.getElementById('referral-landing').classList.add('hidden');
             document.getElementById('dashboard').classList.add('hidden');
             document.getElementById('affiliate-dashboard').classList.add('hidden');
             document.getElementById('admin-dashboard').classList.add('hidden');
@@ -1251,6 +1252,7 @@
 
         function showAffiliateDashboard() {
             document.getElementById('landing-page').classList.add('hidden');
+            document.getElementById('referral-landing').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
             document.getElementById('affiliate-dashboard').classList.remove('hidden');
             document.getElementById('admin-dashboard').classList.add('hidden');
@@ -1261,6 +1263,7 @@
 
         async function showAdminDashboard() {
             document.getElementById('landing-page').classList.add('hidden');
+            document.getElementById('referral-landing').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
             document.getElementById('affiliate-dashboard').classList.add('hidden');
             document.getElementById('admin-dashboard').classList.remove('hidden');
