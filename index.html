@@ -35,7 +35,8 @@
         
         /* Landing Page */
         .landing-page { background: linear-gradient(135deg, var(--deep-blue) 0%, #1E293B 50%, var(--electric-blue) 100%); min-height: 100vh; color: white; position: fixed; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; z-index: 1; }
-        .landing-page.hidden { display: none; }
+        .landing-page.hidden { display: none !important; }
+        .landing-page.hidden * { display: none !important; }
         .landing-nav { padding: 1rem 0; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
         .nav-content { display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 2rem; font-weight: 800; color: white; }
@@ -62,7 +63,7 @@
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--electric-blue); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
         
         /* Dashboard */
-        .dashboard { background: var(--light-gray); min-height: 100vh; position: fixed; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; z-index: 2; }
+        .dashboard { background: var(--light-gray); min-height: 100vh; position: fixed; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; z-index: 10; }
         .dashboard.hidden { display: none; }
         .header { background: var(--white); padding: 1rem 0; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.1); position: sticky; top: 0; z-index: 100; }
         .header-content { display: flex; justify-content: space-between; align-items: center; }
@@ -1284,9 +1285,13 @@
             
             landingPage.classList.add('hidden');
             landingPage.style.display = 'none';
+            landingPage.style.visibility = 'hidden';
+            landingPage.style.zIndex = '-1';
             
             referralLanding.classList.add('hidden');
             referralLanding.style.display = 'none';
+            referralLanding.style.visibility = 'hidden';
+            referralLanding.style.zIndex = '-1';
             
             adminDash.classList.add('hidden');
             adminDash.style.display = 'none';
@@ -1294,6 +1299,8 @@
             // Show dashboard
             dashboard.classList.remove('hidden');
             dashboard.style.display = 'block';
+            dashboard.style.visibility = 'visible';
+            dashboard.style.zIndex = '10';
             
             affiliateDash.classList.remove('hidden');
             affiliateDash.style.display = 'block';
@@ -1314,9 +1321,13 @@
             
             landingPage.classList.add('hidden');
             landingPage.style.display = 'none';
+            landingPage.style.visibility = 'hidden';
+            landingPage.style.zIndex = '-1';
             
             referralLanding.classList.add('hidden');
             referralLanding.style.display = 'none';
+            referralLanding.style.visibility = 'hidden';
+            referralLanding.style.zIndex = '-1';
             
             affiliateDash.classList.add('hidden');
             affiliateDash.style.display = 'none';
@@ -1324,6 +1335,8 @@
             // Show dashboard
             dashboard.classList.remove('hidden');
             dashboard.style.display = 'block';
+            dashboard.style.visibility = 'visible';
+            dashboard.style.zIndex = '10';
             
             adminDash.classList.remove('hidden');
             adminDash.style.display = 'block';
