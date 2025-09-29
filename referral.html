@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KinectB2B - Guaranteed B2B Lead Generation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --deep-blue: #0F172A; --electric-blue: #2563EB; --white: #FFFFFF;
+            --slate-gray: #64748B; --light-gray: #F8FAFC; --border-gray: #E2E8F0;
+            --success-green: #10B981; --warning-yellow: #F59E0B;
+            --gradient-blue: linear-gradient(135deg, #2563EB, #3B82F6);
+            --gradient-green: linear-gradient(135deg, #10B981, #059669);
+        }
+
+        body { font-family: 'Inter', sans-serif; line-height: 1.6; color: var(--deep-blue); background: linear-gradient(135deg, var(--deep-blue) 0%, #1E293B 50%, var(--electric-blue) 100%); min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        h1, h2, h3 { font-weight: 800; line-height: 1.2; }
+        
+        .hero { padding: 4rem 0 2rem 0; text-align: center; color: white; }
+        .hero h1 { font-size: 3.5rem; margin-bottom: 1.5rem; background: linear-gradient(135deg, #fff, #e2e8f0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .hero .tagline { font-size: 1.5rem; margin-bottom: 1rem; opacity: 0.9; }
+        .hero .subtitle { font-size: 1.1rem; opacity: 0.8; margin-bottom: 2rem; }
+        
+        .referral-badge { background: var(--gradient-green); color: white; padding: 1rem 2rem; border-radius: 12px; display: inline-block; margin: 2rem 0; font-weight: 600; }
+        
+        .card { background: white; border-radius: 16px; padding: 2.5rem; box-shadow: 0 8px 30px rgba(0,0,0,0.12); margin: 2rem 0; }
+        
+        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin: 3rem 0; }
+        .feature { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 2rem; border-radius: 16px; text-align: center; color: white; }
+        .feature-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .feature h3 { margin-bottom: 1rem; }
+        
+        .cta-section { background: white; border-radius: 20px; padding: 3rem; margin: 3rem 0; text-align: center; }
+        .cta-section h2 { color: var(--deep-blue); margin-bottom: 1rem; }
+        .cta-section p { color: var(--slate-gray); font-size: 1.1rem; margin-bottom: 2rem; }
+        
+        .form-group { margin-bottom: 1.5rem; text-align: left; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--deep-blue); }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 14px 16px; border: 2px solid var(--border-gray); border-radius: 8px; font-size: 1rem; transition: all 0.3s ease; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--electric-blue); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        
+        .btn { display: inline-block; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.1rem; transition: all 0.3s ease; border: none; cursor: pointer; }
+        .btn-primary { background: var(--gradient-blue); color: white; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4); }
+        .btn-success { background: var(--gradient-green); color: white; }
+        
+        .notification { position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem; border-radius: 8px; color: white; font-weight: 600; z-index: 1000; transform: translateX(400px); transition: transform 0.3s ease; }
+        .notification.success { background: var(--success-green); }
+        .notification.error { background: #EF4444; }
+        .notification.show { transform: translateX(0); }
+        
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin: 2rem 0; }
+        .stat { text-align: center; padding: 1.5rem; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 12px; color: white; }
+        .stat-number { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .stat-label { font-size: 1rem; opacity: 0.9; }
+
+        .process { margin: 3rem 0; }
+        .process-step { display: flex; align-items: flex-start; gap: 1.5rem; margin-bottom: 2rem; padding: 1.5rem; background: rgba(255,255,255,0.95); border-radius: 12px; }
+        .process-number { background: var(--gradient-blue); color: white; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.5rem; flex-shrink: 0; }
+        
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .hero .tagline { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <section class="hero">
+            <h1>Guaranteed B2B Lead Generation</h1>
+            <p class="tagline">🚀 Get Qualified Appointments with Decision-Makers</p>
+            <p class="subtitle">No More Cold Calling. No More Wasted Ad Spend. Just Results.</p>
+            
+            <div id="referral-info" style="display: none;" class="referral-badge">
+                <span id="referral-text"></span>
+            </div>
+        </section>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number">300-500%</div>
+                <div class="stat-label">Average ROI</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Appointment Guarantee</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">50+</div>
+                <div class="stat-label">Industries Served</div>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">🎯</div>
+                <h3>Qualified Appointments</h3>
+                <p>We guarantee appointments with decision-makers ready to discuss your services</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">💼</div>
+                <h3>Full-Service</h3>
+                <p>From prospecting to appointment confirmation - we handle everything</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📈</div>
+                <h3>Proven Results</h3>
+                <p>Track record of generating millions in revenue for our clients</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 style="text-align: center; margin-bottom: 2rem; color: var(--deep-blue);">How It Works</h2>
+            <div class="process">
+                <div class="process-step">
+                    <div class="process-number">1</div>
+                    <div>
+                        <h3 style="color: var(--electric-blue); margin-bottom: 0.5rem;">Discovery Call</h3>
+                        <p>We learn about your business, ideal clients, and revenue goals</p>
+                    </div>
+                </div>
+                <div class="process-step">
+                    <div class="process-number">2</div>
+                    <div>
+                        <h3 style="color: var(--electric-blue); margin-bottom: 0.5rem;">Strategy Development</h3>
+                        <p>We create a customized outreach strategy targeting your perfect prospects</p>
+                    </div>
+                </div>
+                <div class="process-step">
+                    <div class="process-number">3</div>
+                    <div>
+                        <h3 style="color: var(--electric-blue); margin-bottom: 0.5rem;">Appointment Setting</h3>
+                        <p>Our team reaches out, qualifies, and schedules appointments on your calendar</p>
+                    </div>
+                </div>
+                <div class="process-step">
+                    <div class="process-number">4</div>
+                    <div>
+                        <h3 style="color: var(--electric-blue); margin-bottom: 0.5rem;">You Close Deals</h3>
+                        <p>Show up to qualified appointments and focus on what you do best - closing</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cta-section">
+            <h2>Ready to Scale Your Business?</h2>
+            <p>Book a free consultation to see how we can generate qualified leads for your business</p>
+            
+            <form id="consultation-form" style="max-width: 600px; margin: 0 auto;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="first_name">First Name *</label>
+                        <input type="text" id="first_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="last_name">Last Name *</label>
+                        <input type="text" id="last_name" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone Number *</label>
+                    <input type="tel" id="phone" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="company">Company Name *</label>
+                    <input type="text" id="company" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="website">Company Website</label>
+                    <input type="text" id="website" placeholder="example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="industry">Industry *</label>
+                    <select id="industry" required>
+                        <option value="">Select your industry...</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Real Estate">Real Estate</option>
+                        <option value="Legal">Legal</option>
+                        <option value="Consulting">Consulting</option>
+                        <option value="Manufacturing">Manufacturing</option>
+                        <option value="Construction">Construction</option>
+                        <option value="Education">Education</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="monthly_revenue">Monthly Revenue Range</label>
+                    <select id="monthly_revenue">
+                        <option value="">Select range...</option>
+                        <option value="0-10k">$0 - $10,000</option>
+                        <option value="10k-50k">$10,000 - $50,000</option>
+                        <option value="50k-100k">$50,000 - $100,000</option>
+                        <option value="100k-500k">$100,000 - $500,000</option>
+                        <option value="500k+">$500,000+</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">Tell us about your business and goals</label>
+                    <textarea id="message" rows="4" placeholder="What challenges are you facing? What are your growth goals?"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                    Book Free Consultation
+                </button>
+                
+                <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--slate-gray);">
+                    By submitting, you agree to be contacted about our services.
+                </p>
+            </form>
+        </div>
+
+        <div style="text-align: center; padding: 2rem 0; color: white; opacity: 0.8;">
+            <p>&copy; 2025 KinectB2B. All rights reserved.</p>
+            <p style="margin-top: 0.5rem;">
+                <a href="https://kinectb2b.com" target="_blank" style="color: white; text-decoration: none;">Visit KinectB2B.com</a>
+            </p>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        const SUPABASE_URL = 'https://ngdvepfzmpnfzbecpkhw.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5nZHZlcGZ6bXBuZnpiZWNwa2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2Nzg2MzksImV4cCI6MjA3NDI1NDYzOX0.bfkXungCd9GkarpR7E7fayXLStewUcDvROTpd_SevFg';
+        
+        let supabase;
+        let affiliateCode = null;
+        let affiliateId = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            
+            // Get affiliate code from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            affiliateCode = urlParams.get('ref');
+            
+            if (affiliateCode) {
+                loadAffiliateInfo(affiliateCode);
+                // Store in session storage for tracking
+                sessionStorage.setItem('affiliateCode', affiliateCode);
+            } else {
+                // Check session storage for previously stored code
+                affiliateCode = sessionStorage.getItem('affiliateCode');
+                if (affiliateCode) {
+                    loadAffiliateInfo(affiliateCode);
+                }
+            }
+            
+            document.getElementById('consultation-form').addEventListener('submit', handleFormSubmit);
+        });
+
+        async function loadAffiliateInfo(code) {
+            try {
+                const { data, error } = await supabase
+                    .from('user_profiles')
+                    .select('user_id, full_name, email')
+                    .eq('affiliate_code', code)
+                    .eq('role', 'affiliate')
+                    .single();
+                
+                if (data) {
+                    affiliateId = data.user_id;
+                    const badge = document.getElementById('referral-info');
+                    const text = document.getElementById('referral-text');
+                    text.textContent = `✨ Referred by ${data.full_name}`;
+                    badge.style.display = 'block';
+                }
+            } catch (error) {
+                console.log('Affiliate not found or error:', error);
+            }
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const formData = {
+                first_name: document.getElementById('first_name').value.trim(),
+                last_name: document.getElementById('last_name').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                company_name: document.getElementById('company').value.trim(),
+                website: document.getElementById('website').value.trim() || null,
+                industry: document.getElementById('industry').value,
+                monthly_revenue: document.getElementById('monthly_revenue').value || null,
+                message: document.getElementById('message').value.trim() || null,
+                affiliate_code: affiliateCode,
+                affiliate_id: affiliateId,
+                source: 'referral_landing',
+                created_at: new Date().toISOString()
+            };
+
+            try {
+                showNotification('Submitting your request...', 'success');
+                
+                let websiteValue = formData.website;
+                if (websiteValue && !websiteValue.startsWith('http')) {
+                    websiteValue = 'https://' + websiteValue.replace(/^\/\//, '');
+                }
+                
+                let notesContent = '';
+                if (formData.industry) {
+                    notesContent += `Industry: ${formData.industry}\n`;
+                }
+                if (formData.monthly_revenue) {
+                    notesContent += `Monthly Revenue: ${formData.monthly_revenue}\n`;
+                }
+                if (formData.message) {
+                    notesContent += `\nMessage: ${formData.message}`;
+                }
+                
+                const referralData = {
+                    affiliate_id: affiliateId,
+                    company_name: formData.company_name,
+                    website: websiteValue,
+                    contact_name: `${formData.first_name} ${formData.last_name}`,
+                    contact_email: formData.email,
+                    contact_phone: formData.phone,
+                    notes: notesContent || null,
+                    status: 'pending',
+                    source: 'referral_landing',
+                    created_at: new Date().toISOString()
+                };
+
+                const { data, error } = await supabase
+                    .from('referrals')
+                    .insert([referralData])
+                    .select();
+
+                if (error) throw error;
+                
+                showNotification('Thank you! We\'ll contact you within 24 hours to schedule your consultation.', 'success');
+                
+                document.getElementById('consultation-form').reset();
+                
+                // Clear the stored affiliate code after successful submission
+                sessionStorage.removeItem('affiliateCode');
+                
+                setTimeout(() => {
+                    window.location.href = 'https://kinectb2b.com/thank-you';
+                }, 3000);
+
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                showNotification('Error submitting form. Please try again or contact us directly.', 'error');
+            }
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
