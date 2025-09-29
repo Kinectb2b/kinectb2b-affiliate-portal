@@ -254,11 +254,19 @@
         <!-- Affiliate Dashboard -->
         <div id="affiliate-dashboard" class="container hidden">
             <div class="card affiliate-code-card">
-                <h3>Your Personal Affiliate Code</h3>
-                <p>Share this code with businesses to get credit for referrals</p>
-                <div class="affiliate-code" id="affiliate-code">Loading...</div>
-                <button class="copy-button" onclick="copyAffiliateCode()">📋 Copy Code</button>
-            </div>
+    <h3>Your Personal Referral Link</h3>
+    <p>Share this link with businesses to get credit for referrals automatically!</p>
+    <div class="affiliate-code" id="affiliate-link" style="font-size: 1.2rem; word-break: break-all;">Loading...</div>
+    <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1rem; flex-wrap: wrap;">
+        <button class="copy-button" onclick="copyAffiliateLink()">📋 Copy Link</button>
+        <button class="copy-button" onclick="shareAffiliateLink()">📱 Share</button>
+    </div>
+    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid rgba(255,255,255,0.3);">
+        <h4 style="margin-bottom: 1rem;">Your Affiliate Code</h4>
+        <div class="affiliate-code" id="affiliate-code" style="font-size: 1.5rem;">Loading...</div>
+        <button class="copy-button" onclick="copyAffiliateCode()" style="margin-top: 0.5rem;">📋 Copy Code</button>
+    </div>
+</div>
 
             <div class="dashboard-grid">
                 <div class="card stat-card">
