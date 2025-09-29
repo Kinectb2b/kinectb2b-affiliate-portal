@@ -967,28 +967,29 @@
                 if (error) throw error;
                 
                 if (data.user) {
-                    const affiliateCode = generateAffiliateCode(name);
-                    
-                    try {
-                        const { data: existingProfile, error: checkError } = await supabase
-                            .from('user_profiles')
-                            .select('*')
-                            .eq('user_id', data.user.id)
-                            .maybeSingle();
-                        
-                        if (!existingProfile) {
-                            const { error: profileError } = await supabase
-                                .from('user_profiles')
-                                .insert({
-                                    user_id: data.user.id,
-                                    email: email,
-                                    full_name: name,
-                                    role: 'affiliate',
-                                    status: 'active',
-                                    affiliate_code: affiliateCode,
-                                    admin_viewed: false,
-                                    created_at: new Date().toISOString()
-                                });
+    const affiliateCode = generateAffiliateCode(name);
+    
+    try {
+        // Use upsert to either insert or update the profile
+        const { error: profileError } = await supabase
+            .from('user_profiles')
+            .upsert({
+                user_id: data.user.id,
+                email: email,
+                full_name: name,
+                role: 'affiliate',
+                status: 'active',
+                affiliate_code: affiliateCode,
+                admin_viewed: false,
+                created_at: new Date().toISOString()
+            }, {
+                onConflict: 'user_id',
+                ignoreDuplicates: false
+            });
+        
+        if (profileError) {
+            console.warn('Profile upsert error:', profileError);
+        }
                             
                             if (profileError) console.warn('Profile creation error:', profileError);
                         } else {
