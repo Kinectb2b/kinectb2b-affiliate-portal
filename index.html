@@ -529,8 +529,94 @@
 
         <!-- Admin Dashboard -->
         <div id="admin-dashboard" class="container hidden">
-            <h2>Admin Dashboard</h2>
-            <p>Admin features coming soon...</p>
+            <div class="dashboard-grid">
+                <div class="card stat-card">
+                    <div class="stat-number" id="admin-total-affiliates">0</div>
+                    <div class="stat-label">Total Affiliates</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-number" id="admin-total-referrals">0</div>
+                    <div class="stat-label">Total Referrals</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-number" id="admin-new-referrals">0</div>
+                    <div class="stat-label">🔔 New Referrals</div>
+                </div>
+                <div class="card stat-card">
+                    <div class="stat-number" id="admin-new-affiliates">0</div>
+                    <div class="stat-label">🆕 New Affiliates</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab active" onclick="showAdminTab(event, 'referrals')">Referrals (<span id="referrals-count">0</span>)</button>
+                    <button class="tab" onclick="showAdminTab(event, 'active-clients')">Active Clients (<span id="active-clients-count">0</span>)</button>
+                    <button class="tab" onclick="showAdminTab(event, 'affiliates')">Affiliates (<span id="affiliates-count">0</span>)</button>
+                    <button class="tab" onclick="showAdminTab(event, 'payments')">Payments</button>
+                    <button class="tab" onclick="showAdminTab(event, 'questions')">Questions (<span id="questions-count">0</span>)</button>
+                </div>
+
+                <div id="admin-referrals-content" class="tab-content active">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>Referral Management</h3>
+                        <button class="btn btn-small btn-success" onclick="markAllNotificationsRead()">Mark All Read</button>
+                    </div>
+                    <div id="admin-referrals-list">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <h3>Loading Referrals...</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-active-clients-content" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>Active Clients</h3>
+                    </div>
+                    <div id="admin-active-clients-list">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">👥</div>
+                            <h3>Loading Active Clients...</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-affiliates-content" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>Affiliate Management</h3>
+                        <button class="btn btn-small btn-primary" onclick="exportAffiliates()">Export List</button>
+                    </div>
+                    <div id="admin-affiliates-list">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">👥</div>
+                            <h3>Loading Affiliates...</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-payments-content" class="tab-content">
+                    <h3>Payment Management</h3>
+                    <div id="admin-payments-list">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💰</div>
+                            <h3>Loading Payments...</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-questions-content" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>Affiliate Questions</h3>
+                    </div>
+                    <div id="admin-questions-list">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">❓</div>
+                            <h3>Loading Questions...</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -784,6 +870,7 @@
             
             closeAuthModal();
             document.getElementById('user-name').textContent = 'Admin - Robert';
+            await loadAdminData();
         }
 
         function showPaymentFields() {
@@ -1004,6 +1091,848 @@
         function toggleMobileMenu() {
             const navLinks = document.getElementById('nav-links');
             navLinks.classList.toggle('active');
+        }
+
+        // ADMIN FUNCTIONS
+        async function loadAdminData() {
+            if (!currentUser || currentUser.email !== 'robert@kinectb2b.com') return;
+            
+            try {
+                const { data: affiliates } = await supabase
+                    .from('user_profiles')
+                    .select('*')
+                    .eq('role', 'affiliate')
+                    .order('created_at', { ascending: false });
+                
+                const { data: referrals } = await supabase
+                    .from('referrals')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                const { data: payments } = await supabase
+                    .from('payments')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                const { data: questions } = await supabase
+                    .from('questions')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                window.adminData = {
+                    affiliates: affiliates || [],
+                    referrals: referrals || [],
+                    payments: payments || [],
+                    questions: questions || []
+                };
+                
+                updateAdminStats(affiliates || [], referrals || [], payments || []);
+                loadAdminReferrals();
+                loadAdminActiveClients();
+                loadAdminAffiliates();
+                loadAdminPayments();
+                loadAdminQuestions();
+                
+            } catch (error) {
+                console.error('Error loading admin data:', error);
+                showNotification('Error loading admin data', 'error');
+            }
+        }
+
+        function updateAdminStats(affiliates = [], referrals = [], payments = []) {
+            const totalAffiliates = affiliates.length;
+            const totalReferrals = referrals.length;
+            const newReferrals = referrals.filter(r => r.status === 'pending' && !r.admin_viewed).length;
+            const newAffiliates = affiliates.filter(a => {
+                const created = new Date(a.created_at);
+                const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+                return created > weekAgo && !a.admin_viewed;
+            }).length;
+            
+            document.getElementById('admin-total-affiliates').textContent = totalAffiliates;
+            document.getElementById('admin-total-referrals').textContent = totalReferrals;
+            document.getElementById('admin-new-referrals').textContent = newReferrals;
+            document.getElementById('admin-new-affiliates').textContent = newAffiliates;
+            
+            document.getElementById('referrals-count').textContent = totalReferrals;
+            document.getElementById('affiliates-count').textContent = totalAffiliates;
+            document.getElementById('active-clients-count').textContent = referrals.filter(r => r.status === 'customer').length;
+            document.getElementById('questions-count').textContent = window.adminData?.questions?.filter(q => q.status === 'pending').length || 0;
+        }
+
+        function showAdminTab(event, tabName) {
+            document.querySelectorAll('#admin-dashboard .tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('#admin-dashboard .tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            document.getElementById(`admin-${tabName}-content`).classList.add('active');
+            
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+            
+            if (tabName === 'referrals') loadAdminReferrals();
+            else if (tabName === 'active-clients') loadAdminActiveClients();
+            else if (tabName === 'affiliates') loadAdminAffiliates();
+            else if (tabName === 'payments') loadAdminPayments();
+            else if (tabName === 'questions') loadAdminQuestions();
+        }
+
+        function loadAdminReferrals() {
+            const referrals = window.adminData?.referrals.filter(r => r.status !== 'customer') || [];
+            const affiliates = window.adminData?.affiliates || [];
+            
+            const affiliateMap = {};
+            affiliates.forEach(a => affiliateMap[a.user_id] = a);
+            
+            const container = document.getElementById('admin-referrals-list');
+            
+            if (referrals.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <h3>No Referrals Yet</h3>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>🔔</th>
+                                <th>Company</th>
+                                <th>Contact</th>
+                                <th>Affiliate</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${referrals.map(referral => {
+                                const affiliate = affiliateMap[referral.affiliate_id] || {};
+                                const isNew = referral.status === 'pending' && !referral.admin_viewed;
+                                
+                                return `
+                                    <tr style="${isNew ? 'background: #FEF3C7;' : ''}">
+                                        <td style="text-align: center;">
+                                            ${isNew ? 
+                                                `<button class="read-button" onclick="markReferralAsRead('${referral.id}')" title="Mark as read">●</button>` : 
+                                                '<span style="color: var(--success-green);">✓</span>'
+                                            }
+                                        </td>
+                                        <td>
+                                            <strong>${referral.company_name}</strong>
+                                            ${referral.website ? `<br><small><a href="${referral.website}" target="_blank">${referral.website}</a></small>` : ''}
+                                            ${referral.notes ? `<br><small style="color: var(--slate-gray);">${referral.notes.substring(0, 100)}${referral.notes.length > 100 ? '...' : ''}</small>` : ''}
+                                        </td>
+                                        <td>
+                                            <strong>${referral.contact_name}</strong><br>
+                                            ${referral.contact_email ? `<small>${referral.contact_email}</small><br>` : ''}
+                                            ${referral.contact_phone ? `<small>${referral.contact_phone}</small>` : ''}
+                                        </td>
+                                        <td>
+                                            <strong>${affiliate.full_name || 'Unknown'}</strong><br>
+                                            <small><strong>Code:</strong> ${affiliate.affiliate_code || 'N/A'}</small>
+                                        </td>
+                                        <td>
+                                            <select onchange="updateReferralStatus('${referral.id}', this.value)" style="padding: 4px; border-radius: 4px;">
+                                                <option value="pending" ${referral.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                                <option value="contacted" ${referral.status === 'contacted' ? 'selected' : ''}>Contacted</option>
+                                                <option value="customer" ${referral.status === 'customer' ? 'selected' : ''}>Customer</option>
+                                                <option value="closed" ${referral.status === 'closed' ? 'selected' : ''}>Closed</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-small btn-danger" onclick="deleteReferral('${referral.id}', '${referral.company_name.replace(/'/g, "\\'")}')">Delete</button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function loadAdminActiveClients() {
+            const clients = window.adminData?.referrals.filter(r => r.status === 'customer' || r.status === 'suspended' || r.status === 'canceled') || [];
+            const affiliates = window.adminData?.affiliates || [];
+            const affiliateMap = {};
+            affiliates.forEach(a => affiliateMap[a.user_id] = a);
+            
+            const container = document.getElementById('admin-active-clients-list');
+            
+            if (clients.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><h3>No Active Clients</h3></div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Company</th>
+                                <th>Affiliate</th>
+                                <th>Current Plan</th>
+                                <th>Payments Made</th>
+                                <th>Status & Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${clients.map(client => {
+                                const clientPayments = window.adminData?.payments.filter(p => p.referral_id === client.id) || [];
+                                const affiliate = affiliateMap[client.affiliate_id] || {};
+                                return `
+                                    <tr>
+                                        <td><strong>${client.company_name}</strong></td>
+                                        <td>${affiliate.full_name || 'Unknown'}</td>
+                                        <td>${parseFloat(client.pro_plan_value || 0).toFixed(0)}/month</td>
+                                        <td>${clientPayments.length} / 12</td>
+                                        <td>
+                                            <select onchange="updateClientStatus('${client.id}', this.value, '${client.company_name.replace(/'/g, "\\'")}')" style="padding: 6px; border-radius: 4px; margin-right: 0.5rem;">
+                                                <option value="customer" ${client.status === 'customer' ? 'selected' : ''}>Active</option>
+                                                <option value="suspended" ${client.status === 'suspended' ? 'selected' : ''}>Suspended</option>
+                                                <option value="canceled" ${client.status === 'canceled' ? 'selected' : ''}>Canceled</option>
+                                            </select>
+                                            <button class="btn btn-small btn-primary" onclick="manageClient('${client.id}')">Manage</button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        async function updateClientStatus(referralId, newStatus, companyName) {
+            if (!confirm(`Change ${companyName} status to ${newStatus}?`)) {
+                await loadAdminData();
+                return;
+            }
+            
+            try {
+                const { error } = await supabase
+                    .from('referrals')
+                    .update({ status: newStatus })
+                    .eq('id', referralId);
+                
+                if (error) throw error;
+                
+                let message = '';
+                if (newStatus === 'suspended') {
+                    message = `${companyName} has been suspended.`;
+                } else if (newStatus === 'canceled') {
+                    message = `${companyName} has been canceled.`;
+                } else if (newStatus === 'customer') {
+                    message = `${companyName} has been reactivated!`;
+                }
+                
+                showNotification(message, 'success');
+                await loadAdminData();
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+                await loadAdminData();
+            }
+        }
+
+        function manageClient(referralId) {
+            const client = window.adminData.referrals.find(r => r.id === referralId);
+            const payments = window.adminData.payments.filter(p => p.referral_id === referralId);
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h3>Manage Client: ${client.company_name}</h3>
+                    <div style="margin: 2rem 0;">
+                        <p><strong>Current Plan:</strong> ${parseFloat(client.pro_plan_value).toFixed(0)}/month</p>
+                        <p><strong>Payments Made:</strong> ${payments.length} / 12</p>
+                    </div>
+                    <div style="display: grid; gap: 1rem;">
+                        <button class="btn btn-primary" onclick="recordPayment('${client.id}', ${client.pro_plan_value}, '${client.company_name}', '${client.affiliate_id}'); this.closest('.modal').remove();">Record Payment</button>
+                        <button class="btn" onclick="changePlan('${client.id}'); this.closest('.modal').remove();" style="background: var(--warning-yellow); color: white;">Change Plan</button>
+                        <button class="btn" onclick="this.closest('.modal').remove();" style="background: var(--light-gray); color: var(--slate-gray);">Close</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        async function recordPayment(referralId, amount, companyName, affiliateId) {
+            const customAmount = prompt('Enter payment amount:', amount);
+            if (!customAmount) return;
+            
+            const commission = parseFloat(customAmount) * 0.1;
+            const paidDate = new Date().toISOString();
+            const clearedDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+            
+            try {
+                const { error } = await supabase
+                    .from('payments')
+                    .insert([{
+                        affiliate_id: affiliateId,
+                        referral_id: referralId,
+                        amount: commission,
+                        referral_company: companyName,
+                        status: 'paid',
+                        paid_date: paidDate,
+                        expected_cleared_date: clearedDate,
+                        created_at: paidDate
+                    }]);
+                
+                if (error) throw error;
+                
+                showNotification('Payment recorded!', 'success');
+                await loadAdminData();
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function changePlan(referralId) {
+            const planOptions = [
+                { value: 250, label: 'Pro Plan 100 - $250/month' },
+                { value: 500, label: 'Pro Plan 200 - $500/month' },
+                { value: 750, label: 'Pro Plan 300 - $750/month' },
+                { value: 1000, label: 'Pro Plan 400 - $1,000/month' },
+                { value: 1250, label: 'Pro Plan 500 - $1,250/month' },
+                { value: 1500, label: 'Pro Plan 600 - $1,500/month' },
+                { value: 1750, label: 'Pro Plan 700 - $1,750/month' },
+                { value: 2000, label: 'Pro Plan 800 - $2,000/month' },
+                { value: 2250, label: 'Pro Plan 900 - $2,250/month' },
+                { value: 2500, label: 'Pro Plan 1000 - $2,500/month' },
+                { value: 2750, label: 'Pro Plan 1100 - $2,750/month' },
+                { value: 3000, label: 'Pro Plan 1200 - $3,000/month' }
+            ];
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h3>Change Plan</h3>
+                    <div class="form-group">
+                        <label>Select New Plan:</label>
+                        <select id="new-plan-select" style="width: 100%; padding: 12px; border: 2px solid var(--border-gray); border-radius: 8px;">
+                            <option value="">Select a plan...</option>
+                            ${planOptions.map(plan => `<option value="${plan.value}">${plan.label}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button class="btn btn-primary" onclick="savePlanChange('${referralId}')">Save</button>
+                        <button class="btn" onclick="this.closest('.modal').remove()" style="background: var(--light-gray); color: var(--slate-gray);">Cancel</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        async function savePlanChange(referralId) {
+            const select = document.getElementById('new-plan-select');
+            const newPlan = parseFloat(select.value);
+            
+            if (!newPlan) {
+                showNotification('Please select a plan', 'error');
+                return;
+            }
+            
+            try {
+                const { error } = await supabase
+                    .from('referrals')
+                    .update({ pro_plan_value: newPlan })
+                    .eq('id', referralId);
+                
+                if (error) throw error;
+                
+                showNotification('Plan updated!', 'success');
+                document.querySelector('.modal').remove();
+                await loadAdminData();
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        function loadAdminAffiliates() {
+            const affiliates = window.adminData?.affiliates || [];
+            const referrals = window.adminData?.referrals || [];
+            const payments = window.adminData?.payments || [];
+            
+            const container = document.getElementById('admin-affiliates-list');
+            
+            if (affiliates.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👥</div>
+                        <h3>No Affiliates Yet</h3>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>🔔</th>
+                                <th>Name</th>
+                                <th>Contact</th>
+                                <th>Code</th>
+                                <th>Performance</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${affiliates.map(affiliate => {
+                                const affiliateReferrals = referrals.filter(r => r.affiliate_id === affiliate.user_id);
+                                const affiliatePayments = payments.filter(p => p.affiliate_id === affiliate.user_id);
+                                const totalReferrals = affiliateReferrals.length;
+                                const activeClients = affiliateReferrals.filter(r => r.status === 'customer').length;
+                                const totalEarned = affiliatePayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+                                const status = affiliate.status || 'active';
+                                
+                                const created = new Date(affiliate.created_at);
+                                const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+                                const isNew = created > weekAgo && !affiliate.admin_viewed;
+                                
+                                return `
+                                    <tr style="${isNew ? 'background: #FEF3C7;' : ''}">
+                                        <td style="text-align: center;">
+                                            ${isNew ? 
+                                                `<button class="read-button" onclick="markAffiliateAsRead('${affiliate.user_id}')" title="Mark as read">●</button>` : 
+                                                '<span style="color: var(--success-green);">✓</span>'
+                                            }
+                                        </td>
+                                        <td>
+                                            <strong>${affiliate.full_name || 'N/A'}</strong>
+                                            ${affiliate.company ? `<br><small>${affiliate.company}</small>` : ''}
+                                        </td>
+                                        <td>
+                                            ${affiliate.email}<br>
+                                            ${affiliate.phone ? `<small>${affiliate.phone}</small>` : ''}
+                                        </td>
+                                        <td>
+                                            <strong style="font-family: monospace;">${affiliate.affiliate_code || 'N/A'}</strong>
+                                        </td>
+                                        <td>
+                                            <strong>${totalReferrals}</strong> referrals<br>
+                                            <small><strong>${activeClients}</strong> active | <strong>${totalEarned.toFixed(2)}</strong> earned</small>
+                                        </td>
+                                        <td>
+                                            <select onchange="updateAffiliateStatus('${affiliate.user_id}', this.value)" style="padding: 4px; border-radius: 4px;">
+                                                <option value="active" ${status === 'active' ? 'selected' : ''}>Active</option>
+                                                <option value="suspended" ${status === 'suspended' ? 'selected' : ''}>Suspended</option>
+                                                <option value="inactive" ${status === 'inactive' ? 'selected' : ''}>Inactive</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-small btn-primary" onclick="viewAffiliateDetails('${affiliate.user_id}')">View</button>
+                                            <button class="btn btn-small btn-danger" onclick="deleteAffiliate('${affiliate.user_id}', '${affiliate.full_name || 'Unknown'}')" style="margin-left: 0.5rem;">Delete</button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        async function updateAffiliateStatus(userId, newStatus) {
+            try {
+                const { error } = await supabase
+                    .from('user_profiles')
+                    .update({ status: newStatus })
+                    .eq('user_id', userId);
+                
+                if (error) throw error;
+                
+                showNotification(`Affiliate status updated to ${newStatus}`, 'success');
+                await loadAdminData();
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+        
+        async function markAffiliateAsRead(userId) {
+            try {
+                const { error } = await supabase
+                    .from('user_profiles')
+                    .update({ admin_viewed: true })
+                    .eq('user_id', userId);
+                
+                if (error) throw error;
+                
+                showNotification('Marked as read', 'success');
+                await loadAdminData();
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        function viewAffiliateDetails(userId) {
+            const affiliate = window.adminData.affiliates.find(a => a.user_id === userId);
+            const referrals = window.adminData.referrals.filter(r => r.affiliate_id === userId);
+            const payments = window.adminData.payments.filter(p => p.affiliate_id === userId);
+            
+            if (!affiliate) return;
+            
+            const totalEarned = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+            const activeClients = referrals.filter(r => r.status === 'customer').length;
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 900px; max-height: 80vh; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>Affiliate Details - ${affiliate.full_name || 'Unknown'}</h3>
+                        <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                        <div>
+                            <h4 style="color: var(--electric-blue); margin-bottom: 1rem;">Contact</h4>
+                            <p><strong>Email:</strong> ${affiliate.email}</p>
+                            <p><strong>Phone:</strong> ${affiliate.phone || 'N/A'}</p>
+                            <p><strong>Company:</strong> ${affiliate.company || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <h4 style="color: var(--success-green); margin-bottom: 1rem;">Performance</h4>
+                            <p><strong>Total Referrals:</strong> ${referrals.length}</p>
+                            <p><strong>Active Clients:</strong> ${activeClients}</p>
+                            <p><strong>Total Earned:</strong> ${totalEarned.toFixed(2)}</p>
+                        </div>
+                        <div>
+                            <h4 style="color: var(--warning-yellow); margin-bottom: 1rem;">Payment</h4>
+                            <p><strong>Method:</strong> ${affiliate.payment_method || 'N/A'}</p>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 2rem;">
+                        <h4 style="color: var(--electric-blue); margin-bottom: 1rem;">Referrals (${referrals.length})</h4>
+                        ${referrals.length > 0 ? `
+                            <div style="max-height: 200px; overflow-y: auto;">
+                                ${referrals.map(r => `<p>• ${r.company_name} - <span class="status-badge status-${r.status}">${r.status}</span></p>`).join('')}
+                            </div>
+                        ` : '<p>No referrals yet</p>'}
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="this.closest('.modal').remove()">Close</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function loadAdminPayments() {
+            const payments = window.adminData?.payments || [];
+            const affiliates = window.adminData?.affiliates || [];
+            
+            const affiliateMap = {};
+            affiliates.forEach(a => affiliateMap[a.user_id] = a);
+            
+            const container = document.getElementById('admin-payments-list');
+            
+            if (payments.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💰</div>
+                        <h3>No Payments Yet</h3>
+                    </div>
+                `;
+                return;
+            }
+            
+            const totalPaid = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+            
+            container.innerHTML = `
+                <div style="margin-bottom: 2rem; padding: 1rem; background: var(--light-gray); border-radius: 8px;">
+                    <strong>Total Commissions Paid: ${totalPaid.toFixed(2)}</strong>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Affiliate</th>
+                                <th>Company</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${payments.map(payment => {
+                                const affiliate = affiliateMap[payment.affiliate_id] || {};
+                                return `
+                                    <tr>
+                                        <td>${new Date(payment.created_at).toLocaleDateString()}</td>
+                                        <td><strong>${affiliate.full_name || 'Unknown'}</strong><br><small>${affiliate.email || ''}</small></td>
+                                        <td><strong>${payment.referral_company || 'N/A'}</strong></td>
+                                        <td><strong style="color: var(--success-green);">${parseFloat(payment.amount).toFixed(2)}</strong></td>
+                                        <td><span class="status-badge status-paid">Paid</span></td>
+                                        <td><button class="btn btn-small btn-danger" onclick="deletePayment('${payment.id}')">Delete</button></td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function loadAdminQuestions() {
+            const questions = window.adminData?.questions || [];
+            const affiliates = window.adminData?.affiliates || [];
+            const affiliateMap = {};
+            affiliates.forEach(a => affiliateMap[a.user_id] = a);
+            
+            const container = document.getElementById('admin-questions-list');
+            
+            if (questions.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">❓</div><h3>No Questions</h3></div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Affiliate</th>
+                                <th>Question</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${questions.map(q => {
+                                const affiliate = affiliateMap[q.affiliate_id] || {};
+                                return `
+                                    <tr>
+                                        <td>${new Date(q.created_at).toLocaleDateString()}</td>
+                                        <td><strong>${affiliate.full_name || 'Unknown'}</strong></td>
+                                        <td>${q.question}</td>
+                                        <td><span class="status-badge status-${q.status === 'answered' ? 'active' : 'pending'}">${q.status}</span></td>
+                                        <td><button class="btn btn-small btn-primary" onclick="answerQuestion('${q.id}', '${q.question.replace(/'/g, "\\'")}', '${(q.answer || '').replace(/'/g, "\\'")}')">Answer</button></td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        async function answerQuestion(questionId, question, currentAnswer) {
+            const answer = prompt(`Question: ${question}\n\nYour answer:`, currentAnswer);
+            if (!answer) return;
+            
+            try {
+                const { error } = await supabase
+                    .from('questions')
+                    .update({ answer: answer, status: 'answered', answered_at: new Date().toISOString() })
+                    .eq('id', questionId);
+                
+                if (error) throw error;
+                
+                showNotification('Answer saved!', 'success');
+                await loadAdminData();
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function markReferralAsRead(referralId) {
+            try {
+                const { error } = await supabase
+                    .from('referrals')
+                    .update({ admin_viewed: true })
+                    .eq('id', referralId);
+                
+                if (error) throw error;
+                
+                showNotification('Marked as read', 'success');
+                await loadAdminData();
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function updateReferralStatus(referralId, newStatus) {
+            try {
+                const updates = { status: newStatus, admin_viewed: true };
+                
+                if (newStatus === 'customer') {
+                    const planOptions = [
+                        { value: 250, label: 'Pro Plan 100' },
+                        { value: 500, label: 'Pro Plan 200' },
+                        { value: 750, label: 'Pro Plan 300' },
+                        { value: 1000, label: 'Pro Plan 400' },
+                        { value: 1250, label: 'Pro Plan 500' },
+                        { value: 1500, label: 'Pro Plan 600' },
+                        { value: 1750, label: 'Pro Plan 700' },
+                        { value: 2000, label: 'Pro Plan 800' },
+                        { value: 2250, label: 'Pro Plan 900' },
+                        { value: 2500, label: 'Pro Plan 1000' },
+                        { value: 2750, label: 'Pro Plan 1100' },
+                        { value: 3000, label: 'Pro Plan 1200' }
+                    ];
+                    
+                    const selectOptions = planOptions.map(p => `<option value="${p.value}">${p.label} - ${p.value}/mo</option>`).join('');
+                    const modal = document.createElement('div');
+                    modal.className = 'modal active';
+                    modal.innerHTML = `
+                        <div class="modal-content">
+                            <h3>Select Pro Plan</h3>
+                            <select id="plan-value-select" style="width: 100%; padding: 12px; margin: 1rem 0; border: 2px solid var(--border-gray); border-radius: 8px;">
+                                <option value="">Choose plan...</option>
+                                ${selectOptions}
+                            </select>
+                            <div style="display: flex; gap: 1rem;">
+                                <button class="btn btn-primary" onclick="savePlanAndStatus('${referralId}', '${newStatus}')">Save</button>
+                                <button class="btn" onclick="this.closest('.modal').remove()" style="background: var(--light-gray); color: var(--slate-gray);">Cancel</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                    return;
+                }
+                
+                const { error } = await supabase
+                    .from('referrals')
+                    .update(updates)
+                    .eq('id', referralId);
+                
+                if (error) throw error;
+                
+                showNotification(`Status updated to ${newStatus}`, 'success');
+                await loadAdminData();
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function savePlanAndStatus(referralId, status) {
+            const select = document.getElementById('plan-value-select');
+            const planValue = parseFloat(select.value);
+            
+            if (!planValue) {
+                showNotification('Please select a plan', 'error');
+                return;
+            }
+            
+            const planText = select.options[select.selectedIndex].text;
+            const planName = planText.split(' - ')[0];
+            
+            try {
+                const { error } = await supabase
+                    .from('referrals')
+                    .update({ 
+                        status: status,
+                        pro_plan_value: planValue,
+                        pro_plan_name: planName,
+                        admin_viewed: true
+                    })
+                    .eq('id', referralId);
+                
+                if (error) throw error;
+                
+                document.querySelector('.modal').remove();
+                showNotification('Client activated with ' + planName, 'success');
+                await loadAdminData();
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteReferral(referralId, companyName) {
+            if (!confirm(`Delete referral for ${companyName}?`)) return;
+            
+            try {
+                const { error } = await supabase.from('referrals').delete().eq('id', referralId);
+                if (error) throw error;
+                showNotification('Referral deleted', 'success');
+                await loadAdminData();
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteAffiliate(userId, affiliateName) {
+            if (!confirm(`Delete affiliate "${affiliateName}"?`)) return;
+            
+            try {
+                const { error } = await supabase.from('user_profiles').delete().eq('user_id', userId);
+                if (error) throw error;
+                showNotification('Affiliate deleted', 'success');
+                await loadAdminData();
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function deletePayment(paymentId) {
+            if (!confirm('Delete this payment?')) return;
+            
+            try {
+                const { error } = await supabase.from('payments').delete().eq('id', paymentId);
+                if (error) throw error;
+                showNotification('Payment deleted', 'success');
+                await loadAdminData();
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function markAllNotificationsRead() {
+            try {
+                const { error } = await supabase.from('referrals').update({ admin_viewed: true }).eq('admin_viewed', false);
+                if (error) throw error;
+                showNotification('All marked as read', 'success');
+                await loadAdminData();
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        function exportAffiliates() {
+            const affiliates = window.adminData?.affiliates || [];
+            if (affiliates.length === 0) {
+                showNotification('No affiliates to export', 'error');
+                return;
+            }
+            
+            const csvContent = [
+                ['Name', 'Email', 'Phone', 'Company', 'Affiliate Code', 'Status'].join(','),
+                ...affiliates.map(a => [
+                    a.full_name || '',
+                    a.email || '',
+                    a.phone || '',
+                    a.company || '',
+                    a.affiliate_code || '',
+                    a.status || 'active'
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `affiliates_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            showNotification('Affiliates exported', 'success');
         }
 
         document.addEventListener('click', function(e) {
